@@ -1,8 +1,11 @@
 /* $Id$ */
 
+#define SOURCE
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <signal.h>
 
 #include <openssl/opensslv.h>
 
@@ -49,5 +52,8 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	cm_log("Daemon", "Ready");
+#ifndef __MINGW32__
+	signal(SIGCHLD, SIG_IGN);
+#endif
 	tw_server_loop();
 }

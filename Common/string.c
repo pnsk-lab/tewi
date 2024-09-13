@@ -13,6 +13,13 @@ char* cm_strcat(const char* a, const char* b) {
 	return str;
 }
 
+char* cm_strcat3(const char* a, const char* b, const char* c) {
+	char* tmp = cm_strcat(a, b);
+	char* str = cm_strcat(tmp, c);
+	free(tmp);
+	return str;
+}
+
 char* cm_strdup(const char* str) { return cm_strcat(str, ""); }
 
 char* cm_trimstart(const char* str) {

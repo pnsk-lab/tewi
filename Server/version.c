@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#define SOURCE
+
 #include "tw_version.h"
 
 const char* tw_version = "0.00";

@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#define SOURCE
+
 #include "tw_config.h"
 
 #include <stdio.h>

@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#define SOURCE
+
 #include "tw_ssl.h"
 
 #include "tw_config.h"

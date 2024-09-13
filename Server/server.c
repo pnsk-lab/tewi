@@ -1,9 +1,12 @@
 /* $Id$ */
 
+#define SOURCE
+
 #include "tw_server.h"
 
 #include "tw_ssl.h"
 #include "tw_config.h"
+#include "tw_http.h"
 
 #include <unistd.h>
 #include <string.h>
@@ -112,6 +115,22 @@ int tw_server_init(void) {
 	return 0;
 }
 
+size_t tw_read(SSL* ssl, int s, void* data, size_t len) {
+	if(ssl == NULL) {
+		return recv(s, data, len, 0);
+	} else {
+		return SSL_read(ssl, data, len);
+	}
+}
+
+size_t tw_write(SSL* ssl, int s, void* data, size_t len) {
+	if(ssl == NULL) {
+		return send(s, data, len, 0);
+	} else {
+		return SSL_write(ssl, data, len);
+	}
+}
+
 #ifdef __MINGW32__
 struct pass_entry {
 	int sock;
@@ -139,8 +158,10 @@ void tw_server_pass(int sock, bool ssl, int port) {
 		if(SSL_accept(s) <= 0) goto cleanup;
 		sslworks = true;
 	}
+	struct tw_http_request req;
+	int ret = tw_http_parse(s, sock, &req);
 cleanup:
-	if(sslworks){
+	if(sslworks) {
 		SSL_shutdown(s);
 	}
 	SSL_free(s);

@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 char* cm_strcat(const char* a, const char* b);
+char* cm_strcat3(const char* a, const char* b, const char* c);
 char* cm_strdup(const char* str);
 char* cm_trimstart(const char* str);
 char* cm_trimend(const char* str);
