@@ -9,6 +9,7 @@
 #include <cm_log.h>
 
 #include "tw_config.h"
+#include "tw_server.h"
 #include "tw_version.h"
 
 extern bool cm_do_log;
@@ -41,6 +42,10 @@ int main(int argc, char** argv) {
 	tw_config_init();
 	if(tw_config_read(config) != 0) {
 		fprintf(stderr, "Could not read the config\n");
+		return 1;
+	}
+	if(tw_server_init() != 0) {
+		fprintf(stderr, "Could not initialize the server\n");
 		return 1;
 	}
 	cm_log("Daemon", "Ready");
