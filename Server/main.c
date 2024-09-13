@@ -49,4 +49,5 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	cm_log("Daemon", "Ready");
+	tw_server_loop();
 }

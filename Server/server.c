@@ -24,13 +24,14 @@ extern struct tw_config config;
 
 fd_set fdset;
 int sockcount = 0;
-int sockets[MAX_PORTS];
 
 #ifdef NO_IPV6
-struct sockaddr_in addresses[MAX_PORTS];
+#define SOCKADDR struct sockaddr_in
 #else
-struct sockaddr_in6 addresses[MAX_PORTS];
+#define SOCKADDR struct sockaddr_in6
 #endif
+SOCKADDR addresses[MAX_PORTS];
+int sockets[MAX_PORTS];
 
 void close_socket(int sock) {
 #ifdef __MINGW32__
@@ -104,7 +105,32 @@ int tw_server_init(void) {
 			cm_log("Server", "Listen failure");
 			return 1;
 		}
+		FD_SET(sock, &fdset);
 		sockets[i] = sock;
 	}
 	return 0;
+}
+
+void tw_server_loop(void){
+	struct timeval tv;
+	while(1){
+		tv.tv_sec = 1;
+		tv.tv_usec = 0;
+		int ret = select(sockcount, &fdset, NULL, NULL, &tv);
+		if(ret == -1){
+			break;
+		}else if(ret > 0){
+			/* connection */
+			printf("!\n");
+			int i;
+			for(i = 0; i < sockcount; i++){
+				if(FD_ISSET(sockets[i], &fdset)){
+					SOCKADDR claddr;
+					int clen = sizeof(claddr);
+					int sock = accept(sockets[i], (struct sockaddr*)&claddr, &clen);
+					close_socket(sock);
+				}
+			}
+		}
+	}
 }
