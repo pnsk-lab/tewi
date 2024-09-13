@@ -5,7 +5,7 @@ include $(PWD)/Platform/$(PLATFORM).mk
 .PHONY: all clean
 .SUFFIXES: .c .o
 
-OBJS = version.o main.o config.o server.o
+OBJS = version.o main.o config.o server.o ssl.o
 
 all: tewi$(EXEC)
 

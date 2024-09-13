@@ -6,11 +6,13 @@
 
 #include <unistd.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include <cm_log.h>
 
 #ifdef __MINGW32__
 #include <winsock2.h>
+#include <process.h>
 #define NO_IPV6
 #else
 #include <sys/select.h>
@@ -109,28 +111,60 @@ int tw_server_init(void) {
 	return 0;
 }
 
-void tw_server_loop(void){
+#ifdef __MINGW32__
+struct pass_entry {
+	int sock;
+	bool ssl;
+};
+
+unsigned int WINAPI tw_server_pass(void* ptr) {
+	int sock = ((struct pass_entry*)ptr)->sock;
+	bool ssl = ((struct pass_entry*)ptr)->ssl;
+#else
+void tw_server_pass(int sock, bool ssl) {
+#endif
+	close_socket(sock);
+#ifdef __MINGW32__
+	_endthreadex(0);
+#endif
+}
+
+void tw_server_loop(void) {
 	struct timeval tv;
-	while(1){
+	while(1) {
 		FD_ZERO(&fdset);
 		int i;
-		for(i = 0; i < sockcount; i++){
+		for(i = 0; i < sockcount; i++) {
 			FD_SET(sockets[i], &fdset);
 		}
 		tv.tv_sec = 1;
 		tv.tv_usec = 0;
 		int ret = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
-		if(ret == -1){
+		if(ret == -1) {
 			break;
-		}else if(ret > 0){
+		} else if(ret > 0) {
 			/* connection */
 			int i;
-			for(i = 0; i < sockcount; i++){
-				if(FD_ISSET(sockets[i], &fdset)){
+			for(i = 0; i < sockcount; i++) {
+				if(FD_ISSET(sockets[i], &fdset)) {
 					SOCKADDR claddr;
 					int clen = sizeof(claddr);
 					int sock = accept(sockets[i], (struct sockaddr*)&claddr, &clen);
-					close_socket(sock);
+#ifdef __MINGW32__
+					HANDLE thread;
+					struct pass_entry* e = malloc(sizeof(*e));
+					e->sock = sock;
+					e->ssl = config.ports[i] & (1ULL << 32);
+					thread = (HANDLE)_beginthreadex(NULL, 0, tw_server_pass, e, 0, NULL);
+#else
+					pid_t pid = fork();
+					if(pid == 0) {
+						tw_server_pass(sock, config.ports[i] & (1ULL << 32));
+						_exit(0);
+					} else {
+						close_socket(sock);
+					}
+#endif
 				}
 			}
 		}
