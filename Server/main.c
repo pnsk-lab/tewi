@@ -6,12 +6,14 @@
 
 #include <cm_log.h>
 
+#include "tw_config.h"
 #include "tw_version.h"
 
 extern bool cm_do_log;
 
 int main(int argc, char** argv) {
 	int i;
+	const char* config = PREFIX "/etc/tewi.conf";
 	for(i = 1; i < argc; i++) {
 		if(argv[i][0] == '-') {
 			if(strcmp(argv[i], "--verbose") == 0 || strcmp(argv[i], "-v") == 0) {
@@ -21,11 +23,22 @@ int main(int argc, char** argv) {
 				} else {
 					cm_do_log = true;
 				}
+			} else if(strcmp(argv[i], "--config") == 0 || strcmp(argv[i], "-C") == 0){
+				i++;
+				if(argv[i] == NULL){
+					fprintf(stderr, "Missing argument\n");
+					return 1;
+				}
+				config = argv[i];
 			} else {
 				fprintf(stderr, "Unknown option: %s\n", argv[i]);
 				return 1;
 			}
 		}
+	}
+	if(tw_config_read(config) != 0){
+		fprintf(stderr, "Could not read the config\n");
+		return 1;
 	}
 	cm_log("Daemon", "Ready");
 }

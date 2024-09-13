@@ -2,7 +2,7 @@
 
 PWD = `pwd`
 PLATFORM = generic
-PREFIX = /usr
+PREFIX = /usr/local
 
 FLAGS = PWD=$(PWD) PLATFORM=$(PLATFORM) PREFIX=$(PREFIX)
 
