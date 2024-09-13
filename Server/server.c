@@ -131,13 +131,19 @@ void tw_server_pass(int sock, bool ssl, int port) {
 
 	SSL_CTX* ctx = NULL;
 	SSL* s = NULL;
+	bool sslworks = false;
 	if(ssl) {
 		ctx = tw_create_ssl_ctx(port);
 		s = SSL_new(ctx);
 		SSL_set_fd(s, sock);
 		if(SSL_accept(s) <= 0) goto cleanup;
+		sslworks = true;
 	}
 cleanup:
+	if(sslworks){
+		SSL_shutdown(s);
+	}
+	SSL_free(s);
 	close_socket(sock);
 #ifdef __MINGW32__
 	_endthreadex(0);
