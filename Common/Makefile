@@ -5,7 +5,7 @@ include $(PWD)/Platform/$(PLATFORM).mk
 .PHONY: all clean
 .SUFFIXES: .c .o
 
-OBJS = string.o
+OBJS = string.o log.o
 
 all: common.a
 

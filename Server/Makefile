@@ -5,12 +5,12 @@ include $(PWD)/Platform/$(PLATFORM).mk
 .PHONY: all clean
 .SUFFIXES: .c .o
 
-OBJS = ../Common/common.a main.o
+OBJS = version.o main.o
 
 all: tewi$(EXEC)
 
-tewi$(EXEC): $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+tewi$(EXEC): $(OBJS) ../Common/common.a
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS) ../Common/common.a
 
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<
