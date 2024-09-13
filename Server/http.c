@@ -11,7 +11,13 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
-#include <sys/socket.h>
+#include <string.h>
+
+#ifdef __MINGW32__
+#include <winsock2.h>
+#else
+#include <sys/select.h>
+#endif
 
 void tw_free_request(struct tw_http_request* req) {
 	if(req->method != NULL) free(req->method);

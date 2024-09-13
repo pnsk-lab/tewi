@@ -160,6 +160,8 @@ void tw_server_pass(int sock, bool ssl, int port) {
 	}
 	struct tw_http_request req;
 	int ret = tw_http_parse(s, sock, &req);
+	if(ret == 0) {
+	}
 cleanup:
 	if(sslworks) {
 		SSL_shutdown(s);

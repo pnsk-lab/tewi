@@ -15,8 +15,6 @@ struct tw_http_response {
 	char** headers;
 };
 
-struct tw_http_tool {};
-
 #ifdef SOURCE
 #include <openssl/ssl.h>
 int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req);

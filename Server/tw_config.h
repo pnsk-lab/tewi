@@ -22,6 +22,7 @@ struct tw_config {
 	struct tw_config_entry root;
 	struct tw_config_entry vhosts[MAX_VHOSTS];
 	int vhost_count;
+	char* server_root;
 };
 
 void tw_config_init(void);

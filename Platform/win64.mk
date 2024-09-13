@@ -6,3 +6,4 @@ CFLAGS = -g -std=c99 -DPREFIX=\"$(PREFIX)\" -I $(PWD)/Common -I $(PWD)/openssl/i
 LDFLAGS = -L $(PWD)/openssl/lib
 LIBS = -lws2_32
 EXEC = .exe
+LIB = .dll

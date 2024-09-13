@@ -3,6 +3,7 @@
 #define SOURCE
 
 #include "tw_config.h"
+#include "tw_module.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -37,6 +38,7 @@ void tw_config_init(void) {
 	config.root.sslkey = NULL;
 	config.root.sslcert = NULL;
 	config.vhost_count = 0;
+	config.server_root = cm_strdup(PREFIX);
 	gethostname(config.hostname, 1024);
 }
 
@@ -124,6 +126,27 @@ int tw_config_read(const char* path) {
 						} else {
 							if(current->sslcert != NULL) free(current->sslcert);
 							current->sslcert = cm_strdup(r[1]);
+						}
+					} else if(cm_strcaseequ(r[0], "ServerRoot")) {
+						if(r[1] == NULL) {
+							cm_log("Config", "Missing path at line %d", ln);
+							stop = 1;
+						} else {
+							if(config.server_root != NULL) free(config.server_root);
+							config.server_root = cm_strdup(r[1]);
+						}
+					} else if(cm_strcaseequ(r[0], "LoadModule")) {
+						for(i = 1; r[i] != NULL; i++) {
+							void* mod = tw_module_load(r[i]);
+							if(mod != NULL) {
+								if(tw_module_init(mod) != 0) {
+									stop = 1;
+									break;
+								}
+							} else {
+								stop = 1;
+								break;
+							}
 						}
 					} else {
 						if(r[0] != NULL) {
