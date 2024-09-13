@@ -47,7 +47,6 @@ int tw_server_init(void) {
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 0), &wsa);
 #endif
-	FD_ZERO(&fdset);
 	for(i = 0; config.ports[i] != -1; i++)
 		;
 	sockcount = i;
@@ -105,7 +104,6 @@ int tw_server_init(void) {
 			cm_log("Server", "Listen failure");
 			return 1;
 		}
-		FD_SET(sock, &fdset);
 		sockets[i] = sock;
 	}
 	return 0;
@@ -114,14 +112,18 @@ int tw_server_init(void) {
 void tw_server_loop(void){
 	struct timeval tv;
 	while(1){
+		FD_ZERO(&fdset);
+		int i;
+		for(i = 0; i < sockcount; i++){
+			FD_SET(sockets[i], &fdset);
+		}
 		tv.tv_sec = 1;
 		tv.tv_usec = 0;
-		int ret = select(sockcount, &fdset, NULL, NULL, &tv);
+		int ret = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
 		if(ret == -1){
 			break;
 		}else if(ret > 0){
 			/* connection */
-			printf("!\n");
 			int i;
 			for(i = 0; i < sockcount; i++){
 				if(FD_ISSET(sockets[i], &fdset)){
