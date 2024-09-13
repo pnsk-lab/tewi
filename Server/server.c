@@ -2,6 +2,7 @@
 
 #include "tw_server.h"
 
+#include "tw_ssl.h"
 #include "tw_config.h"
 
 #include <unistd.h>
@@ -114,15 +115,27 @@ int tw_server_init(void) {
 #ifdef __MINGW32__
 struct pass_entry {
 	int sock;
+	int port;
 	bool ssl;
 };
 
 unsigned int WINAPI tw_server_pass(void* ptr) {
 	int sock = ((struct pass_entry*)ptr)->sock;
 	bool ssl = ((struct pass_entry*)ptr)->ssl;
+	int port = ((struct pass_entry*)ptR)->port;
+	free(ptr);
 #else
-void tw_server_pass(int sock, bool ssl) {
+void tw_server_pass(int sock, bool ssl, int port) {
 #endif
+	SSL_CTX* ctx = NULL;
+	SSL* s = NULL;
+	if(ssl) {
+		ctx = tw_create_ssl_ctx(port);
+		s = SSL_new(ctx);
+		SSL_set_fd(s, sock);
+		if(SSL_accept(s) <= 0) goto cleanup;
+	}
+cleanup:
 	close_socket(sock);
 #ifdef __MINGW32__
 	_endthreadex(0);
@@ -150,16 +163,18 @@ void tw_server_loop(void) {
 					SOCKADDR claddr;
 					int clen = sizeof(claddr);
 					int sock = accept(sockets[i], (struct sockaddr*)&claddr, &clen);
+					cm_log("Server", "New connection accepted");
 #ifdef __MINGW32__
 					HANDLE thread;
 					struct pass_entry* e = malloc(sizeof(*e));
 					e->sock = sock;
 					e->ssl = config.ports[i] & (1ULL << 32);
+					e->port = config.ports[i];
 					thread = (HANDLE)_beginthreadex(NULL, 0, tw_server_pass, e, 0, NULL);
 #else
 					pid_t pid = fork();
 					if(pid == 0) {
-						tw_server_pass(sock, config.ports[i] & (1ULL << 32));
+						tw_server_pass(sock, config.ports[i] & (1ULL << 32), config.ports[i]);
 						_exit(0);
 					} else {
 						close_socket(sock);

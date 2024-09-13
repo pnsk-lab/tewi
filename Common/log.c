@@ -37,7 +37,8 @@ void cm_log(const char* name, const char* log, ...) {
 			i++;
 			if(log[i] == 's') {
 				char* tmp = result;
-				result = cm_strcat(tmp, va_arg(args, char*));
+				char* c = va_arg(args, char*);
+				result = cm_strcat(tmp, c == NULL ? "(null)" : c);
 				free(tmp);
 			} else if(log[i] == 'd') {
 				int a = va_arg(args, int);

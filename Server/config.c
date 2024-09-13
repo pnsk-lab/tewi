@@ -6,17 +6,36 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <cm_string.h>
 #include <cm_log.h>
 
 struct tw_config config;
 
+struct tw_config_entry* tw_vhost_match(const char* name, int port) {
+	int i;
+	for(i = 0; i < config.vhost_count; i++) {
+		if(strcmp(config.vhosts[i].name, name) == 0 && config.vhosts[i].port == port) {
+			return &config.vhosts[i];
+		}
+	}
+	return &config.root;
+}
+
 void tw_config_init(void) {
 	int i;
 	for(i = 0; i < MAX_PORTS + 1; i++) {
 		config.ports[i] = -1;
 	}
+	for(i = 0; i < MAX_VHOSTS; i++) {
+		config.vhosts[i].sslkey = NULL;
+		config.vhosts[i].sslcert = NULL;
+	}
+	config.root.sslkey = NULL;
+	config.root.sslcert = NULL;
+	config.vhost_count = 0;
+	gethostname(config.hostname, 1024);
 }
 
 int tw_config_read(const char* path) {
@@ -29,6 +48,7 @@ int tw_config_read(const char* path) {
 		char* line = malloc(1);
 		line[0] = 0;
 		int stop = 0;
+		struct tw_config_entry* current = &config.root;
 		char* vhost = NULL;
 		while(stop == 0) {
 			int c = fread(cbuf, 1, 1, f);
@@ -47,23 +67,35 @@ int tw_config_read(const char* path) {
 						}
 					} else if(cm_strcaseequ(r[0], "BeginVirtualHost")) {
 						if(vhost != NULL) {
-							cm_log("Config", "Already in virtual host section");
+							cm_log("Config", "Already in virtual host section at line %d", ln);
 							stop = 1;
 						} else {
 							if(r[1] == NULL) {
-								cm_log("Config", "Missing virtual host");
+								cm_log("Config", "Missing virtual host at line %d", ln);
 								stop = 1;
 							} else {
 								vhost = cm_strdup(r[1]);
+								current = &config.vhosts[config.vhost_count++];
+								int i;
+								current->name = cm_strdup(vhost);
+								current->port = 80;
+								for(i = 0; vhost[i] != 0; i++) {
+									if(vhost[i] == ':') {
+										current->name[i] = 0;
+										current->port = atoi(current->name + i + 1);
+										break;
+									}
+								}
 							}
 						}
 					} else if(cm_strcaseequ(r[0], "EndVirtualHost")) {
 						if(vhost == NULL) {
-							cm_log("Config", "Not in virtual host section");
+							cm_log("Config", "Not in virtual host section at line %d", ln);
 							stop = 1;
 						} else {
 							free(vhost);
 							vhost = NULL;
+							current = &config.root;
 						}
 					} else if(cm_strcaseequ(r[0], "Listen") || cm_strcaseequ(r[0], "ListenSSL")) {
 						for(i = 1; r[i] != NULL; i++) {
@@ -74,6 +106,22 @@ int tw_config_read(const char* path) {
 							for(j = 0; config.ports[j] != -1; j++)
 								;
 							config.ports[j] = port;
+						}
+					} else if(cm_strcaseequ(r[0], "SSLKey")) {
+						if(r[1] == NULL) {
+							cm_log("Config", "Missing path at line %d", ln);
+							stop = 1;
+						} else {
+							if(current->sslkey != NULL) free(current->sslkey);
+							current->sslkey = cm_strdup(r[1]);
+						}
+					} else if(cm_strcaseequ(r[0], "SSLCertificate")) {
+						if(r[1] == NULL) {
+							cm_log("Config", "Missing path at line %d", ln);
+							stop = 1;
+						} else {
+							if(current->sslcert != NULL) free(current->sslcert);
+							current->sslcert = cm_strdup(r[1]);
 						}
 					} else {
 						if(r[0] != NULL) {
