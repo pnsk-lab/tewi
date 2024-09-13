@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include <openssl/opensslv.h>
+
 #include <cm_log.h>
 
 #include "tw_config.h"
@@ -19,13 +21,13 @@ int main(int argc, char** argv) {
 			if(strcmp(argv[i], "--verbose") == 0 || strcmp(argv[i], "-v") == 0) {
 				if(!cm_do_log) {
 					cm_do_log = true;
-					cm_log("", "This is Tewi HTTPd, version %s", tw_get_version());
+					cm_log("", "This is Tewi HTTPd, version %s, using %s", tw_get_version(), OPENSSL_VERSION_TEXT);
 				} else {
 					cm_do_log = true;
 				}
-			} else if(strcmp(argv[i], "--config") == 0 || strcmp(argv[i], "-C") == 0){
+			} else if(strcmp(argv[i], "--config") == 0 || strcmp(argv[i], "-C") == 0) {
 				i++;
-				if(argv[i] == NULL){
+				if(argv[i] == NULL) {
 					fprintf(stderr, "Missing argument\n");
 					return 1;
 				}
@@ -36,7 +38,8 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
-	if(tw_config_read(config) != 0){
+	tw_config_init();
+	if(tw_config_read(config) != 0) {
 		fprintf(stderr, "Could not read the config\n");
 		return 1;
 	}

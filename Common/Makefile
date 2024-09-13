@@ -10,7 +10,7 @@ OBJS = string.o log.o
 all: common.a
 
 common.a: $(OBJS)
-	ar rcs $@ $(OBJS)
+	$(AR) rcs $@ $(OBJS)
 
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<

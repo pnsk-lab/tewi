@@ -17,7 +17,7 @@ all: ./Server
 	$(MAKE) -C $@ $(FLAGS)
 
 format:
-	clang-format --verbose -i `find . -name "*.c" -or -name "*.h"`
+	clang-format --verbose -i `find ./Server ./Common -name "*.c" -or -name "*.h"`
 
 clean:
 	$(MAKE) -C ./Server $(FLAGS) clean

@@ -39,6 +39,13 @@ void cm_log(const char* name, const char* log, ...) {
 				char* tmp = result;
 				result = cm_strcat(tmp, va_arg(args, char*));
 				free(tmp);
+			} else if(log[i] == 'd') {
+				int a = va_arg(args, int);
+				char buf[128];
+				sprintf(buf, "%d", a);
+				char* tmp = result;
+				result = cm_strcat(tmp, buf);
+				free(tmp);
 			}
 		} else {
 			cbuf[0] = log[i];
