@@ -3,6 +3,7 @@
 #include "tw_config.h"
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -11,7 +12,12 @@
 
 struct tw_config config;
 
-void tw_config_init(void) {}
+void tw_config_init(void) {
+	int i;
+	for(i = 0; i < MAX_PORTS + 1; i++) {
+		config.ports[i] = -1;
+	}
+}
 
 int tw_config_read(const char* path) {
 	cm_log("Config", "Reading %s", path);
@@ -58,6 +64,16 @@ int tw_config_read(const char* path) {
 						} else {
 							free(vhost);
 							vhost = NULL;
+						}
+					} else if(cm_strcaseequ(r[0], "Listen") || cm_strcaseequ(r[0], "ListenSSL")) {
+						for(i = 1; r[i] != NULL; i++) {
+							uint64_t port = atoi(r[i]);
+							cm_log("Config", "Going to listen at port %d%s", (int)port, cm_strcaseequ(r[0], "ListenSSL") ? " with SSL" : "");
+							if(cm_strcaseequ(r[0], "ListenSSL")) port |= (1ULL << 32);
+							int j;
+							for(j = 0; config.ports[j] != -1; j++)
+								;
+							config.ports[j] = port;
 						}
 					} else {
 						if(r[0] != NULL) {
