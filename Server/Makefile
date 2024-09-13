@@ -10,7 +10,7 @@ OBJS = version.o main.o config.o server.o ssl.o
 all: tewi$(EXEC)
 
 tewi$(EXEC): $(OBJS) ../Common/common.a
-	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS) ../Common/common.a -lssl -lcrypto
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) -lssl -lcrypto $(LIBS) ../Common/common.a
 
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<

@@ -122,7 +122,7 @@ struct pass_entry {
 unsigned int WINAPI tw_server_pass(void* ptr) {
 	int sock = ((struct pass_entry*)ptr)->sock;
 	bool ssl = ((struct pass_entry*)ptr)->ssl;
-	int port = ((struct pass_entry*)ptR)->port;
+	int port = ((struct pass_entry*)ptr)->port;
 	free(ptr);
 #else
 void tw_server_pass(int sock, bool ssl, int port) {
