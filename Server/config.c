@@ -16,7 +16,7 @@ struct tw_config config;
 struct tw_config_entry* tw_vhost_match(const char* name, int port) {
 	int i;
 	for(i = 0; i < config.vhost_count; i++) {
-		if(strcmp(config.vhosts[i].name, name) == 0 && config.vhosts[i].port == port) {
+		if(strcmp(config.vhosts[i].name, name) == 0 && (config.vhosts[i].port == -1 ? 1 : config.vhosts[i].port == port)) {
 			return &config.vhosts[i];
 		}
 	}
@@ -78,7 +78,7 @@ int tw_config_read(const char* path) {
 								current = &config.vhosts[config.vhost_count++];
 								int i;
 								current->name = cm_strdup(vhost);
-								current->port = 80;
+								current->port = -1;
 								for(i = 0; vhost[i] != 0; i++) {
 									if(vhost[i] == ':') {
 										current->name[i] = 0;

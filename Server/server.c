@@ -127,6 +127,8 @@ unsigned int WINAPI tw_server_pass(void* ptr) {
 #else
 void tw_server_pass(int sock, bool ssl, int port) {
 #endif
+	char* name = config.hostname;
+
 	SSL_CTX* ctx = NULL;
 	SSL* s = NULL;
 	if(ssl) {
