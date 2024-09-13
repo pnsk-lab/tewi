@@ -22,7 +22,22 @@ int tw_config_read(const char* path){
 			if(cbuf[0] == '\n' || c <= 0){
 				char* l = cm_trim(line);
 				if(strlen(l) > 0 && l[0] != '#'){
-					printf("[%s]\n", l);
+					char** r = cm_split(l, " \t");
+					int i;
+					if(cm_strcaseequ(r[0], "Include") || cm_strcaseequ(r[0], "IncludeOptional")){
+						for(i = 1; r[i] != NULL; i++){
+							if(tw_config_read(r[i]) != 0 && cm_strcaseequ(r[0], "Include")){
+								for(i = 0; r[i] != NULL; i++) free(r[i]);
+								free(r);
+								free(line);
+								free(l);
+								fclose(f);
+								return 1;
+							}
+						}
+					}
+					for(i = 0; r[i] != NULL; i++) free(r[i]);
+					free(r);
 				}
 				free(l);
 				free(line);
@@ -39,6 +54,7 @@ int tw_config_read(const char* path){
 		fclose(f);
 		return 0;
 	}else{
+		cm_log("Config", "Could not open the file");
 		return 1;
 	}
 }
