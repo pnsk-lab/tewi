@@ -21,11 +21,12 @@
 #define SOCKADDR struct sockaddr_in6
 #endif
 
-#define MAX_PORTS	1024
-#define MAX_VHOSTS	1024
-#define MAX_MODULES	1024
-#define MAX_DIRS 	1024
-#define MAX_MIME 	1024
+#define MAX_PORTS 1024
+#define MAX_VHOSTS 1024
+#define MAX_MODULES 1024
+#define MAX_DIRS 1024
+#define MAX_MIME 1024
+#define MAX_ICON 1024
 
 enum TW_DIR_TYPE {
 	TW_DIR_ALLOW = 0,
@@ -43,6 +44,11 @@ struct tw_mime_entry {
 	char* mime;
 };
 
+struct tw_icon_entry {
+	char* mime;
+	char* icon;
+};
+
 struct tw_config_entry {
 	char* name;
 	int port;
@@ -53,6 +59,8 @@ struct tw_config_entry {
 	int dir_count;
 	struct tw_mime_entry mimes[MAX_DIRS];
 	int mime_count;
+	struct tw_icon_entry icons[MAX_DIRS];
+	int icon_count;
 };
 
 struct tw_config {

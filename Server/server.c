@@ -165,11 +165,11 @@ void tw_process_page(SSL* ssl, int sock, const char* status, const char* type, F
 	tw_write(ssl, sock, "\r\n", 2);
 	size_t incr = 0;
 	while(1) {
-		if(f != NULL){
+		if(f != NULL) {
 			char buffer[128];
 			fread(buffer, size < 128 ? size : 128, 1, f);
 			tw_write(ssl, sock, buffer, size < 128 ? size : 128);
-		}else{
+		} else {
 			tw_write(ssl, sock, (unsigned char*)doc + incr, size < 128 ? size : 128);
 		}
 		incr += 128;
@@ -268,6 +268,48 @@ void addstring(char** str, const char* add, ...) {
 	}
 }
 
+char* tw_get_mime(const char* ext, struct tw_config_entry* vhost_entry) {
+	char* mime = "application/octet-stream";
+	if(ext == NULL) return mime;
+	bool set = false;
+	int i;
+	for(i = 0; i < vhost_entry->mime_count; i++) {
+		if(strcmp(vhost_entry->mimes[i].ext, "all") == 0 || (ext != NULL && strcmp(vhost_entry->mimes[i].ext, ext) == 0)) {
+			mime = vhost_entry->mimes[i].mime;
+			set = true;
+		}
+	}
+	if(!set) {
+		for(i = 0; i < config.root.mime_count; i++) {
+			if(strcmp(config.root.mimes[i].ext, "all") == 0 || (ext != NULL && strcmp(config.root.mimes[i].ext, ext) == 0)) {
+				mime = config.root.mimes[i].mime;
+			}
+		}
+	}
+	return mime;
+}
+
+char* tw_get_icon(const char* mime, struct tw_config_entry* vhost_entry) {
+	char* icon = "";
+	if(mime == NULL) return "";
+	bool set = false;
+	int i;
+	for(i = 0; i < vhost_entry->icon_count; i++) {
+		if(strcmp(vhost_entry->icons[i].mime, "all") == 0 || (mime != NULL && strcmp(vhost_entry->icons[i].mime, mime) == 0)) {
+			icon = vhost_entry->icons[i].icon;
+			set = true;
+		}
+	}
+	if(!set) {
+		for(i = 0; i < config.root.icon_count; i++) {
+			if(strcmp(config.root.icons[i].mime, "all") == 0 || (mime != NULL && strcmp(config.root.icons[i].mime, mime) == 0)) {
+				icon = config.root.icons[i].icon;
+			}
+		}
+	}
+	return icon;
+}
+
 #ifdef __MINGW32__
 struct pass_entry {
 	int sock;
@@ -306,8 +348,8 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 	if(ret == 0) {
 		char* vhost = cm_strdup(config.hostname);
 		int i;
-		for(i = 0; req.headers[i] != NULL; i += 2){
-			if(cm_strcaseequ(req.headers[i], "Host")){
+		for(i = 0; req.headers[i] != NULL; i += 2) {
+			if(cm_strcaseequ(req.headers[i], "Host")) {
 				free(vhost);
 				vhost = req.headers[i + 1];
 				break;
@@ -316,8 +358,8 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 		cm_log("Server", "Host is %s", vhost);
 		int port = s == NULL ? 80 : 443;
 		char* host = cm_strdup(vhost);
-		for(i = 0; vhost[i] != 0; i++){
-			if(vhost[i] == ':'){
+		for(i = 0; vhost[i] != 0; i++) {
+			if(vhost[i] == ':') {
 				host[i] = 0;
 				port = atoi(host + i + 1);
 				break;
@@ -346,10 +388,10 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 			char* path = cm_strcat(vhost_entry->root == NULL ? "" : vhost_entry->root, req.path);
 			cm_log("Server", "Filesystem path is %s", path);
 			struct stat st;
-			if(stat(path, &st) == 0){
-				if(!tw_permission_allowed(path, addr, req, vhost_entry)){
+			if(stat(path, &st) == 0) {
+				if(!tw_permission_allowed(path, addr, req, vhost_entry)) {
 					tw_http_error(s, sock, 403, name, port);
-				}else if(S_ISDIR(st.st_mode)){
+				} else if(S_ISDIR(st.st_mode)) {
 					char* str = malloc(1);
 					str[0] = 0;
 					char** items = cm_scandir(path);
@@ -367,12 +409,44 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 					addstring(&str, "				<th></th>\n");
 					addstring(&str, "				<th>Filename</th>\n");
 					addstring(&str, "			</tr>\n");
-					if(items != NULL){
-						for(i = 0; items[i] != NULL; i++){
+					if(items != NULL) {
+						for(i = 0; items[i] != NULL; i++) {
+							char* ext = NULL;
+							int j;
+							for(j = strlen(items[i]) - 1; j >= 0; j--) {
+								if(items[i][j] == '.') {
+									ext = cm_strdup(items[i] + j);
+									break;
+								}
+							}
+							char* mime = tw_get_mime(ext, vhost_entry);
+							if(strcmp(items[i], "../") == 0) {
+								mime = "misc/parent";
+							} else if(items[i][strlen(items[i]) - 1] == '/') {
+								mime = "misc/dir";
+							}
+							char* icon = tw_get_icon(mime, vhost_entry);
+							if(ext != NULL) free(ext);
+							char* itm = cm_strdup(items[i]);
+							if(strlen(itm) >= 32) {
+								if(itm[strlen(itm) - 1] == '/') {
+									itm[31] = 0;
+									itm[30] = '/';
+									itm[29] = '.';
+									itm[28] = '.';
+									itm[27] = '.';
+								} else {
+									itm[31] = 0;
+									itm[30] = '.';
+									itm[29] = '.';
+									itm[28] = '.';
+								}
+							}
 							addstring(&str, "<tr>\n");
-							addstring(&str, "	<td></td>\n");
-							addstring(&str, "	<td><a href=\"%l\">%h</a></td>\n", items[i], items[i]);
+							addstring(&str, "	<td><img src=\"%s\" alt=\"icon\"></td>\n", icon);
+							addstring(&str, "	<td><a href=\"%l\"><code>%h</code></a></td>\n", items[i], itm);
 							addstring(&str, "</tr>\n");
+							free(itm);
 						}
 					}
 					addstring(&str, "		</table>\n");
@@ -382,42 +456,28 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 					addstring(&str, "</html>\n");
 					tw_process_page(s, sock, tw_http_status(200), "text/html", NULL, str, strlen(str));
 					free(str);
-				}else{
-					char* mime = "application/octet-stream";
-					bool set = false;
+				} else {
 					char* ext = NULL;
-					for(i = strlen(req.path) - 1; i >= 0; i--){
-						if(req.path[i] == '.'){
+					for(i = strlen(req.path) - 1; i >= 0; i--) {
+						if(req.path[i] == '.') {
 							ext = cm_strdup(req.path + i);
 							break;
 						}
 					}
-					for(i = 0; i < vhost_entry->mime_count; i++){
-						if(strcmp(vhost_entry->mimes[i].ext, "all") == 0 || (ext != NULL && strcmp(vhost_entry->mimes[i].ext, ext) == 0)){
-							mime = vhost_entry->mimes[i].mime;
-							set = true;
-						}
-					}
-					if(!set){
-						for(i = 0; i < config.root.mime_count; i++){
-							if(strcmp(config.root.mimes[i].ext, "all") == 0 || (ext != NULL && strcmp(config.root.mimes[i].ext, ext) == 0)){
-								mime = config.root.mimes[i].mime;
-								set = true;
-							}
-						}
-					}
+					char* mime = tw_get_mime(ext, vhost_entry);
 					if(ext != NULL) free(ext);
 					FILE* f = fopen(path, "rb");
 					tw_process_page(s, sock, tw_http_status(200), mime, f, NULL, st.st_size);
 					fclose(f);
 				}
-			}else{
+			} else {
 				tw_http_error(s, sock, 404, name, port);
 			}
 			free(path);
 		}
 		free(vhost);
 		free(host);
+	} else if(ret == -1) {
 	} else {
 		tw_http_error(s, sock, 400, name, port);
 	}

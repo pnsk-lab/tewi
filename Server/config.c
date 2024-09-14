@@ -30,20 +30,20 @@ struct tw_config_entry* tw_vhost_match(const char* name, int port) {
 	return &config.root;
 }
 
-bool tw_permission_allowed(const char* path, SOCKADDR addr, struct tw_http_request req, struct tw_config_entry* vhost){
+bool tw_permission_allowed(const char* path, SOCKADDR addr, struct tw_http_request req, struct tw_config_entry* vhost) {
 	int i;
 	bool found = false;
 	bool pathstart = false;
 	bool perm = false;
 again:
-	for(i = 0; i < vhost->dir_count; i++){
+	for(i = 0; i < vhost->dir_count; i++) {
 		struct tw_dir_entry* e = &vhost->dirs[i];
 		pathstart = false;
-		if(strlen(path) >= strlen(e->dir)){
+		if(strlen(path) >= strlen(e->dir)) {
 			pathstart = true;
 			int j;
-			for(j = 0; path[j] != 0 && e->dir[j] != 0; j++){
-				if(path[j] != e->dir[j]){
+			for(j = 0; path[j] != 0 && e->dir[j] != 0; j++) {
+				if(path[j] != e->dir[j]) {
 					pathstart = false;
 					break;
 				}
@@ -51,15 +51,15 @@ again:
 		}
 		char* noslash = cm_strdup(e->dir);
 		noslash[strlen(noslash) - 1] = 0;
-		if(strcmp(e->dir, path) == 0 || strcmp(noslash, path) == 0 || pathstart){
+		if(strcmp(e->dir, path) == 0 || strcmp(noslash, path) == 0 || pathstart) {
 			found = true;
-			if(strcmp(e->name, "all") == 0){
+			if(strcmp(e->name, "all") == 0) {
 				perm = e->type == TW_DIR_ALLOW;
 			}
 		}
 		free(noslash);
 	}
-	if(!found && vhost != &config.root){
+	if(!found && vhost != &config.root) {
 		vhost = &config.root;
 		goto again;
 	}
@@ -81,6 +81,7 @@ void tw_config_init(void) {
 	config.root.root = NULL;
 	config.root.mime_count = 0;
 	config.root.dir_count = 0;
+	config.root.icon_count = 0;
 	config.vhost_count = 0;
 	config.module_count = 0;
 	config.extension = NULL;
@@ -179,6 +180,7 @@ int tw_config_read(const char* path) {
 								current = &config.vhosts[config.vhost_count++];
 								current->dir_count = 0;
 								current->mime_count = 0;
+								current->icon_count = 0;
 								int i;
 								current->name = cm_strdup(vhost);
 								current->port = -1;
@@ -246,13 +248,25 @@ int tw_config_read(const char* path) {
 						if(r[1] == NULL) {
 							cm_log("Config", "Missing extension at line %d", ln);
 							stop = 1;
-						}else if(r[2] == NULL) {
+						} else if(r[2] == NULL) {
 							cm_log("Config", "Missing MIME at line %d", ln);
 							stop = 1;
 						} else {
 							struct tw_mime_entry* e = &current->mimes[current->mime_count++];
 							e->ext = cm_strdup(r[1]);
 							e->mime = cm_strdup(r[2]);
+						}
+					} else if(cm_strcaseequ(r[0], "Icon")) {
+						if(r[1] == NULL) {
+							cm_log("Config", "Missing MIME at line %d", ln);
+							stop = 1;
+						} else if(r[2] == NULL) {
+							cm_log("Config", "Missing path at line %d", ln);
+							stop = 1;
+						} else {
+							struct tw_icon_entry* e = &current->icons[current->icon_count++];
+							e->mime = cm_strdup(r[1]);
+							e->icon = cm_strdup(r[2]);
 						}
 					} else if(cm_strcaseequ(r[0], "LoadModule")) {
 						for(i = 1; r[i] != NULL; i++) {
