@@ -215,8 +215,8 @@ void tw_process_page(SSL* ssl, int sock, const char* status, const char* type, c
 	while(1) {
 		tw_write(ssl, sock, (unsigned char*)doc + incr, size < 128 ? size : 128);
 		incr += 128;
+		if(size <= 128) break;
 		size -= 128;
-		if(size <= 0) break;
 	}
 }
 

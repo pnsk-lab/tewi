@@ -14,6 +14,7 @@ struct tw_config_entry {
 	int port;
 	char* sslkey;
 	char* sslcert;
+	char* root;
 };
 
 struct tw_config {

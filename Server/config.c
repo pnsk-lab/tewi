@@ -34,9 +34,11 @@ void tw_config_init(void) {
 	for(i = 0; i < MAX_VHOSTS; i++) {
 		config.vhosts[i].sslkey = NULL;
 		config.vhosts[i].sslcert = NULL;
+		config.vhosts[i].root = NULL;
 	}
 	config.root.sslkey = NULL;
 	config.root.sslcert = NULL;
+	config.root.root = NULL;
 	config.vhost_count = 0;
 	config.module_count = 0;
 	config.extension = NULL;
@@ -128,6 +130,14 @@ int tw_config_read(const char* path) {
 						} else {
 							if(current->sslcert != NULL) free(current->sslcert);
 							current->sslcert = cm_strdup(r[1]);
+						}
+					} else if(cm_strcaseequ(r[0], "DocumentRoot")) {
+						if(r[1] == NULL) {
+							cm_log("Config", "Missing path at line %d", ln);
+							stop = 1;
+						} else {
+							if(current->root != NULL) free(current->root);
+							current->root = cm_strdup(r[1]);
 						}
 					} else if(cm_strcaseequ(r[0], "ServerRoot")) {
 						if(r[1] == NULL) {

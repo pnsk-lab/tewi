@@ -25,6 +25,9 @@ int tw_ssl_cert_cb(SSL* ssl, void* arg) {
 		SSL_use_PrivateKey_file(ssl, e->sslkey, SSL_FILETYPE_PEM);
 		SSL_use_certificate_file(ssl, e->sslcert, SSL_FILETYPE_PEM);
 		return 1;
+	} else if(config.root.sslkey != NULL && config.root.sslcert != NULL) {
+		SSL_use_PrivateKey_file(ssl, config.root.sslkey, SSL_FILETYPE_PEM);
+		SSL_use_certificate_file(ssl, config.root.sslcert, SSL_FILETYPE_PEM);
 	} else {
 		return 0;
 	}
