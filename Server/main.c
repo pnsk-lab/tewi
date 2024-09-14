@@ -16,10 +16,13 @@
 #include "tw_version.h"
 
 extern bool cm_do_log;
+extern struct tw_config config;
+
+char tw_server[2048];
 
 int main(int argc, char** argv) {
 	int i;
-	const char* config = PREFIX "/etc/tewi.conf";
+	const char* confpath = PREFIX "/etc/tewi.conf";
 	for(i = 1; i < argc; i++) {
 		if(argv[i][0] == '-') {
 			if(strcmp(argv[i], "--verbose") == 0 || strcmp(argv[i], "-v") == 0) {
@@ -35,7 +38,7 @@ int main(int argc, char** argv) {
 					fprintf(stderr, "Missing argument\n");
 					return 1;
 				}
-				config = argv[i];
+				confpath = argv[i];
 			} else {
 				fprintf(stderr, "Unknown option: %s\n", argv[i]);
 				return 1;
@@ -43,7 +46,7 @@ int main(int argc, char** argv) {
 		}
 	}
 	tw_config_init();
-	if(tw_config_read(config) != 0) {
+	if(tw_config_read(confpath) != 0) {
 		fprintf(stderr, "Could not read the config\n");
 		return 1;
 	}
@@ -51,6 +54,7 @@ int main(int argc, char** argv) {
 		fprintf(stderr, "Could not initialize the server\n");
 		return 1;
 	}
+	sprintf(tw_server, "Tewi/%s (%s)%s", tw_get_version(), tw_get_platform(), config.extension == NULL ? "" : config.extension);
 	cm_log("Daemon", "Ready");
 #ifndef __MINGW32__
 	signal(SIGCHLD, SIG_IGN);

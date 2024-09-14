@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#define SOURCE
+
 #include "tw_module.h"
 
 #include "tw_config.h"
@@ -43,7 +45,20 @@ void* tw_module_symbol(void* mod, const char* sym) {
 #endif
 }
 
-void tw_init_tools(struct tw_tool* tools) { tools->log = cm_log; }
+void tw_add_version(const char* string) {
+	if(config.extension == NULL) {
+		config.extension = cm_strcat(" ", string);
+	} else {
+		char* tmp = config.extension;
+		config.extension = cm_strcat3(tmp, " ", string);
+		free(tmp);
+	}
+}
+
+void tw_init_tools(struct tw_tool* tools) {
+	tools->log = cm_log;
+	tools->add_version = tw_add_version;
+}
 
 int tw_module_init(void* mod) {
 	tw_mod_init_t mod_init = (tw_mod_init_t)tw_module_symbol(mod, "mod_init");

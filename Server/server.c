@@ -7,11 +7,14 @@
 #include "tw_ssl.h"
 #include "tw_config.h"
 #include "tw_http.h"
+#include "tw_module.h"
+#include "tw_version.h"
 
 #include <unistd.h>
 #include <string.h>
 #include <stdbool.h>
 
+#include <cm_string.h>
 #include <cm_log.h>
 
 #ifdef __MINGW32__
@@ -27,6 +30,7 @@
 #endif
 
 extern struct tw_config config;
+extern char tw_server[];
 
 fd_set fdset;
 int sockcount = 0;
@@ -131,6 +135,115 @@ size_t tw_write(SSL* ssl, int s, void* data, size_t len) {
 	}
 }
 
+#define ERROR_400 \
+	"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n" \
+	"<html>\n" \
+	"	<head>\n" \
+	"		<title>400 Bad Request</title>" \
+	"	</head>\n" \
+	"	<body>\n" \
+	"		<h1>Bad Request</h1>\n" \
+	"		<hr>\n" \
+	"		", \
+	    address, \
+	    "\n" \
+	    "	</body>\n" \
+	    "</html>\n"
+
+#define ERROR_401 \
+	"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n" \
+	"<html>\n" \
+	"	<head>\n" \
+	"		<title>401 Unauthorized</title>" \
+	"	</head>\n" \
+	"	<body>\n" \
+	"		<h1>Unauthorized</h1>\n" \
+	"		<hr>\n" \
+	"		", \
+	    address, \
+	    "\n" \
+	    "	</body>\n" \
+	    "</html>\n"
+
+#define ERROR_403 \
+	"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n" \
+	"<html>\n" \
+	"	<head>\n" \
+	"		<title>403 Forbidden</title>" \
+	"	</head>\n" \
+	"	<body>\n" \
+	"		<h1>Forbidden</h1>\n" \
+	"		<hr>\n" \
+	"		", \
+	    address, \
+	    "\n" \
+	    "	</body>\n" \
+	    "</html>\n"
+
+#define ERROR_404 \
+	"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n" \
+	"<html>\n" \
+	"	<head>\n" \
+	"		<title>404 Not Found</title>" \
+	"	</head>\n" \
+	"	<body>\n" \
+	"		<h1>Not Found</h1>\n" \
+	"		<hr>\n" \
+	"		", \
+	    address, \
+	    "\n" \
+	    "	</body>\n" \
+	    "</html>\n"
+
+void tw_process_page(SSL* ssl, int sock, const char* status, const char* type, const unsigned char* doc, size_t size) {
+	char construct[512];
+	sprintf(construct, "%llu", (unsigned long long)size);
+	tw_write(ssl, sock, "HTTP/1.1 ", 9);
+	tw_write(ssl, sock, (char*)status, strlen(status));
+	tw_write(ssl, sock, "\r\n", 2);
+	tw_write(ssl, sock, "Content-Type: ", 7 + 5 + 2);
+	tw_write(ssl, sock, (char*)type, strlen(type));
+	tw_write(ssl, sock, "\r\n", 2);
+	tw_write(ssl, sock, "Server: ", 6 + 2);
+	tw_write(ssl, sock, tw_server, strlen(tw_server));
+	tw_write(ssl, sock, "\r\n", 2);
+	tw_write(ssl, sock, "Content-Length: ", 7 + 7 + 2);
+	tw_write(ssl, sock, construct, strlen(construct));
+	tw_write(ssl, sock, "\r\n", 2);
+	tw_write(ssl, sock, "\r\n", 2);
+	size_t incr = 0;
+	while(1) {
+		tw_write(ssl, sock, (unsigned char*)doc + incr, size < 128 ? size : 128);
+		incr += 128;
+		size -= 128;
+		if(size <= 0) break;
+	}
+}
+
+const char* tw_http_status(int code) {
+	if(code == 400) {
+		return "400 Bad Request";
+	} else {
+		return "400 Bad Request";
+	}
+}
+
+char* tw_http_default_error(int code, char* name, int port) {
+	char address[1024];
+	sprintf(address, "<address>%s Server at %s Port %d</address>", tw_server, name, port);
+	if(code == 400) {
+		return cm_strcat3(ERROR_400);
+	} else {
+		return cm_strcat3(ERROR_400);
+	}
+}
+
+void tw_http_error(SSL* ssl, int sock, int error, char* name, int port) {
+	char* str = tw_http_default_error(error, name, port);
+	tw_process_page(ssl, sock, tw_http_status(error), "text/html", str, strlen(str));
+	free(str);
+}
+
 #ifdef __MINGW32__
 struct pass_entry {
 	int sock;
@@ -161,6 +274,8 @@ void tw_server_pass(int sock, bool ssl, int port) {
 	struct tw_http_request req;
 	int ret = tw_http_parse(s, sock, &req);
 	if(ret == 0) {
+	} else {
+		tw_http_error(s, sock, 400, name, port);
 	}
 cleanup:
 	if(sslworks) {

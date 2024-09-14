@@ -8,7 +8,7 @@ include $(PWD)/Platform/$(PLATFORM).mk
 all: mod_example.so
 
 .o.so:
-	$(CC) $(LDFLAGS) -shared -o $@ $< $(LIBS)
+	$(CC) $(LDFLAGS) -shared -o $@ $< ../Common/common.a $(LIBS)
 
 .c.o:
 	$(CC) $(CFLAGS) -fPIC -c -o $@ $<

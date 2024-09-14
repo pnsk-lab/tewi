@@ -38,6 +38,8 @@ void tw_config_init(void) {
 	config.root.sslkey = NULL;
 	config.root.sslcert = NULL;
 	config.vhost_count = 0;
+	config.module_count = 0;
+	config.extension = NULL;
 	config.server_root = cm_strdup(PREFIX);
 	gethostname(config.hostname, 1024);
 }
@@ -139,6 +141,7 @@ int tw_config_read(const char* path) {
 						for(i = 1; r[i] != NULL; i++) {
 							void* mod = tw_module_load(r[i]);
 							if(mod != NULL) {
+								config.modules[config.module_count++] = mod;
 								if(tw_module_init(mod) != 0) {
 									stop = 1;
 									break;

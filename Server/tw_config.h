@@ -6,8 +6,8 @@
 #include <stdint.h>
 
 #define MAX_PORTS 1024
-
 #define MAX_VHOSTS 1024
+#define MAX_MODULES 1024
 
 struct tw_config_entry {
 	char* name;
@@ -21,8 +21,11 @@ struct tw_config {
 	char hostname[1025];
 	struct tw_config_entry root;
 	struct tw_config_entry vhosts[MAX_VHOSTS];
+	void* modules[MAX_MODULES];
+	int module_count;
 	int vhost_count;
 	char* server_root;
+	char* extension;
 };
 
 void tw_config_init(void);

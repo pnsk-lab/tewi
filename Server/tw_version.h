@@ -4,5 +4,6 @@
 #define __TW_VERSION_H__
 
 const char* tw_get_version(void);
+const char* tw_get_platform(void);
 
 #endif
