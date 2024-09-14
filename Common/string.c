@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <ctype.h>
 
 char* cm_strcat(const char* a, const char* b) {
@@ -111,4 +112,50 @@ bool cm_strcaseequ(const char* a, const char* b) {
 		if(tolower(a[i]) != tolower(b[i])) return false;
 	}
 	return true;
+}
+
+int cm_hex(const char* str, int len) {
+	int n = 0;
+	int i;
+	for(i = 0; i < len; i++) {
+		char c = str[i];
+		n *= 16;
+		if('0' <= c && c <= '9') {
+			n += c - '0';
+		} else if('a' <= c && c <= 'f') {
+			n += c - 'a' + 10;
+		} else if('A' <= c && c <= 'F') {
+			n += c - 'A' + 10;
+		}
+	}
+	return n;
+}
+
+char* cm_html_escape(const char* str) {
+	int i;
+	char* result = malloc(1);
+	result[0] = 0;
+	char cbuf[2];
+	cbuf[1] = 0;
+	for(i = 0; str[i] != 0; i++) {
+		cbuf[0] = str[i];
+		if(str[i] == '&') {
+			char* tmp = result;
+			result = cm_strcat(tmp, "&amp;");
+			free(tmp);
+		} else if(str[i] == '<') {
+			char* tmp = result;
+			result = cm_strcat(tmp, "&lt;");
+			free(tmp);
+		} else if(str[i] == '>') {
+			char* tmp = result;
+			result = cm_strcat(tmp, "&gt;");
+			free(tmp);
+		} else {
+			char* tmp = result;
+			result = cm_strcat(tmp, cbuf);
+			free(tmp);
+		}
+	}
+	return result;
 }

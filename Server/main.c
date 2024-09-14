@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	sprintf(tw_server, "Tewi/%s (%s)%s", tw_get_version(), tw_get_platform(), config.extension == NULL ? "" : config.extension);
-	cm_log("Daemon", "Ready");
+	cm_log("Daemon", "Ready, server: %s", tw_server);
 #ifndef __MINGW32__
 	signal(SIGCHLD, SIG_IGN);
 #endif

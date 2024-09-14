@@ -22,6 +22,7 @@
 void tw_free_request(struct tw_http_request* req) {
 	if(req->method != NULL) free(req->method);
 	if(req->path != NULL) free(req->path);
+	if(req->query != NULL) free(req->query);
 	if(req->headers != NULL) {
 		int i;
 		for(i = 0; req->headers[i] != NULL; i++) free(req->headers[i]);
@@ -43,6 +44,7 @@ int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req) {
 
 	req->method = NULL;
 	req->path = NULL;
+	req->query = NULL;
 	req->headers = NULL;
 	req->body = NULL;
 	req->version = NULL;
@@ -245,5 +247,32 @@ getout:
 		tw_free_request(req);
 		return 1;
 	}
+	char* result = malloc(1);
+	result[0] = 0;
+	int i;
+	for(i = 0; req->path[i] != 0; i++) {
+		if(req->path[i] == '?') {
+			req->path[i] = 0;
+			req->query = cm_strdup(req->path + i + 1);
+			break;
+		}
+	}
+	for(i = 0; req->path[i] != 0; i++) {
+		if(req->path[i] == '%') {
+			if(req->path[i + 1] == 0) continue;
+			cbuf[0] = cm_hex(req->path + i + 1, 2);
+			char* tmp = result;
+			result = cm_strcat(tmp, cbuf);
+			free(tmp);
+			i += 2;
+		} else {
+			cbuf[0] = req->path[i];
+			char* tmp = result;
+			result = cm_strcat(tmp, cbuf);
+			free(tmp);
+		}
+	}
+	free(req->path);
+	req->path = result;
 	return 0;
 }

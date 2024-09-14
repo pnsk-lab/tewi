@@ -12,10 +12,14 @@ struct tw_tool {
 };
 
 enum TW_MODULE_RETURN {
-	TW_MODULE_PASS = 0, /* Pass to the next module. */
-	TW_MODULE_STOP,	    /* Do not pass to the next module. */
-	TW_MODULE_ERROR	    /* Error, and do not pass to the next module. */
+	_TW_MODULE_PASS = 0, /* Pass to the next module. */
+	_TW_MODULE_STOP,     /* Do not pass to the next module. */
+	_TW_MODULE_ERROR     /* Error, and do not pass to the next module. */
 };
+
+#define TW_MODULE_PASS _TW_MODULE_PASS
+#define TW_MODULE_STOP _TW_MODULE_STOP
+#define TW_MODULE_ERROR(x) (_TW_MODULE_ERROR | ((x) << 8))
 
 typedef int (*tw_mod_init_t)(struct tw_config* config, struct tw_tool* tools);
 typedef int (*tw_mod_request_t)(struct tw_tool* tools, struct tw_http_request* req, struct tw_http_response* res);

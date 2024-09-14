@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 #include <cm_string.h>
 #include <cm_log.h>
@@ -135,59 +136,14 @@ size_t tw_write(SSL* ssl, int s, void* data, size_t len) {
 	}
 }
 
-#define ERROR_400 \
+#define ERROR_HTML \
 	"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n" \
 	"<html>\n" \
 	"	<head>\n" \
-	"		<title>400 Bad Request</title>" \
+	"		<title>%s</title>\n" \
 	"	</head>\n" \
 	"	<body>\n" \
-	"		<h1>Bad Request</h1>\n" \
-	"		<hr>\n" \
-	"		", \
-	    address, \
-	    "\n" \
-	    "	</body>\n" \
-	    "</html>\n"
-
-#define ERROR_401 \
-	"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n" \
-	"<html>\n" \
-	"	<head>\n" \
-	"		<title>401 Unauthorized</title>" \
-	"	</head>\n" \
-	"	<body>\n" \
-	"		<h1>Unauthorized</h1>\n" \
-	"		<hr>\n" \
-	"		", \
-	    address, \
-	    "\n" \
-	    "	</body>\n" \
-	    "</html>\n"
-
-#define ERROR_403 \
-	"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n" \
-	"<html>\n" \
-	"	<head>\n" \
-	"		<title>403 Forbidden</title>" \
-	"	</head>\n" \
-	"	<body>\n" \
-	"		<h1>Forbidden</h1>\n" \
-	"		<hr>\n" \
-	"		", \
-	    address, \
-	    "\n" \
-	    "	</body>\n" \
-	    "</html>\n"
-
-#define ERROR_404 \
-	"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n" \
-	"<html>\n" \
-	"	<head>\n" \
-	"		<title>404 Not Found</title>" \
-	"	</head>\n" \
-	"	<body>\n" \
-	"		<h1>Not Found</h1>\n" \
+	"		<h1>%s</h1>\n" \
 	"		<hr>\n" \
 	"		", \
 	    address, \
@@ -221,8 +177,16 @@ void tw_process_page(SSL* ssl, int sock, const char* status, const char* type, c
 }
 
 const char* tw_http_status(int code) {
-	if(code == 400) {
+	if(code == 200) {
+		return "200 OK";
+	} else if(code == 400) {
 		return "400 Bad Request";
+	} else if(code == 401) {
+		return "401 Unauthorized";
+	} else if(code == 403) {
+		return "403 Forbidden";
+	} else if(code == 404) {
+		return "404 Not Found";
 	} else {
 		return "400 Bad Request";
 	}
@@ -231,17 +195,69 @@ const char* tw_http_status(int code) {
 char* tw_http_default_error(int code, char* name, int port) {
 	char address[1024];
 	sprintf(address, "<address>%s Server at %s Port %d</address>", tw_server, name, port);
-	if(code == 400) {
-		return cm_strcat3(ERROR_400);
-	} else {
-		return cm_strcat3(ERROR_400);
+
+	char* st = cm_strdup(tw_http_status(code));
+	char* st2;
+	int i;
+	for(i = 0; st[i] != 0; i++) {
+		if(st[i] == ' ') {
+			st2 = cm_strdup(st + i + 1);
+			break;
+		}
 	}
+	char* buffer = malloc(4096);
+	char* str = cm_strcat3(ERROR_HTML);
+	sprintf(buffer, str, st, st2);
+	free(str);
+	free(st);
+	return buffer;
 }
 
 void tw_http_error(SSL* ssl, int sock, int error, char* name, int port) {
 	char* str = tw_http_default_error(error, name, port);
 	tw_process_page(ssl, sock, tw_http_status(error), "text/html", str, strlen(str));
 	free(str);
+}
+
+void addstring(char** str, const char* add, ...) {
+	int i;
+	char cbuf[2];
+	cbuf[1] = 0;
+	va_list va;
+	va_start(va, add);
+	for(i = 0; add[i] != 0; i++) {
+		cbuf[0] = add[i];
+		if(add[i] == '%') {
+			i++;
+			if(add[i] == 's') {
+				char* tmp = *str;
+				*str = cm_strcat(tmp, va_arg(va, const char*));
+				free(tmp);
+			} else if(add[i] == 'h') {
+				char* h = cm_html_escape(va_arg(va, const char*));
+				char* tmp = *str;
+				*str = cm_strcat(tmp, h);
+				free(tmp);
+				free(h);
+			} else if(add[i] == 'd') {
+				int n = va_arg(va, int);
+				char* h = malloc(512);
+				sprintf(h, "%d", n);
+				char* tmp = *str;
+				*str = cm_strcat(tmp, h);
+				free(tmp);
+				free(h);
+			} else if(add[i] == '%') {
+				char* tmp = *str;
+				*str = cm_strcat(tmp, "%");
+				free(tmp);
+			}
+		} else {
+			char* tmp = *str;
+			*str = cm_strcat(tmp, cbuf);
+			free(tmp);
+		}
+	}
 }
 
 #ifdef __MINGW32__
@@ -272,8 +288,54 @@ void tw_server_pass(int sock, bool ssl, int port) {
 		sslworks = true;
 	}
 	struct tw_http_request req;
+	struct tw_http_response res;
+	struct tw_tool tools;
+	res._processed = false;
+	tw_init_tools(&tools);
 	int ret = tw_http_parse(s, sock, &req);
 	if(ret == 0) {
+		int i;
+		for(i = 0; i < config.module_count; i++) {
+			tw_mod_request_t mod_req = (tw_mod_request_t)tw_module_symbol(config.modules[i], "mod_request");
+			if(mod_req != NULL) {
+				int ret = mod_req(&tools, &req, &res);
+				int co = ret & 0xff;
+				if(co == _TW_MODULE_PASS) continue;
+				if(co == _TW_MODULE_STOP) {
+					res._processed = true;
+					break;
+				}
+				if(co == _TW_MODULE_ERROR) {
+					tw_http_error(s, sock, (ret & 0xffff00) >> 8, name, port);
+					break;
+				}
+			}
+		}
+		if(!res._processed) {
+			char* str = malloc(1);
+			str[0] = 0;
+			addstring(&str, "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n");
+			addstring(&str, "<html>\n");
+			addstring(&str, "	<head>\n");
+			addstring(&str, "		<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
+			addstring(&str, "		<title>Index of %h</title>\n", req.path);
+			addstring(&str, "	</head>\n");
+			addstring(&str, "	<body>\n");
+			addstring(&str, "		<h1>Index of %h</h1>\n", req.path);
+			addstring(&str, "		<hr>\n");
+			addstring(&str, "		<table border=\"0\">\n");
+			addstring(&str, "			<tr>\n");
+			addstring(&str, "				<th></th>\n");
+			addstring(&str, "				<th>Filename</th>\n");
+			addstring(&str, "			</tr>\n");
+			addstring(&str, "		</table>\n");
+			addstring(&str, "		<hr>\n");
+			addstring(&str, "		<address>%s Server at %s Port %d</address>\n", tw_server, name, port);
+			addstring(&str, "	</body>\n");
+			addstring(&str, "</html>\n");
+			tw_process_page(s, sock, tw_http_status(200), "text/html", str, strlen(str));
+			free(str);
+		}
 	} else {
 		tw_http_error(s, sock, 400, name, port);
 	}

@@ -11,6 +11,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef __MINGW32__
+#include <winsock2.h>
+#endif
+
 #include <cm_string.h>
 #include <cm_log.h>
 
