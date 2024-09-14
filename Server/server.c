@@ -482,9 +482,30 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 							addstring(&str, "			<tr>\n");
 							addstring(&str, "				<th></th>\n");
 							addstring(&str, "				<th>Filename</th>\n");
+							addstring(&str, "				<th>MIME</th>\n");
+							addstring(&str, "				<th>Size</th>\n");
 							addstring(&str, "			</tr>\n");
 							if(items != NULL) {
 								for(i = 0; items[i] != NULL; i++) {
+									char* fpth = cm_strcat3(path, "/", items[i]);
+									struct stat s;
+									char size[512];
+									size[0] = 0;
+									stat(fpth, &s);
+									if(s.st_size < 1024ULL){
+										sprintf(size, "%d", s.st_size);
+									}else if(s.st_size < 1024ULL * 1024){
+										sprintf(size, "%.1f K", (double)s.st_size / 1024);
+									}else if(s.st_size < 1024ULL * 1024 * 1024){
+										sprintf(size, "%.1f M", (double)s.st_size / 1024 / 1024);
+									}else if(s.st_size < 1024ULL * 1024 * 1024 * 1024){
+										sprintf(size, "%.1f G", (double)s.st_size / 1024 / 1024 / 1024);
+									}else if(s.st_size < 1024ULL * 1024 * 1024 * 1024 * 1024){
+										sprintf(size, "%.1f T", (double)s.st_size / 1024 / 1024 / 1024 / 1024);
+									}
+
+									free(fpth);
+
 									char* ext = NULL;
 									int j;
 									for(j = strlen(items[i]) - 1; j >= 0; j--) {
@@ -495,11 +516,14 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 											break;
 										}
 									}
+									char* showmime = "";
 									char* mime = tw_get_mime(ext, vhost_entry);
 									if(strcmp(items[i], "../") == 0) {
 										mime = "misc/parent";
 									} else if(items[i][strlen(items[i]) - 1] == '/') {
 										mime = "misc/dir";
+									}else{
+										showmime = mime;
 									}
 									char* icon = tw_get_icon(mime, vhost_entry);
 									if(ext != NULL) free(ext);
@@ -521,6 +545,8 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 									addstring(&str, "<tr>\n");
 									addstring(&str, "	<td><img src=\"%s\" alt=\"icon\"></td>\n", icon);
 									addstring(&str, "	<td><a href=\"%l\"><code>%h</code></a></td>\n", items[i], itm);
+									addstring(&str, "	<td><code>%h</code></td>\n", showmime);
+									addstring(&str, "	<td><code>%s</code></td>\n", size);
 									addstring(&str, "</tr>\n");
 									free(itm);
 								}
