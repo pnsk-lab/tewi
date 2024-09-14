@@ -14,14 +14,15 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdarg.h>
+#include <sys/stat.h>
 
 #include <cm_string.h>
 #include <cm_log.h>
+#include <cm_dir.h>
 
 #ifdef __MINGW32__
 #include <winsock2.h>
 #include <process.h>
-#define NO_IPV6
 #else
 #include <sys/select.h>
 #include <sys/socket.h>
@@ -36,11 +37,6 @@ extern char tw_server[];
 fd_set fdset;
 int sockcount = 0;
 
-#ifdef NO_IPV6
-#define SOCKADDR struct sockaddr_in
-#else
-#define SOCKADDR struct sockaddr_in6
-#endif
 SOCKADDR addresses[MAX_PORTS];
 int sockets[MAX_PORTS];
 
@@ -151,7 +147,7 @@ size_t tw_write(SSL* ssl, int s, void* data, size_t len) {
 	    "	</body>\n" \
 	    "</html>\n"
 
-void tw_process_page(SSL* ssl, int sock, const char* status, const char* type, const unsigned char* doc, size_t size) {
+void tw_process_page(SSL* ssl, int sock, const char* status, const char* type, FILE* f, const unsigned char* doc, size_t size) {
 	char construct[512];
 	sprintf(construct, "%llu", (unsigned long long)size);
 	tw_write(ssl, sock, "HTTP/1.1 ", 9);
@@ -169,7 +165,13 @@ void tw_process_page(SSL* ssl, int sock, const char* status, const char* type, c
 	tw_write(ssl, sock, "\r\n", 2);
 	size_t incr = 0;
 	while(1) {
-		tw_write(ssl, sock, (unsigned char*)doc + incr, size < 128 ? size : 128);
+		if(f != NULL){
+			char buffer[128];
+			fread(buffer, size < 128 ? size : 128, 1, f);
+			tw_write(ssl, sock, buffer, size < 128 ? size : 128);
+		}else{
+			tw_write(ssl, sock, (unsigned char*)doc + incr, size < 128 ? size : 128);
+		}
 		incr += 128;
 		if(size <= 128) break;
 		size -= 128;
@@ -215,7 +217,7 @@ char* tw_http_default_error(int code, char* name, int port) {
 
 void tw_http_error(SSL* ssl, int sock, int error, char* name, int port) {
 	char* str = tw_http_default_error(error, name, port);
-	tw_process_page(ssl, sock, tw_http_status(error), "text/html", str, strlen(str));
+	tw_process_page(ssl, sock, tw_http_status(error), "text/html", NULL, str, strlen(str));
 	free(str);
 }
 
@@ -235,6 +237,12 @@ void addstring(char** str, const char* add, ...) {
 				free(tmp);
 			} else if(add[i] == 'h') {
 				char* h = cm_html_escape(va_arg(va, const char*));
+				char* tmp = *str;
+				*str = cm_strcat(tmp, h);
+				free(tmp);
+				free(h);
+			} else if(add[i] == 'l') {
+				char* h = cm_url_escape(va_arg(va, const char*));
 				char* tmp = *str;
 				*str = cm_strcat(tmp, h);
 				free(tmp);
@@ -265,15 +273,17 @@ struct pass_entry {
 	int sock;
 	int port;
 	bool ssl;
+	SOCKADDR addr;
 };
 
 unsigned int WINAPI tw_server_pass(void* ptr) {
 	int sock = ((struct pass_entry*)ptr)->sock;
 	bool ssl = ((struct pass_entry*)ptr)->ssl;
 	int port = ((struct pass_entry*)ptr)->port;
+	SOCKADDR addr = ((struct pass_entry*)ptr)->addr;
 	free(ptr);
 #else
-void tw_server_pass(int sock, bool ssl, int port) {
+void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 #endif
 	char* name = config.hostname;
 
@@ -294,7 +304,27 @@ void tw_server_pass(int sock, bool ssl, int port) {
 	tw_init_tools(&tools);
 	int ret = tw_http_parse(s, sock, &req);
 	if(ret == 0) {
+		char* vhost = cm_strdup(config.hostname);
 		int i;
+		for(i = 0; req.headers[i] != NULL; i += 2){
+			if(cm_strcaseequ(req.headers[i], "Host")){
+				free(vhost);
+				vhost = req.headers[i + 1];
+				break;
+			}
+		}
+		cm_log("Server", "Host is %s", vhost);
+		int port = s == NULL ? 80 : 443;
+		char* host = cm_strdup(vhost);
+		for(i = 0; vhost[i] != 0; i++){
+			if(vhost[i] == ':'){
+				host[i] = 0;
+				port = atoi(host + i + 1);
+				break;
+			}
+		}
+		cm_log("Server", "Hostname is `%s', port is `%d'", host, port);
+		struct tw_config_entry* vhost_entry = tw_vhost_match(host, port);
 		for(i = 0; i < config.module_count; i++) {
 			tw_mod_request_t mod_req = (tw_mod_request_t)tw_module_symbol(config.modules[i], "mod_request");
 			if(mod_req != NULL) {
@@ -312,30 +342,82 @@ void tw_server_pass(int sock, bool ssl, int port) {
 			}
 		}
 		if(!res._processed) {
-			char* str = malloc(1);
-			str[0] = 0;
-			addstring(&str, "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n");
-			addstring(&str, "<html>\n");
-			addstring(&str, "	<head>\n");
-			addstring(&str, "		<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
-			addstring(&str, "		<title>Index of %h</title>\n", req.path);
-			addstring(&str, "	</head>\n");
-			addstring(&str, "	<body>\n");
-			addstring(&str, "		<h1>Index of %h</h1>\n", req.path);
-			addstring(&str, "		<hr>\n");
-			addstring(&str, "		<table border=\"0\">\n");
-			addstring(&str, "			<tr>\n");
-			addstring(&str, "				<th></th>\n");
-			addstring(&str, "				<th>Filename</th>\n");
-			addstring(&str, "			</tr>\n");
-			addstring(&str, "		</table>\n");
-			addstring(&str, "		<hr>\n");
-			addstring(&str, "		<address>%s Server at %s Port %d</address>\n", tw_server, name, port);
-			addstring(&str, "	</body>\n");
-			addstring(&str, "</html>\n");
-			tw_process_page(s, sock, tw_http_status(200), "text/html", str, strlen(str));
-			free(str);
+			cm_log("Server", "Document root is %s", vhost_entry->root == NULL ? "not set" : vhost_entry->root);
+			char* path = cm_strcat(vhost_entry->root == NULL ? "" : vhost_entry->root, req.path);
+			cm_log("Server", "Filesystem path is %s", path);
+			struct stat st;
+			if(stat(path, &st) == 0){
+				if(!tw_permission_allowed(path, addr, req, vhost_entry)){
+					tw_http_error(s, sock, 403, name, port);
+				}else if(S_ISDIR(st.st_mode)){
+					char* str = malloc(1);
+					str[0] = 0;
+					char** items = cm_scandir(path);
+					addstring(&str, "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n");
+					addstring(&str, "<html>\n");
+					addstring(&str, "	<head>\n");
+					addstring(&str, "		<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
+					addstring(&str, "		<title>Index of %h</title>\n", req.path);
+					addstring(&str, "	</head>\n");
+					addstring(&str, "	<body>\n");
+					addstring(&str, "		<h1>Index of %h</h1>\n", req.path);
+					addstring(&str, "		<hr>\n");
+					addstring(&str, "		<table border=\"0\">\n");
+					addstring(&str, "			<tr>\n");
+					addstring(&str, "				<th></th>\n");
+					addstring(&str, "				<th>Filename</th>\n");
+					addstring(&str, "			</tr>\n");
+					if(items != NULL){
+						for(i = 0; items[i] != NULL; i++){
+							addstring(&str, "<tr>\n");
+							addstring(&str, "	<td></td>\n");
+							addstring(&str, "	<td><a href=\"%l\">%h</a></td>\n", items[i], items[i]);
+							addstring(&str, "</tr>\n");
+						}
+					}
+					addstring(&str, "		</table>\n");
+					addstring(&str, "		<hr>\n");
+					addstring(&str, "		<address>%s Server at %s Port %d</address>\n", tw_server, name, port);
+					addstring(&str, "	</body>\n");
+					addstring(&str, "</html>\n");
+					tw_process_page(s, sock, tw_http_status(200), "text/html", NULL, str, strlen(str));
+					free(str);
+				}else{
+					char* mime = "application/octet-stream";
+					bool set = false;
+					char* ext = NULL;
+					for(i = strlen(req.path) - 1; i >= 0; i--){
+						if(req.path[i] == '.'){
+							ext = cm_strdup(req.path + i);
+							break;
+						}
+					}
+					for(i = 0; i < vhost_entry->mime_count; i++){
+						if(strcmp(vhost_entry->mimes[i].ext, "all") == 0 || (ext != NULL && strcmp(vhost_entry->mimes[i].ext, ext) == 0)){
+							mime = vhost_entry->mimes[i].mime;
+							set = true;
+						}
+					}
+					if(!set){
+						for(i = 0; i < config.root.mime_count; i++){
+							if(strcmp(config.root.mimes[i].ext, "all") == 0 || (ext != NULL && strcmp(config.root.mimes[i].ext, ext) == 0)){
+								mime = config.root.mimes[i].mime;
+								set = true;
+							}
+						}
+					}
+					if(ext != NULL) free(ext);
+					FILE* f = fopen(path, "rb");
+					tw_process_page(s, sock, tw_http_status(200), mime, f, NULL, st.st_size);
+					fclose(f);
+				}
+			}else{
+				tw_http_error(s, sock, 404, name, port);
+			}
+			free(path);
 		}
+		free(vhost);
+		free(host);
 	} else {
 		tw_http_error(s, sock, 400, name, port);
 	}
@@ -378,11 +460,12 @@ void tw_server_loop(void) {
 					e->sock = sock;
 					e->ssl = config.ports[i] & (1ULL << 32);
 					e->port = config.ports[i];
+					e->addr = claddr;
 					thread = (HANDLE)_beginthreadex(NULL, 0, tw_server_pass, e, 0, NULL);
 #else
 					pid_t pid = fork();
 					if(pid == 0) {
-						tw_server_pass(sock, config.ports[i] & (1ULL << 32), config.ports[i]);
+						tw_server_pass(sock, config.ports[i] & (1ULL << 32), config.ports[i], claddr);
 						_exit(0);
 					} else {
 						close_socket(sock);

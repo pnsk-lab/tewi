@@ -7,6 +7,7 @@
 
 int cm_hex(const char* str, int len);
 char* cm_html_escape(const char* str);
+char* cm_url_escape(const char* str);
 char* cm_strcat(const char* a, const char* b);
 char* cm_strcat3(const char* a, const char* b, const char* c);
 char* cm_strdup(const char* str);

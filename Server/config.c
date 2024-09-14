@@ -30,6 +30,42 @@ struct tw_config_entry* tw_vhost_match(const char* name, int port) {
 	return &config.root;
 }
 
+bool tw_permission_allowed(const char* path, SOCKADDR addr, struct tw_http_request req, struct tw_config_entry* vhost){
+	int i;
+	bool found = false;
+	bool pathstart = false;
+	bool perm = false;
+again:
+	for(i = 0; i < vhost->dir_count; i++){
+		struct tw_dir_entry* e = &vhost->dirs[i];
+		pathstart = false;
+		if(strlen(path) >= strlen(e->dir)){
+			pathstart = true;
+			int j;
+			for(j = 0; path[j] != 0 && e->dir[j] != 0; j++){
+				if(path[j] != e->dir[j]){
+					pathstart = false;
+					break;
+				}
+			}
+		}
+		char* noslash = cm_strdup(e->dir);
+		noslash[strlen(noslash) - 1] = 0;
+		if(strcmp(e->dir, path) == 0 || strcmp(noslash, path) == 0 || pathstart){
+			found = true;
+			if(strcmp(e->name, "all") == 0){
+				perm = e->type == TW_DIR_ALLOW;
+			}
+		}
+		free(noslash);
+	}
+	if(!found && vhost != &config.root){
+		vhost = &config.root;
+		goto again;
+	}
+	return perm;
+}
+
 void tw_config_init(void) {
 	int i;
 	for(i = 0; i < MAX_PORTS + 1; i++) {
@@ -43,6 +79,8 @@ void tw_config_init(void) {
 	config.root.sslkey = NULL;
 	config.root.sslcert = NULL;
 	config.root.root = NULL;
+	config.root.mime_count = 0;
+	config.root.dir_count = 0;
 	config.vhost_count = 0;
 	config.module_count = 0;
 	config.extension = NULL;
@@ -62,6 +100,7 @@ int tw_config_read(const char* path) {
 		int stop = 0;
 		struct tw_config_entry* current = &config.root;
 		char* vhost = NULL;
+		char* dir = NULL;
 		while(stop == 0) {
 			int c = fread(cbuf, 1, 1, f);
 			if(cbuf[0] == '\n' || c <= 0) {
@@ -77,6 +116,56 @@ int tw_config_read(const char* path) {
 								break;
 							}
 						}
+					} else if(cm_strcaseequ(r[0], "BeginDirectory")) {
+						if(dir != NULL) {
+							cm_log("Config", "Already in directory section at line %d", ln);
+							stop = 1;
+						} else {
+							if(r[1] == NULL) {
+								cm_log("Config", "Missing directory at line %d", ln);
+								stop = 1;
+							} else {
+								dir = cm_strcat(r[1], r[1][strlen(r[1]) - 1] == '/' ? "" : "/");
+							}
+						}
+					} else if(cm_strcaseequ(r[0], "EndDirectory")) {
+						if(dir == NULL) {
+							cm_log("Config", "Not in directory section at line %d", ln);
+							stop = 1;
+						} else {
+							free(dir);
+							dir = NULL;
+						}
+					} else if(cm_strcaseequ(r[0], "Allow")) {
+						if(dir == NULL) {
+							cm_log("Config", "Not in directory section at line %d", ln);
+							stop = 1;
+						} else {
+							if(r[1] == NULL) {
+								cm_log("Config", "Missing argument at line %d", ln);
+								stop = 1;
+							} else {
+								struct tw_dir_entry* e = &current->dirs[current->dir_count++];
+								e->name = cm_strdup(r[1]);
+								e->dir = cm_strdup(dir);
+								e->type = TW_DIR_ALLOW;
+							}
+						}
+					} else if(cm_strcaseequ(r[0], "Deny")) {
+						if(dir == NULL) {
+							cm_log("Config", "Not in directory section at line %d", ln);
+							stop = 1;
+						} else {
+							if(r[1] == NULL) {
+								cm_log("Config", "Missing argument at line %d", ln);
+								stop = 1;
+							} else {
+								struct tw_dir_entry* e = &current->dirs[current->dir_count++];
+								e->name = cm_strdup(r[1]);
+								e->dir = cm_strdup(dir);
+								e->type = TW_DIR_DENY;
+							}
+						}
 					} else if(cm_strcaseequ(r[0], "BeginVirtualHost")) {
 						if(vhost != NULL) {
 							cm_log("Config", "Already in virtual host section at line %d", ln);
@@ -88,6 +177,8 @@ int tw_config_read(const char* path) {
 							} else {
 								vhost = cm_strdup(r[1]);
 								current = &config.vhosts[config.vhost_count++];
+								current->dir_count = 0;
+								current->mime_count = 0;
 								int i;
 								current->name = cm_strdup(vhost);
 								current->port = -1;
@@ -141,7 +232,7 @@ int tw_config_read(const char* path) {
 							stop = 1;
 						} else {
 							if(current->root != NULL) free(current->root);
-							current->root = cm_strdup(r[1]);
+							current->root = cm_strdup(strcmp(r[1], "/") == 0 ? "" : r[1]);
 						}
 					} else if(cm_strcaseequ(r[0], "ServerRoot")) {
 						if(r[1] == NULL) {
@@ -150,6 +241,18 @@ int tw_config_read(const char* path) {
 						} else {
 							if(config.server_root != NULL) free(config.server_root);
 							config.server_root = cm_strdup(r[1]);
+						}
+					} else if(cm_strcaseequ(r[0], "MIMEType")) {
+						if(r[1] == NULL) {
+							cm_log("Config", "Missing extension at line %d", ln);
+							stop = 1;
+						}else if(r[2] == NULL) {
+							cm_log("Config", "Missing MIME at line %d", ln);
+							stop = 1;
+						} else {
+							struct tw_mime_entry* e = &current->mimes[current->mime_count++];
+							e->ext = cm_strdup(r[1]);
+							e->mime = cm_strdup(r[2]);
 						}
 					} else if(cm_strcaseequ(r[0], "LoadModule")) {
 						for(i = 1; r[i] != NULL; i++) {

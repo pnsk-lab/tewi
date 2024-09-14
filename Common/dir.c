@@ -1,0 +1,48 @@
+/* $Id$ */
+
+#include "cm_dir.h"
+
+#include "cm_string.h"
+
+#include <sys/stat.h>
+#include <dirent.h>
+#include <stdlib.h>
+#include <string.h>
+
+int cm_sort(const void* _a, const void* _b){
+	char* a = *(char**)_a;
+	char* b = *(char**)_b;
+	return strcmp(a, b);
+}
+
+char** cm_scandir(const char* path){
+	DIR* dir = opendir(path);
+	if(dir != NULL){
+		char** r = malloc(sizeof(*r));
+		r[0] = NULL;
+		struct dirent* d;
+		while((d = readdir(dir)) != NULL){
+			if(strcmp(d->d_name, ".") != 0){
+				struct stat s;
+				char* p = cm_strcat3(path, "/", d->d_name);
+				stat(p, &s);
+				free(p);
+
+				char** old = r;
+				int i;
+				for(i = 0; old[i] != NULL; i++);
+				r = malloc(sizeof(*r) * (i + 2));
+				for(i = 0; old[i] != NULL; i++) r[i] = old[i];
+				r[i] = cm_strcat(d->d_name, S_ISDIR(s.st_mode) ? "/" : "");
+				r[i + 1] = NULL;
+				free(old);
+			}
+		}
+		int len;
+		for(len = 0; r[len] != NULL; len++);
+		qsort(r, len, sizeof(char*), cm_sort);
+		return r;
+	}else{
+		return NULL;
+	}
+}

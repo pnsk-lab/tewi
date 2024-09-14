@@ -159,3 +159,26 @@ char* cm_html_escape(const char* str) {
 	}
 	return result;
 }
+
+char* cm_url_escape(const char* str) {
+	int i;
+	char* result = malloc(1);
+	result[0] = 0;
+	char cbuf[2];
+	cbuf[1] = 0;
+	for(i = 0; str[i] != 0; i++) {
+		cbuf[0] = str[i];
+		if('!' <= str[i] && str[i] <= '@' && str[i] != '.' && str[i] != '-' && str[i] != '/' && !('0' <= str[i] && str[i] <= '9')) {
+			char code[4];
+			sprintf(code, "%%%02X", str[i]);
+			char* tmp = result;
+			result = cm_strcat(tmp, code);
+			free(tmp);
+		} else {
+			char* tmp = result;
+			result = cm_strcat(tmp, cbuf);
+			free(tmp);
+		}
+	}
+	return result;
+}
