@@ -8,9 +8,11 @@ const char* tw_version = "0.00";
 
 const char* tw_platform =
 #if defined(PLATFORM)
-    PLATFORM
+    PLATFORMM
 #elif defined(__NetBSD__)
     "NetBSD"
+#elif defined(__linux__)
+    "Linux"
 #elif defined(__MINGW32__)
     "Windows"
 #else
