@@ -27,7 +27,7 @@ void* tw_module_load(const char* path) {
 #ifdef __MINGW32__
 	lib = LoadLibraryA(path);
 #else
-	lib = dlopen(path, DL_LAZY);
+	lib = dlopen(path, RTLD_LAZY);
 #endif
 	if(lib == NULL) {
 		cm_log("Module", "Could not load %s", path);

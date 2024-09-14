@@ -4,6 +4,8 @@ PWD = `pwd`
 PLATFORM = generic
 PREFIX = /usr/local
 
+include Platform/$(PLATFORM).mk
+
 FLAGS = PWD=$(PWD) PLATFORM=$(PLATFORM) PREFIX=$(PREFIX)
 
 .PHONY: all format clean ./Server ./Common ./Module
