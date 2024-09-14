@@ -27,6 +27,7 @@
 #define MAX_DIRS 1024
 #define MAX_MIME 1024
 #define MAX_ICON 1024
+#define MAX_INDEX 1024
 
 enum TW_DIR_TYPE {
 	TW_DIR_ALLOW = 0,
@@ -61,6 +62,8 @@ struct tw_config_entry {
 	int mime_count;
 	struct tw_icon_entry icons[MAX_DIRS];
 	int icon_count;
+	char* indexes[MAX_INDEX];
+	int index_count;
 };
 
 struct tw_config {

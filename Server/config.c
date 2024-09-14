@@ -82,6 +82,7 @@ void tw_config_init(void) {
 	config.root.mime_count = 0;
 	config.root.dir_count = 0;
 	config.root.icon_count = 0;
+	config.root.index_count = 0;
 	config.vhost_count = 0;
 	config.module_count = 0;
 	config.extension = NULL;
@@ -181,6 +182,7 @@ int tw_config_read(const char* path) {
 								current->dir_count = 0;
 								current->mime_count = 0;
 								current->icon_count = 0;
+								current->index_count = 0;
 								int i;
 								current->name = cm_strdup(vhost);
 								current->port = -1;
@@ -281,6 +283,10 @@ int tw_config_read(const char* path) {
 								stop = 1;
 								break;
 							}
+						}
+					} else if(cm_strcaseequ(r[0], "DirectoryIndex")) {
+						for(i = 1; r[i] != NULL; i++) {
+							current->indexes[current->index_count++] = cm_strdup(r[i]);
 						}
 					} else {
 						if(r[0] != NULL) {

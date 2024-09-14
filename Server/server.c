@@ -169,22 +169,36 @@ size_t tw_write(SSL* ssl, int s, void* data, size_t len) {
 	    "	</body>\n" \
 	    "</html>\n"
 
-void tw_process_page(SSL* ssl, int sock, const char* status, const char* type, FILE* f, const unsigned char* doc, size_t size) {
+void _tw_process_page(SSL* ssl, int sock, const char* status, const char* type, FILE* f, const unsigned char* doc, size_t size, char** headers) {
 	char construct[512];
 	sprintf(construct, "%llu", (unsigned long long)size);
 	tw_write(ssl, sock, "HTTP/1.1 ", 9);
 	tw_write(ssl, sock, (char*)status, strlen(status));
 	tw_write(ssl, sock, "\r\n", 2);
-	tw_write(ssl, sock, "Content-Type: ", 7 + 5 + 2);
-	tw_write(ssl, sock, (char*)type, strlen(type));
-	tw_write(ssl, sock, "\r\n", 2);
+	if(type != NULL) {
+		tw_write(ssl, sock, "Content-Type: ", 7 + 5 + 2);
+		tw_write(ssl, sock, (char*)type, strlen(type));
+		tw_write(ssl, sock, "\r\n", 2);
+	}
 	tw_write(ssl, sock, "Server: ", 6 + 2);
 	tw_write(ssl, sock, tw_server, strlen(tw_server));
 	tw_write(ssl, sock, "\r\n", 2);
-	tw_write(ssl, sock, "Content-Length: ", 7 + 7 + 2);
-	tw_write(ssl, sock, construct, strlen(construct));
+	if(size != 0) {
+		tw_write(ssl, sock, "Content-Length: ", 7 + 7 + 2);
+		tw_write(ssl, sock, construct, strlen(construct));
+		tw_write(ssl, sock, "\r\n", 2);
+	}
+	int i;
+	if(headers != NULL) {
+		for(i = 0; headers[i] != NULL; i += 2) {
+			tw_write(ssl, sock, headers[i], strlen(headers[i]));
+			tw_write(ssl, sock, ": ", 2);
+			tw_write(ssl, sock, headers[i + 1], strlen(headers[i + 1]));
+			tw_write(ssl, sock, "\r\n", 2);
+		}
+	}
 	tw_write(ssl, sock, "\r\n", 2);
-	tw_write(ssl, sock, "\r\n", 2);
+	if(doc == NULL && f == NULL) return;
 	size_t incr = 0;
 	while(1) {
 		if(f != NULL) {
@@ -200,9 +214,13 @@ void tw_process_page(SSL* ssl, int sock, const char* status, const char* type, F
 	}
 }
 
+void tw_process_page(SSL* ssl, int sock, const char* status, const char* type, FILE* f, const unsigned char* doc, size_t size) { _tw_process_page(ssl, sock, status, type, f, doc, size, NULL); }
+
 const char* tw_http_status(int code) {
 	if(code == 200) {
 		return "200 OK";
+	} else if(code == 308) {
+		return "308 Permanent Redirect";
 	} else if(code == 400) {
 		return "400 Bad Request";
 	} else if(code == 401) {
@@ -414,75 +432,115 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 				if(!tw_permission_allowed(path, addr, req, vhost_entry)) {
 					tw_http_error(s, sock, 403, name, port);
 				} else if(S_ISDIR(st.st_mode)) {
-					char* str = malloc(1);
-					str[0] = 0;
-					char** items = cm_scandir(path);
-					addstring(&str, "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n");
-					addstring(&str, "<html>\n");
-					addstring(&str, "	<head>\n");
-					addstring(&str, "		<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
-					addstring(&str, "		<title>Index of %h</title>\n", req.path);
-					addstring(&str, "	</head>\n");
-					addstring(&str, "	<body>\n");
-					addstring(&str, "		<h1>Index of %h</h1>\n", req.path);
-					addstring(&str, "		<hr>\n");
-					addstring(&str, "		<table border=\"0\">\n");
-					addstring(&str, "			<tr>\n");
-					addstring(&str, "				<th></th>\n");
-					addstring(&str, "				<th>Filename</th>\n");
-					addstring(&str, "			</tr>\n");
-					if(items != NULL) {
-						for(i = 0; items[i] != NULL; i++) {
-							char* ext = NULL;
-							int j;
-							for(j = strlen(items[i]) - 1; j >= 0; j--) {
-								if(items[i][j] == '.') {
-									ext = cm_strdup(items[i] + j);
-									break;
+					if(req.path[strlen(req.path) - 1] != '/') {
+						char* headers[3] = {"Location", cm_strcat(req.path, "/"), NULL};
+						_tw_process_page(s, sock, tw_http_status(308), NULL, NULL, NULL, 0, headers);
+						free(headers[1]);
+					} else {
+						char** indexes = vhost_entry->index_count == 0 ? config.root.indexes : vhost_entry->indexes;
+						int index_count = vhost_entry->index_count == 0 ? config.root.index_count : vhost_entry->index_count;
+						bool found = false;
+						for(i = 0; i < index_count; i++) {
+							char* p = cm_strcat3(path, "/", indexes[i]);
+							FILE* f = fopen(p, "rb");
+							if(f != NULL) {
+								char* ext = NULL;
+								int j;
+								for(j = strlen(p) - 1; j >= 0; j--) {
+									if(p[j] == '.') {
+										ext = cm_strdup(p + j);
+										break;
+									} else if(p[j] == '/') {
+										break;
+									}
+								}
+								struct stat st;
+								stat(p, &st);
+								char* mime = tw_get_mime(ext, vhost_entry);
+								tw_process_page(s, sock, tw_http_status(200), mime, f, NULL, st.st_size);
+								fclose(f);
+								free(p);
+								found = true;
+								break;
+							}
+							free(p);
+						}
+						if(!found) {
+							char* str = malloc(1);
+							str[0] = 0;
+							char** items = cm_scandir(path);
+							addstring(&str, "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n");
+							addstring(&str, "<html>\n");
+							addstring(&str, "	<head>\n");
+							addstring(&str, "		<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
+							addstring(&str, "		<title>Index of %h</title>\n", req.path);
+							addstring(&str, "	</head>\n");
+							addstring(&str, "	<body>\n");
+							addstring(&str, "		<h1>Index of %h</h1>\n", req.path);
+							addstring(&str, "		<hr>\n");
+							addstring(&str, "		<table border=\"0\">\n");
+							addstring(&str, "			<tr>\n");
+							addstring(&str, "				<th></th>\n");
+							addstring(&str, "				<th>Filename</th>\n");
+							addstring(&str, "			</tr>\n");
+							if(items != NULL) {
+								for(i = 0; items[i] != NULL; i++) {
+									char* ext = NULL;
+									int j;
+									for(j = strlen(items[i]) - 1; j >= 0; j--) {
+										if(items[i][j] == '.') {
+											ext = cm_strdup(items[i] + j);
+											break;
+										} else if(items[i][j] == '/') {
+											break;
+										}
+									}
+									char* mime = tw_get_mime(ext, vhost_entry);
+									if(strcmp(items[i], "../") == 0) {
+										mime = "misc/parent";
+									} else if(items[i][strlen(items[i]) - 1] == '/') {
+										mime = "misc/dir";
+									}
+									char* icon = tw_get_icon(mime, vhost_entry);
+									if(ext != NULL) free(ext);
+									char* itm = cm_strdup(items[i]);
+									if(strlen(itm) >= 32) {
+										if(itm[strlen(itm) - 1] == '/') {
+											itm[31] = 0;
+											itm[30] = '/';
+											itm[29] = '.';
+											itm[28] = '.';
+											itm[27] = '.';
+										} else {
+											itm[31] = 0;
+											itm[30] = '.';
+											itm[29] = '.';
+											itm[28] = '.';
+										}
+									}
+									addstring(&str, "<tr>\n");
+									addstring(&str, "	<td><img src=\"%s\" alt=\"icon\"></td>\n", icon);
+									addstring(&str, "	<td><a href=\"%l\"><code>%h</code></a></td>\n", items[i], itm);
+									addstring(&str, "</tr>\n");
+									free(itm);
 								}
 							}
-							char* mime = tw_get_mime(ext, vhost_entry);
-							if(strcmp(items[i], "../") == 0) {
-								mime = "misc/parent";
-							} else if(items[i][strlen(items[i]) - 1] == '/') {
-								mime = "misc/dir";
-							}
-							char* icon = tw_get_icon(mime, vhost_entry);
-							if(ext != NULL) free(ext);
-							char* itm = cm_strdup(items[i]);
-							if(strlen(itm) >= 32) {
-								if(itm[strlen(itm) - 1] == '/') {
-									itm[31] = 0;
-									itm[30] = '/';
-									itm[29] = '.';
-									itm[28] = '.';
-									itm[27] = '.';
-								} else {
-									itm[31] = 0;
-									itm[30] = '.';
-									itm[29] = '.';
-									itm[28] = '.';
-								}
-							}
-							addstring(&str, "<tr>\n");
-							addstring(&str, "	<td><img src=\"%s\" alt=\"icon\"></td>\n", icon);
-							addstring(&str, "	<td><a href=\"%l\"><code>%h</code></a></td>\n", items[i], itm);
-							addstring(&str, "</tr>\n");
-							free(itm);
+							addstring(&str, "		</table>\n");
+							addstring(&str, "		<hr>\n");
+							addstring(&str, "		<address>%s Server at %s Port %d</address>\n", tw_server, name, port);
+							addstring(&str, "	</body>\n");
+							addstring(&str, "</html>\n");
+							tw_process_page(s, sock, tw_http_status(200), "text/html", NULL, str, strlen(str));
+							free(str);
 						}
 					}
-					addstring(&str, "		</table>\n");
-					addstring(&str, "		<hr>\n");
-					addstring(&str, "		<address>%s Server at %s Port %d</address>\n", tw_server, name, port);
-					addstring(&str, "	</body>\n");
-					addstring(&str, "</html>\n");
-					tw_process_page(s, sock, tw_http_status(200), "text/html", NULL, str, strlen(str));
-					free(str);
 				} else {
 					char* ext = NULL;
 					for(i = strlen(req.path) - 1; i >= 0; i--) {
 						if(req.path[i] == '.') {
 							ext = cm_strdup(req.path + i);
+							break;
+						} else if(req.path[i] == '/') {
 							break;
 						}
 					}
