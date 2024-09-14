@@ -59,7 +59,7 @@ int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req) {
 		struct timeval tv;
 		tv.tv_sec = 5;
 		tv.tv_usec = 0;
-		if(!SSL_has_pending(ssl)) {
+		if(ssl == NULL || !SSL_has_pending(ssl)) {
 			int n = select(FD_SETSIZE, &fds, NULL, NULL, &tv);
 			if(n <= 0) {
 				free(header);

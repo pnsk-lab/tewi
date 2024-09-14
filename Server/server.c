@@ -40,6 +40,28 @@ int sockcount = 0;
 SOCKADDR addresses[MAX_PORTS];
 int sockets[MAX_PORTS];
 
+/* https://qiita.com/gyu-don/items/5a640c6d2252a860c8cd */
+int tw_wildcard_match(const char* wildcard, const char* target) {
+	const char *pw = wildcard, *pt = target;
+
+	while(1) {
+		if(*pt == 0) {
+			while(*pw == '*') pw++;
+			return *pw == 0;
+		} else if(*pw == 0) {
+			return 0;
+		} else if(*pw == '*') {
+			return *(pw + 1) == 0 || tw_wildcard_match(pw, pt + 1) || tw_wildcard_match(pw + 1, pt);
+		} else if(*pw == '?' || (*pw == *pt)) {
+			pw++;
+			pt++;
+			continue;
+		} else {
+			return 0;
+		}
+	}
+}
+
 void close_socket(int sock) {
 #ifdef __MINGW32__
 	closesocket(sock);
@@ -274,14 +296,14 @@ char* tw_get_mime(const char* ext, struct tw_config_entry* vhost_entry) {
 	bool set = false;
 	int i;
 	for(i = 0; i < vhost_entry->mime_count; i++) {
-		if(strcmp(vhost_entry->mimes[i].ext, "all") == 0 || (ext != NULL && strcmp(vhost_entry->mimes[i].ext, ext) == 0)) {
+		if(strcmp(vhost_entry->mimes[i].ext, "all") == 0 || (ext != NULL && tw_wildcard_match(vhost_entry->mimes[i].ext, ext))) {
 			mime = vhost_entry->mimes[i].mime;
 			set = true;
 		}
 	}
 	if(!set) {
 		for(i = 0; i < config.root.mime_count; i++) {
-			if(strcmp(config.root.mimes[i].ext, "all") == 0 || (ext != NULL && strcmp(config.root.mimes[i].ext, ext) == 0)) {
+			if(strcmp(config.root.mimes[i].ext, "all") == 0 || (ext != NULL && tw_wildcard_match(config.root.mimes[i].ext, ext))) {
 				mime = config.root.mimes[i].mime;
 			}
 		}
@@ -295,14 +317,14 @@ char* tw_get_icon(const char* mime, struct tw_config_entry* vhost_entry) {
 	bool set = false;
 	int i;
 	for(i = 0; i < vhost_entry->icon_count; i++) {
-		if(strcmp(vhost_entry->icons[i].mime, "all") == 0 || (mime != NULL && strcmp(vhost_entry->icons[i].mime, mime) == 0)) {
+		if(strcmp(vhost_entry->icons[i].mime, "all") == 0 || (mime != NULL && tw_wildcard_match(vhost_entry->icons[i].mime, mime))) {
 			icon = vhost_entry->icons[i].icon;
 			set = true;
 		}
 	}
 	if(!set) {
 		for(i = 0; i < config.root.icon_count; i++) {
-			if(strcmp(config.root.icons[i].mime, "all") == 0 || (mime != NULL && strcmp(config.root.icons[i].mime, mime) == 0)) {
+			if(strcmp(config.root.icons[i].mime, "all") == 0 || (mime != NULL && tw_wildcard_match(config.root.icons[i].mime, mime))) {
 				icon = config.root.icons[i].icon;
 			}
 		}
