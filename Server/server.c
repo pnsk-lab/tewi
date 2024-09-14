@@ -486,22 +486,31 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 							addstring(&str, "				<th>Size</th>\n");
 							addstring(&str, "			</tr>\n");
 							if(items != NULL) {
+								int phase = 0;
+							doit:
 								for(i = 0; items[i] != NULL; i++) {
 									char* fpth = cm_strcat3(path, "/", items[i]);
 									struct stat s;
 									char size[512];
 									size[0] = 0;
 									stat(fpth, &s);
-									if(s.st_size < 1024ULL){
+									if(phase == 0 && !S_ISDIR(s.st_mode)) {
+										free(fpth);
+										continue;
+									} else if(phase == 1 && S_ISDIR(s.st_mode)) {
+										free(fpth);
+										continue;
+									}
+									if(s.st_size < 1024ULL) {
 										sprintf(size, "%d", s.st_size);
-									}else if(s.st_size < 1024ULL * 1024){
-										sprintf(size, "%.1f K", (double)s.st_size / 1024);
-									}else if(s.st_size < 1024ULL * 1024 * 1024){
-										sprintf(size, "%.1f M", (double)s.st_size / 1024 / 1024);
-									}else if(s.st_size < 1024ULL * 1024 * 1024 * 1024){
-										sprintf(size, "%.1f G", (double)s.st_size / 1024 / 1024 / 1024);
-									}else if(s.st_size < 1024ULL * 1024 * 1024 * 1024 * 1024){
-										sprintf(size, "%.1f T", (double)s.st_size / 1024 / 1024 / 1024 / 1024);
+									} else if(s.st_size < 1024ULL * 1024) {
+										sprintf(size, "%.1fK", (double)s.st_size / 1024);
+									} else if(s.st_size < 1024ULL * 1024 * 1024) {
+										sprintf(size, "%.1fM", (double)s.st_size / 1024 / 1024);
+									} else if(s.st_size < 1024ULL * 1024 * 1024 * 1024) {
+										sprintf(size, "%.1fG", (double)s.st_size / 1024 / 1024 / 1024);
+									} else if(s.st_size < 1024ULL * 1024 * 1024 * 1024 * 1024) {
+										sprintf(size, "%.1fT", (double)s.st_size / 1024 / 1024 / 1024 / 1024);
 									}
 
 									free(fpth);
@@ -520,9 +529,11 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 									char* mime = tw_get_mime(ext, vhost_entry);
 									if(strcmp(items[i], "../") == 0) {
 										mime = "misc/parent";
+										size[0] = 0;
 									} else if(items[i][strlen(items[i]) - 1] == '/') {
 										mime = "misc/dir";
-									}else{
+										size[0] = 0;
+									} else {
 										showmime = mime;
 									}
 									char* icon = tw_get_icon(mime, vhost_entry);
@@ -545,11 +556,15 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 									addstring(&str, "<tr>\n");
 									addstring(&str, "	<td><img src=\"%s\" alt=\"icon\"></td>\n", icon);
 									addstring(&str, "	<td><a href=\"%l\"><code>%h</code></a></td>\n", items[i], itm);
-									addstring(&str, "	<td><code>%h</code></td>\n", showmime);
-									addstring(&str, "	<td><code>%s</code></td>\n", size);
+									addstring(&str, "	<td><code>&emsp;&emsp;%h&emsp;&emsp;</code></td>\n", showmime);
+									addstring(&str, "	<td><code>&emsp;&emsp;%s&emsp;&emsp;</code></td>\n", size);
 									addstring(&str, "</tr>\n");
 									free(itm);
 								}
+								phase++;
+								if(phase != 2) goto doit;
+								for(i = 0; items[i] != NULL; i++) free(items[i]);
+								free(items);
 							}
 							addstring(&str, "		</table>\n");
 							addstring(&str, "		<hr>\n");
