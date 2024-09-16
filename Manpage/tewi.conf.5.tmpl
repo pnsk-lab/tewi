@@ -1,0 +1,89 @@
+.Dd 2024 Sep 16th
+.Dt TEWI 8
+.Os
+.Sh NAME
+.Nm tewi ,
+.Nm tewi.conf
+.Nd Tewi HTTPd
+.Sh DESCRIPTION
+.Nm
+is a simple public domain HTTP daemon written in C.
+.Sh CONFIGURATION
+.Ss "General settings"
+.Bl -tag -width 20 -compact
+.It Pa "Listen"
+Specifies the port(s) to be listened on.
+.It Pa "DocumentRoot"
+Specifies the document root.
+.It Pa "LoadModule"
+Loads the module.
+.It Pa "MIMEType"
+Specifies the MIME type for files.
+\fBall\fR can be used instead of the extension if you want to make all extensions appear as same MIME.
+Later rules will override the MIME.
+
+Example:
+
+.Vb 1
+\&    MIMEType all application/octet-stream
+
+\&    MIMEType .html text/html
+.Ve
+
+.It Pa "BeginVirtualHost"
+Begins the virtual host section.
+.It Pa "EndVirtualHost"
+Ends the virtual host section.
+.El
+.Ss "TLS/SSL settings"
+.Bl -tag -width 20 -compact
+.It Pa "ListenSSL"
+Specifies the port(s) to be listened on, but with TLS/SSL.
+.It Pa "SSLKey"
+Specifies the TLS/SSL private key.
+This works in the virtual host section too, and can be used to switch key depending on the virtual host.
+.It Pa "SSLCertificate"
+Specifies the TLS/SSL certificate.
+This works in the virtual host section too, and can be used to switch certificate depending on the virtual host.
+.El
+.Ss "Access settings"
+.Bl -tag -width 20 -compact
+Default access is "Deny all".
+
+.It Pa "BeginDirectory"
+Begins the directory section.
+.It Pa "EndDirectory"
+Ends the directory section.
+.It Pa "Allow"
+Allows the connection. Only works with \fBall\fR for now.
+Will not work outside of the directory section.
+.It Pa "Deny"
+Denies the connection. Only works with \fBall\fR for now.
+Will not work outside of the directory section.
+.El
+.Ss "Directory settings"
+.Bl -tag -width 20 -compact
+.It Pa "DirectoryIndex"
+Specifies the directory index.
+.It Pa "Readme"
+Specifies the README file for directory listing.
+.It Pa "Icon"
+Sets the icon for the MIME type.
+\fBall\fR can be used instead of the MIME if you want to make all MIMEs appear as same icon.
+Later rules will override the icon.
+
+Example:
+
+.Vb 1
+\&    Icon all /icons/unknown.png
+
+\&    Icon text/* /icons/text.png
+.Ve
+.El
+.Sh FILES
+.Bl -tag -width @PREFIX@/etc/tewi.conf -compact
+.It Pa @PREFIX@/etc/tewi.conf
+Default path for the config
+.El
+.Sh AUTHORS
+.An Nishi Aq Mt nishi@nishi.boats
