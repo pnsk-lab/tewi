@@ -39,6 +39,11 @@ int main(int argc, char** argv) {
 					return 1;
 				}
 				confpath = argv[i];
+			} else if(strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-V") == 0) {
+				printf("Tewi HTTPd Tewi/%s\n", tw_get_version());
+				printf("Under public domain.\n");
+				printf("Copyright (C) 2024 Nishi\n");
+				return 0;
 			} else {
 				fprintf(stderr, "Unknown option: %s\n", argv[i]);
 				return 1;

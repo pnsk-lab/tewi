@@ -35,6 +35,8 @@
 //#include <sys/cdefs.h>
 //__RCSID("$NetBSD: strptime.c,v 1.62 2017/08/24 01:01:09 ginsbach Exp $");
 
+#ifdef __MINGW32__
+
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
@@ -832,3 +834,5 @@ find_string(const unsigned char *bp, int *tgt, const char * const *n1,
     /* Nothing matched */
     return NULL;
 }
+
+#endif
