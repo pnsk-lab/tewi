@@ -20,7 +20,7 @@ int tw_ssl_cert_cb(SSL* ssl, void* arg) {
 		s = config.hostname;
 		cm_log("SSL", "Could not get the servername, defaulting to the hostname: %s", s);
 	}
-	struct tw_config_entry* e = tw_vhost_match(s, (uint64_t)arg);
+	struct tw_config_entry* e = tw_vhost_match(s, (__UINTPTR_TYPE__)arg);
 	if(e != NULL && e->sslkey != NULL && e->sslcert != NULL) {
 		SSL_use_PrivateKey_file(ssl, e->sslkey, SSL_FILETYPE_PEM);
 		SSL_use_certificate_file(ssl, e->sslcert, SSL_FILETYPE_PEM);
@@ -34,7 +34,7 @@ int tw_ssl_cert_cb(SSL* ssl, void* arg) {
 	}
 }
 
-SSL_CTX* tw_create_ssl_ctx(uint64_t port) {
+SSL_CTX* tw_create_ssl_ctx(__UINTPTR_TYPE__ port) {
 	SSL_CTX* ctx = SSL_CTX_new(TLS_server_method());
 	SSL_CTX_set_cert_cb(ctx, tw_ssl_cert_cb, (void*)port);
 	return ctx;

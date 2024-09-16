@@ -502,7 +502,7 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 										continue;
 									}
 									if(s.st_size < 1024ULL) {
-										sprintf(size, "%d", s.st_size);
+										sprintf(size, "%d", (int)s.st_size);
 									} else if(s.st_size < 1024ULL * 1024) {
 										sprintf(size, "%.1fK", (double)s.st_size / 1024);
 									} else if(s.st_size < 1024ULL * 1024 * 1024) {
