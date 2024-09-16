@@ -44,7 +44,10 @@ int main(int argc, char** argv) {
 				printf("Under public domain.\n");
 				printf("Original by 2024 Nishi\n");
 				printf("\n");
-				printf();
+				printf("Usage: %s [--config|-C config] [--verbose|-v] [--version|-V]\n", argv[0]);
+				printf("--config  | -C config     : Specify config\n");
+				printf("--verbose | -v            : Verbose mode\n");
+				printf("--version | -V            : Version information\n");
 				return 0;
 			} else {
 				fprintf(stderr, "Unknown option: %s\n", argv[i]);
