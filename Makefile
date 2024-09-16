@@ -22,7 +22,7 @@ all: ./Server ./Module
 	$(MAKE) -C $@ $(FLAGS)
 
 format:
-	clang-format --verbose -i `find ./Server ./Common ./Module -name "*.c" -or -name "*.h"`
+	clang-format --verbose -i `find ./Server ./Common ./Module "(" -name "*.c" -or -name "*.h" ")" -and -not -name "strptime.*"`
 
 clean:
 	$(MAKE) -C ./Server $(FLAGS) clean

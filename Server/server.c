@@ -15,6 +15,7 @@
 #include <stdbool.h>
 #include <stdarg.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #include <cm_string.h>
 #include <cm_log.h>
@@ -23,6 +24,8 @@
 #ifdef __MINGW32__
 #include <winsock2.h>
 #include <process.h>
+
+#include "strptime.h"
 #else
 #include <sys/select.h>
 #include <sys/socket.h>
@@ -169,8 +172,16 @@ size_t tw_write(SSL* ssl, int s, void* data, size_t len) {
 	    "	</body>\n" \
 	    "</html>\n"
 
-void _tw_process_page(SSL* ssl, int sock, const char* status, const char* type, FILE* f, const unsigned char* doc, size_t size, char** headers) {
+void _tw_process_page(SSL* ssl, int sock, const char* status, const char* type, FILE* f, const unsigned char* doc, size_t size, char** headers, time_t mtime, time_t cmtime) {
 	char construct[512];
+	if(mtime != 0 && cmtime != 0 && mtime <= cmtime) {
+		status = "304 Not Modified";
+		type = NULL;
+		size = 0;
+		headers = NULL;
+		f = NULL;
+		doc = NULL;
+	}
 	sprintf(construct, "%llu", (unsigned long long)size);
 	tw_write(ssl, sock, "HTTP/1.1 ", 9);
 	tw_write(ssl, sock, (char*)status, strlen(status));
@@ -187,6 +198,14 @@ void _tw_process_page(SSL* ssl, int sock, const char* status, const char* type, 
 		tw_write(ssl, sock, "Content-Length: ", 7 + 7 + 2);
 		tw_write(ssl, sock, construct, strlen(construct));
 		tw_write(ssl, sock, "\r\n", 2);
+		if(mtime != 0) {
+			struct tm* tm = gmtime(&mtime);
+			char date[513];
+			strftime(date, 512, "%a, %d %b %Y %H:%M:%S GMT", tm);
+			tw_write(ssl, sock, "Last-Modified: ", 5 + 8 + 2);
+			tw_write(ssl, sock, date, strlen(date));
+			tw_write(ssl, sock, "\r\n", 2);
+		}
 	}
 	int i;
 	if(headers != NULL) {
@@ -214,7 +233,7 @@ void _tw_process_page(SSL* ssl, int sock, const char* status, const char* type, 
 	}
 }
 
-void tw_process_page(SSL* ssl, int sock, const char* status, const char* type, FILE* f, const unsigned char* doc, size_t size) { _tw_process_page(ssl, sock, status, type, f, doc, size, NULL); }
+void tw_process_page(SSL* ssl, int sock, const char* status, const char* type, FILE* f, const unsigned char* doc, size_t size, time_t mtime, time_t cmtime) { _tw_process_page(ssl, sock, status, type, f, doc, size, NULL, mtime, cmtime); }
 
 const char* tw_http_status(int code) {
 	if(code == 200) {
@@ -257,7 +276,7 @@ char* tw_http_default_error(int code, char* name, int port) {
 
 void tw_http_error(SSL* ssl, int sock, int error, char* name, int port) {
 	char* str = tw_http_default_error(error, name, port);
-	tw_process_page(ssl, sock, tw_http_status(error), "text/html", NULL, str, strlen(str));
+	tw_process_page(ssl, sock, tw_http_status(error), "text/html", NULL, str, strlen(str), 0, 0);
 	free(str);
 }
 
@@ -388,11 +407,19 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 	if(ret == 0) {
 		char* vhost = cm_strdup(config.hostname);
 		int i;
+		time_t cmtime = 0;
 		for(i = 0; req.headers[i] != NULL; i += 2) {
 			if(cm_strcaseequ(req.headers[i], "Host")) {
 				free(vhost);
-				vhost = req.headers[i + 1];
-				break;
+				vhost = cm_strdup(req.headers[i + 1]);
+			} else if(cm_strcaseequ(req.headers[i], "If-Modified-Since")) {
+				struct tm tm;
+				strptime(req.headers[i + 1], "%a, %d %b %Y %H:%M:%S GMT", &tm);
+#ifdef __MINGW32__
+				cmtime = _mkgmtime(&tm);
+#else
+				cmtime = timegm(&tm);
+#endif
 			}
 		}
 		cm_log("Server", "Host is %s", vhost);
@@ -434,7 +461,7 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 				} else if(S_ISDIR(st.st_mode)) {
 					if(req.path[strlen(req.path) - 1] != '/') {
 						char* headers[3] = {"Location", cm_strcat(req.path, "/"), NULL};
-						_tw_process_page(s, sock, tw_http_status(308), NULL, NULL, NULL, 0, headers);
+						_tw_process_page(s, sock, tw_http_status(308), NULL, NULL, NULL, 0, headers, 0, 0);
 						free(headers[1]);
 					} else {
 						char** indexes = vhost_entry->index_count == 0 ? config.root.indexes : vhost_entry->indexes;
@@ -457,7 +484,7 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 								struct stat st;
 								stat(p, &st);
 								char* mime = tw_get_mime(ext, vhost_entry);
-								tw_process_page(s, sock, tw_http_status(200), mime, f, NULL, st.st_size);
+								tw_process_page(s, sock, tw_http_status(200), mime, f, NULL, st.st_size, 0, 0);
 								fclose(f);
 								free(p);
 								found = true;
@@ -571,7 +598,7 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 							addstring(&str, "		<address>%s Server at %s Port %d</address>\n", tw_server, name, port);
 							addstring(&str, "	</body>\n");
 							addstring(&str, "</html>\n");
-							tw_process_page(s, sock, tw_http_status(200), "text/html", NULL, str, strlen(str));
+							tw_process_page(s, sock, tw_http_status(200), "text/html", NULL, str, strlen(str), 0, 0);
 							free(str);
 						}
 					}
@@ -588,7 +615,7 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 					char* mime = tw_get_mime(ext, vhost_entry);
 					if(ext != NULL) free(ext);
 					FILE* f = fopen(path, "rb");
-					tw_process_page(s, sock, tw_http_status(200), mime, f, NULL, st.st_size);
+					tw_process_page(s, sock, tw_http_status(200), mime, f, NULL, st.st_size, st.st_mtime, cmtime);
 					fclose(f);
 				}
 			} else {
@@ -598,6 +625,7 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 		}
 		free(vhost);
 		free(host);
+		tw_free_request(&req);
 	} else if(ret == -1) {
 	} else {
 		tw_http_error(s, sock, 400, name, port);

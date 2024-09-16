@@ -22,6 +22,7 @@ struct tw_http_response {
 
 #ifdef SOURCE
 #include <openssl/ssl.h>
+void tw_free_request(struct tw_http_request* req);
 int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req);
 #endif
 
