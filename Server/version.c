@@ -4,7 +4,7 @@
 
 #include "tw_version.h"
 
-const char* tw_version = "0.00";
+const char* tw_version = "1.00";
 
 const char* tw_platform =
 #if defined(PLATFORM)

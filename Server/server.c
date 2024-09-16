@@ -512,10 +512,14 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 							addstring(&str, "				<th>MIME</th>\n");
 							addstring(&str, "				<th>Size</th>\n");
 							addstring(&str, "			</tr>\n");
+							int readme = -1;
+							char** readmes = vhost_entry->readme_count == 0 ? config.root.readmes : vhost_entry->readmes;
+							int readme_count = vhost_entry->readme_count == 0 ? config.root.readme_count : vhost_entry->readme_count;
 							if(items != NULL) {
 								int phase = 0;
 							doit:
 								for(i = 0; items[i] != NULL; i++) {
+									int j;
 									char* fpth = cm_strcat3(path, "/", items[i]);
 									struct stat s;
 									char size[512];
@@ -527,6 +531,18 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 									} else if(phase == 1 && S_ISDIR(s.st_mode)) {
 										free(fpth);
 										continue;
+									}
+									if(readme == -1) {
+										for(j = 0; j < readme_count; j++) {
+											if(strcmp(items[i], readmes[j]) == 0) {
+												readme = j;
+												break;
+											}
+										}
+										if(readme != -1) {
+											free(fpth);
+											continue;
+										}
 									}
 									if(s.st_size < 1024ULL) {
 										sprintf(size, "%d", (int)s.st_size);
@@ -543,7 +559,6 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 									free(fpth);
 
 									char* ext = NULL;
-									int j;
 									for(j = strlen(items[i]) - 1; j >= 0; j--) {
 										if(items[i][j] == '.') {
 											ext = cm_strdup(items[i] + j);
@@ -594,6 +609,20 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 								free(items);
 							}
 							addstring(&str, "		</table>\n");
+							if(readme != -1) {
+								addstring(&str, "<hr>\n");
+								char* fpth = cm_strcat3(path, "/", readmes[readme]);
+								struct stat s;
+								stat(fpth, &s);
+								FILE* fr = fopen(fpth, "r");
+								if(fr != NULL) {
+									char* rmbuf = malloc(s.st_size + 1);
+									rmbuf[s.st_size] = 0;
+									fread(rmbuf, s.st_size, 1, fr);
+									addstring(&str, "<pre><code>%h</code></pre>\n", rmbuf);
+									fclose(fr);
+								}
+							}
 							addstring(&str, "		<hr>\n");
 							addstring(&str, "		<address>%s Server at %s Port %d</address>\n", tw_server, name, port);
 							addstring(&str, "	</body>\n");
