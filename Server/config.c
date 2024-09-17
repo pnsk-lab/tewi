@@ -295,10 +295,34 @@ int tw_config_read(const char* path) {
 							current->readmes[current->readme_count++] = cm_strdup(r[i]);
 						}
 					} else {
-						if(r[0] != NULL) {
-							cm_log("Config", "Unknown directive `%s' at line %d", r[0], ln);
-						}
 						stop = 1;
+						if(r[0] != NULL) {
+							int argc;
+							for(argc = 0; r[argc] != NULL; argc++)
+								;
+							stop = 0;
+							int i;
+							bool called = false;
+							struct tw_tool tools;
+							tw_init_tools(&tools);
+							for(i = 0; i < config.module_count; i++) {
+								tw_mod_config_t mod_config = (tw_mod_config_t)tw_module_symbol(config.modules[i], "mod_config");
+								int resp;
+								if(mod_config != NULL && (resp = mod_config(&tools, r, argc)) == TW_CONFIG_PARSED) {
+									called = true;
+									break;
+								}
+								if(resp == TW_CONFIG_ERROR) {
+									stop = 1;
+									called = true;
+									break;
+								}
+							}
+							if(!called) {
+								cm_log("Config", "Unknown directive `%s' at line %d", r[0], ln);
+								stop = 1;
+							}
+						}
 					}
 					for(i = 0; r[i] != NULL; i++) free(r[i]);
 					free(r);
