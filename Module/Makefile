@@ -3,15 +3,15 @@
 include $(PWD)/Platform/$(PLATFORM).mk
 
 .PHONY: all clean
-.SUFFIXES: .c .o .so
+.SUFFIXES: .c .o $(LIB)
 
-all: mod_example.so mod_cgi.so
+all: mod_cgi$(LIB)
 
-.o.so:
+.o$(LIB):
 	$(CC) $(LDFLAGS) -shared -o $@ $< ../Common/common.a $(LIBS)
 
 .c.o:
-	$(CC) $(CFLAGS) -fPIC -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
 	rm -f *.o *.so *.a
