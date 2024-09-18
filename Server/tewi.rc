@@ -1,5 +1,6 @@
 #include <winver.h>
 #include "tw_version.h"
+#include "../config.h"
 
 id ICON "./tewi.ico"
 VS_VERSION_INFO VERSIONINFO
@@ -11,7 +12,11 @@ BEGIN
 		BLOCK "040904E4"
 		BEGIN
 			VALUE "CompanyName", "Nishi\0"
+#ifdef NO_SSL
 			VALUE "FileDescription", "Simple HTTP Daemon\0"
+#else
+			VALUE "FileDescription", "Simple HTTP Daemon with TLS/SSL\0"
+#endif
 			VALUE "LegalCopyright", "Public domain, original by Nishi\0"
 			VALUE "FileVersion", TW_VERSION
 			VALUE "ProductVersion", TW_VERSION
