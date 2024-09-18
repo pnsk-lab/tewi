@@ -2,12 +2,16 @@
 
 #define SOURCE
 
+#include "../config.h"
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <signal.h>
 
+#ifndef NO_SSL
 #include <openssl/opensslv.h>
+#endif
 
 #include <cm_log.h>
 
@@ -28,7 +32,11 @@ int main(int argc, char** argv) {
 			if(strcmp(argv[i], "--verbose") == 0 || strcmp(argv[i], "-v") == 0) {
 				if(!cm_do_log) {
 					cm_do_log = true;
+#ifndef NO_SSL
 					cm_log("", "This is Tewi HTTPd, version %s, using %s", tw_get_version(), OPENSSL_VERSION_TEXT);
+#else
+					cm_log("", "This is Tewi HTTPd, version %s", tw_get_version());
+#endif
 				} else {
 					cm_do_log = true;
 				}

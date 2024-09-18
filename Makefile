@@ -12,8 +12,11 @@ FLAGS = PWD=$(PWD) PLATFORM=$(PLATFORM) PREFIX=$(PREFIX)
 
 all: ./Server ./Module ./Manpage
 
-./Server:: ./Common
-	$(MAKE) -C $@ $(FLAGS)
+./Server/option: ./Server/option.c
+	cc -o $@ ./Server/option.c
+
+./Server:: ./Common ./Server/option
+	$(MAKE) -C $@ $(FLAGS) EXTOBJS=`./Server/option objs ../` EXTLIBS=`./Server/option libs ../`
 
 ./Module:: ./Common
 	$(MAKE) -C $@ $(FLAGS)
@@ -25,10 +28,11 @@ all: ./Server ./Module ./Manpage
 	$(MAKE) -C $@ $(FLAGS)
 
 format:
-	clang-format --verbose -i `find ./Server ./Common ./Module "(" -name "*.c" -or -name "*.h" ")" -and -not -name "strptime.*"`
+	clang-format --verbose -i `find ./Server ./Common ./Module "(" -name "*.c" -or -name "*.h" ")" -and -not -name "strptime.*"` config.h
 
 clean:
 	$(MAKE) -C ./Server $(FLAGS) clean
 	$(MAKE) -C ./Module $(FLAGS) clean
 	$(MAKE) -C ./Common $(FLAGS) clean
 	$(MAKE) -C ./Manpage $(FLAGS) clean
+	rm -f ./Server/option

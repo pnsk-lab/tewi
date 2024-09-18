@@ -5,6 +5,8 @@
 
 #include <stdbool.h>
 
+#include "../config.h"
+
 struct tw_http_request {
 	char* method;
 	char* path;
@@ -21,9 +23,15 @@ struct tw_http_response {
 };
 
 #ifdef SOURCE
+#ifndef NO_SSL
 #include <openssl/ssl.h>
+#endif
 void tw_free_request(struct tw_http_request* req);
+#ifndef NO_SSL
 int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req);
+#else
+int tw_http_parse(void* ssl, int sock, struct tw_http_request* req);
+#endif
 #endif
 
 #endif

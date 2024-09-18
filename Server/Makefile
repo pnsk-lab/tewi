@@ -5,12 +5,12 @@ include $(PWD)/Platform/$(PLATFORM).mk
 .PHONY: all clean
 .SUFFIXES: .c .o
 
-OBJS = version.o main.o config.o server.o ssl.o http.o module.o strptime.o
+OBJS = version.o main.o config.o server.o http.o module.o strptime.o $(EXTOBJS)
 
 all: tewi$(EXEC)
 
 tewi$(EXEC): $(OBJS) ../Common/common.a
-	$(CC) $(LDFLAGS) -o $@ $(OBJS) -lssl -lcrypto $(LIBS) ../Common/common.a
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(EXTLIBS) $(LIBS) ../Common/common.a
 
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<

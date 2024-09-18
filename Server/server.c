@@ -2,9 +2,14 @@
 
 #define SOURCE
 
+#include "../config.h"
+
 #include "tw_server.h"
 
+#ifndef NO_SSL
 #include "tw_ssl.h"
+#endif
+
 #include "tw_config.h"
 #include "tw_http.h"
 #include "tw_module.h"
@@ -14,6 +19,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <time.h>
 
@@ -142,19 +149,27 @@ int tw_server_init(void) {
 }
 
 size_t tw_read(SSL* ssl, int s, void* data, size_t len) {
+#ifndef NO_SSL
 	if(ssl == NULL) {
 		return recv(s, data, len, 0);
 	} else {
 		return SSL_read(ssl, data, len);
 	}
+#else
+	return recv(s, data, len, 0);
+#endif
 }
 
 size_t tw_write(SSL* ssl, int s, void* data, size_t len) {
+#ifndef NO_SSL
 	if(ssl == NULL) {
 		return send(s, data, len, 0);
 	} else {
 		return SSL_write(ssl, data, len);
 	}
+#else
+	return send(s, data, len, 0);
+#endif
 }
 
 #define ERROR_HTML \
@@ -388,6 +403,7 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 #endif
 	char* name = config.hostname;
 
+#ifndef NO_SSL
 	SSL_CTX* ctx = NULL;
 	SSL* s = NULL;
 	bool sslworks = false;
@@ -398,6 +414,9 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 		if(SSL_accept(s) <= 0) goto cleanup;
 		sslworks = true;
 	}
+#else
+	void* s = NULL;
+#endif
 	struct tw_http_request req;
 	struct tw_http_response res;
 	struct tw_tool tools;
@@ -660,14 +679,17 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 		tw_http_error(s, sock, 400, name, port);
 	}
 cleanup:
+#ifndef NO_SSL
 	if(sslworks) {
 		SSL_shutdown(s);
 	}
 	SSL_free(s);
 	close_socket(sock);
+#endif
 #ifdef __MINGW32__
 	_endthreadex(0);
 #endif
+	;
 }
 
 void tw_server_loop(void) {
