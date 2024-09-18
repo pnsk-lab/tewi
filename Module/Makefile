@@ -14,4 +14,4 @@ all: mod_cgi$(LIB)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f *.o *.so *.a
+	rm -f *.o *.so *.a *.dll

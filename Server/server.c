@@ -31,6 +31,7 @@
 #ifdef __MINGW32__
 #include <winsock2.h>
 #include <process.h>
+#include <windows.h>
 
 #include "strptime.h"
 #else
@@ -696,6 +697,11 @@ cleanup:
 	;
 }
 
+#ifdef SERVICE
+extern SERVICE_STATUS status;
+extern SERVICE_STATUS_HANDLE status_handle;
+#endif
+
 void tw_server_loop(void) {
 	struct timeval tv;
 	while(1) {
@@ -709,6 +715,12 @@ void tw_server_loop(void) {
 		int ret = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
 		if(ret == -1) {
 			break;
+		}else if(ret == 0){
+#ifdef SERVICE
+			if(status.dwCurrentState == SERVICE_STOP_PENDING){
+				break;
+			}
+#endif
 		} else if(ret > 0) {
 			/* connection */
 			int i;

@@ -7,10 +7,7 @@ include $(PWD)/Platform/$(PLATFORM).mk
 
 OBJS = version.o main.o config.o server.o http.o module.o strptime.o $(EXTOBJS) $(PREOBJS)
 
-all: tewi$(EXEC) $(INSTALLER)
-
-install.exe: tewi$(EXEC) install.nsi
-	makensis install.nsi
+all: tewi$(EXEC)
 
 tewi$(EXEC): $(OBJS) ../Common/common.a
 	$(CC) $(LDFLAGS) $(EXTLDFLAGS) -o $@ $(OBJS) $(EXTLIBS) $(LIBS) ../Common/common.a

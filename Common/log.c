@@ -4,15 +4,27 @@
 
 #include "cm_string.h"
 
+#include <time.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
 
+FILE* logfile;
+
 bool cm_do_log = false;
 
 #define LOGNAME_LENGTH 12
+
+void cm_force_log(const char* log) {
+	time_t t = time(NULL);
+	struct tm* tm = localtime(&t);
+	char date[513];
+	strftime(date, 512, "%a %b %d %H:%M:%S %Z %Y", tm);
+	fprintf(logfile, "[%s] %s\n", date, log);
+	fflush(logfile);
+}
 
 void cm_log(const char* name, const char* log, ...) {
 	if(!cm_do_log) return;
@@ -56,7 +68,7 @@ void cm_log(const char* name, const char* log, ...) {
 		}
 	}
 
-	fprintf(stderr, "%s %s\n", namebuf, result);
+	fprintf(logfile, "%s %s\n", namebuf, result);
 	va_end(args);
 
 	free(result);
