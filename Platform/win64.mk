@@ -11,3 +11,4 @@ LIBS = -lws2_32
 EXEC = .exe
 LIB = .dll
 PREOBJS = tewi.res
+INSTALLER = install.exe
