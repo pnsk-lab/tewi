@@ -704,11 +704,24 @@ extern SERVICE_STATUS status;
 extern SERVICE_STATUS_HANDLE status_handle;
 #endif
 
+#ifdef __MINGW32__
+struct thread_entry {
+	HANDLE handle;
+	bool used;
+};
+#endif
+
 void tw_server_loop(void) {
 	struct timeval tv;
+#ifdef __MINGW32__
+	struct thread_entry threads[2048];
+	int i;
+	for(i = 0; i < sizeof(threads) / sizeof(threads[0]); i++){
+		threads[i].used = false;
+	}
+#endif
 	while(1) {
 		FD_ZERO(&fdset);
-		int i;
 		for(i = 0; i < sockcount; i++) {
 			FD_SET(sockets[i], &fdset);
 		}
@@ -718,6 +731,16 @@ void tw_server_loop(void) {
 		if(ret == -1) {
 			break;
 		}else if(ret == 0){
+			for(i = 0; i < sizeof(threads) / sizeof(threads[0]); i++){
+				if(threads[i].used){
+					DWORD ex;
+					GetExitCodeThread(threads[i].handle, &ex);
+					if(ex != STILL_ACTIVE){
+						CloseHandle(threads[i].handle);
+						threads[i].used = false;
+					}
+				}
+			}
 #ifdef SERVICE
 			if(status.dwCurrentState == SERVICE_STOP_PENDING){
 				break;
@@ -733,13 +756,29 @@ void tw_server_loop(void) {
 					int sock = accept(sockets[i], (struct sockaddr*)&claddr, &clen);
 					cm_log("Server", "New connection accepted");
 #ifdef __MINGW32__
-					HANDLE thread;
 					struct pass_entry* e = malloc(sizeof(*e));
 					e->sock = sock;
 					e->ssl = config.ports[i] & (1ULL << 32);
 					e->port = config.ports[i];
 					e->addr = claddr;
-					thread = (HANDLE)_beginthreadex(NULL, 0, tw_server_pass, e, 0, NULL);
+					int j;
+					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++){
+						if(threads[j].used){
+							DWORD ex;
+							GetExitCodeThread(threads[j].handle, &ex);
+							if(ex != STILL_ACTIVE){
+								CloseHandle(threads[j].handle);
+								threads[j].used = false;
+							}
+						}
+					}
+					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++){
+						if(!threads[j].used){
+							threads[j].handle = (HANDLE)_beginthreadex(NULL, 0, tw_server_pass, e, 0, NULL);
+							threads[j].used = true;
+							break;
+						}
+					}
 #else
 					pid_t pid = fork();
 					if(pid == 0) {
