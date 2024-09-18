@@ -648,6 +648,7 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 									addstring(&str, "<pre><code>%h</code></pre>\n", rmbuf);
 									fclose(fr);
 								}
+								free(fpth);
 							}
 							addstring(&str, "		<hr>\n");
 							addstring(&str, "		<address>%s Server at %s Port %d</address>\n", tw_server, name, port);
