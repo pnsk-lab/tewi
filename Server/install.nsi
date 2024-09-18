@@ -1,10 +1,20 @@
 # $Id$
 
+LoadLanguageFile "${NSISDIR}\Contrib\Language files\Japanese.nlf"
+LoadLanguageFile "${NSISDIR}\Contrib\Language files\English.nlf"
+
 Name "Tewi HTTPd"
 OutFile "install.exe"
 InstallDir "C:\Tewi"
 Icon "tewi.ico"
 LicenseData ../LICENSE
+
+LangString EXEC_ONLY ${LANG_ENGLISH} "Install the executable only"
+LangString EXEC_ONLY ${LANG_JAPANESE} "実行機能のみをインストールする"
+LangString SERV_TOO ${LANG_ENGLISH} "Install the service too (NT-only)"
+LangString SERV_TOO ${LANG_JAPANESE} "サービスもインストールする(NTのみ)"
+LangString WAIT_STOP ${LANG_ENGLISH} "Waiting for 1 second so service can stop"
+LangString WAIT_STOP ${LANG_JAPANESE} "サービスが止まるのを待っています"
 
 !include "LogicLib.nsh"
 !include "Sections.nsh"
@@ -45,20 +55,20 @@ Section
 	WriteUninstaller "$INSTDIR\uninstall.exe"
 SectionEnd
 
-Section "Install the executable only" SEL_EXEC
+Section "$(EXEC_ONLY)" SEL_EXEC
 	SetOutPath "$INSTDIR\bin"
 	File "../tewi.exe"
 	WriteINIStr $INSTDIR\install.ini uninstall service false
 SectionEnd
 
-Section /o "Install the service too (NT-only)" SEL_SERVICE
+Section /o "$(SERV_TOO)" SEL_SERVICE
 	WriteINIStr $INSTDIR\install.ini uninstall service true
 	FileOpen $9 $INSTDIR\install.bat w
 	FileWrite $9 '"$SYSDIR\sc.exe" stop "TewiHTTPd"$\r$\n'
 	FileClose $9
 	nsExec::Exec '"$INSTDIR\install.bat"'
 	Pop $0
-	DetailPrint "Waiting for 1s so service can stop..."
+	DetailPrint "$(WAIT_STOP)"
 	Sleep 1000
 	CreateDirectory "$INSTDIR\logs"
 	SetOutPath "$INSTDIR\bin"
@@ -94,7 +104,7 @@ Section "Uninstall"
 		nsExec::Exec '"$INSTDIR\uninstall.bat"'
 		Pop $0
 		FileOpen $9 $INSTDIR\uninstall.bat w
-		DetailPrint "Waiting for 1s so service can stop..."
+		DetailPrint "$(WAIT_STOP)"
 		Sleep 1000
 		FileWrite $9 '"$SYSDIR\sc.exe" delete "TewiHTTPd"$\r$\n'
 		FileClose $9
