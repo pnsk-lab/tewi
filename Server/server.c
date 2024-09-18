@@ -435,7 +435,10 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 				struct tm tm;
 				strptime(req.headers[i + 1], "%a, %d %b %Y %H:%M:%S GMT", &tm);
 #ifdef __MINGW32__
-				cmtime = _mkgmtime(&tm);
+				time_t t = 0;
+				struct tm* btm = localtime(&t);
+				cmtime = mktime(&tm);
+				cmtime -= (btm->tm_hour * 60 + btm->tm_min) * 60;
 #else
 				cmtime = timegm(&tm);
 #endif
