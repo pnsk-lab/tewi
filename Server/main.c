@@ -9,6 +9,10 @@
 #include <string.h>
 #include <signal.h>
 
+#ifdef __MINGW32__
+#include <windows.h>
+#endif
+
 #ifndef NO_SSL
 #include <openssl/opensslv.h>
 #endif
@@ -76,6 +80,8 @@ int main(int argc, char** argv) {
 	cm_log("Daemon", "Ready, server: %s", tw_server);
 #ifndef __MINGW32__
 	signal(SIGCHLD, SIG_IGN);
+#else
+	SetConsoleTitle(tw_server);
 #endif
 	tw_server_loop();
 }
