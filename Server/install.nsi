@@ -12,6 +12,7 @@ UninstPage instfiles
 Section
 	CreateDirectory "$INSTDIR\etc"
 	CreateDirectory "$INSTDIR\www"
+	CreateDirectory "$INSTDIR\www\icons"
 	CreateDirectory "$INSTDIR\bin"
 	SetOutPath "$INSTDIR\bin"
 	File "tewi.exe"
@@ -19,6 +20,8 @@ Section
 	File /oname=tewi.conf.default "../example-win.conf"
 	SetOutPath "$INSTDIR\www"
 	File /oname=index.html "../itworks.html"
+	SetOutPath "$INSTDIR\www\icons"
+	File "../Icons/*.png"
 
 	CreateDirectory "$SMPROGRAMS\Tewi HTTPd"
 	CreateShortcut "$SMPROGRAMS\Tewi HTTPd\Start Tewi HTTPd.lnk" "$INSTDIR\bin\tewi.exe" ""

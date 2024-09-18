@@ -620,8 +620,8 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 									addstring(&str, "<tr>\n");
 									addstring(&str, "	<td><img src=\"%s\" alt=\"icon\"></td>\n", icon);
 									addstring(&str, "	<td><a href=\"%l\"><code>%h</code></a></td>\n", items[i], itm);
-									addstring(&str, "	<td><code>&emsp;&emsp;%h&emsp;&emsp;</code></td>\n", showmime);
-									addstring(&str, "	<td><code>&emsp;&emsp;%s&emsp;&emsp;</code></td>\n", size);
+									addstring(&str, "	<td><code>  %h  </code></td>\n", showmime);
+									addstring(&str, "	<td><code>  %s  </code></td>\n", size);
 									addstring(&str, "</tr>\n");
 									free(itm);
 								}
