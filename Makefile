@@ -8,7 +8,7 @@ include Platform/$(PLATFORM).mk
 
 FLAGS = PWD=$(PWD) PLATFORM=$(PLATFORM) PREFIX=$(PREFIX)
 
-.PHONY: all format clean ./Server ./Common ./Module ./Manpage
+.PHONY: all format clean ./Server ./Common ./Module ./Manpage get-version
 
 all: ./Server ./Module ./Manpage
 
@@ -29,6 +29,9 @@ all: ./Server ./Module ./Manpage
 
 format:
 	clang-format --verbose -i `find ./Server ./Common ./Module "(" -name "*.c" -or -name "*.h" ")" -and -not -name "strptime.*"` config.h
+
+get-version:
+	@grep "define TW_VERSION" Server/tw_version.h | grep -Eo '"[^\]+' | sed -E 's/^"//g'
 
 clean:
 	$(MAKE) -C ./Server $(FLAGS) clean
