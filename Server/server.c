@@ -428,21 +428,23 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 		char* vhost = cm_strdup(config.hostname);
 		int i;
 		time_t cmtime = 0;
-		for(i = 0; req.headers[i] != NULL; i += 2) {
-			if(cm_strcaseequ(req.headers[i], "Host")) {
-				free(vhost);
-				vhost = cm_strdup(req.headers[i + 1]);
-			} else if(cm_strcaseequ(req.headers[i], "If-Modified-Since")) {
-				struct tm tm;
-				strptime(req.headers[i + 1], "%a, %d %b %Y %H:%M:%S GMT", &tm);
+		if(req.headers != NULL){
+			for(i = 0; req.headers[i] != NULL; i += 2) {
+				if(cm_strcaseequ(req.headers[i], "Host")) {
+					free(vhost);
+					vhost = cm_strdup(req.headers[i + 1]);
+				} else if(cm_strcaseequ(req.headers[i], "If-Modified-Since")) {
+					struct tm tm;
+					strptime(req.headers[i + 1], "%a, %d %b %Y %H:%M:%S GMT", &tm);
 #ifdef __MINGW32__
-				time_t t = 0;
-				struct tm* btm = localtime(&t);
-				cmtime = mktime(&tm);
-				cmtime -= (btm->tm_hour * 60 + btm->tm_min) * 60;
+					time_t t = 0;
+					struct tm* btm = localtime(&t);
+					cmtime = mktime(&tm);
+					cmtime -= (btm->tm_hour * 60 + btm->tm_min) * 60;
 #else
-				cmtime = timegm(&tm);
+					cmtime = timegm(&tm);
 #endif
+				}
 			}
 		}
 		cm_log("Server", "Host is %s", vhost);

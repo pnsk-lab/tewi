@@ -32,6 +32,13 @@ void tw_free_request(struct tw_http_request* req) {
 	}
 	if(req->body != NULL) free(req->body);
 	if(req->version != NULL) free(req->version);
+
+	req->method = NULL;
+	req->path = NULL;
+	req->query = NULL;
+	req->headers = NULL;
+	req->body = NULL;
+	req->version = NULL;
 }
 
 int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req) {
@@ -75,7 +82,10 @@ int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req) {
 		}
 #endif
 		int len = tw_read(ssl, sock, buffer, 512);
-		if(len <= 0) break;
+		if(len <= 0){
+			bad = true;
+			break;
+		}
 		int i;
 		for(i = 0; i < len; i++) {
 			char c = buffer[i];
