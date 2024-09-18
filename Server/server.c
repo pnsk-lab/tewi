@@ -714,9 +714,9 @@ struct thread_entry {
 
 void tw_server_loop(void) {
 	struct timeval tv;
+	int i;
 #ifdef __MINGW32__
 	struct thread_entry threads[2048];
-	int i;
 	for(i = 0; i < sizeof(threads) / sizeof(threads[0]); i++){
 		threads[i].used = false;
 	}
