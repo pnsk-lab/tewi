@@ -9,10 +9,6 @@
 #include <string.h>
 #include <signal.h>
 
-#ifdef __MINGW32__
-#include <windows.h>
-#endif
-
 #ifndef NO_SSL
 #include <openssl/opensslv.h>
 #endif
@@ -22,6 +18,10 @@
 #include "tw_config.h"
 #include "tw_server.h"
 #include "tw_version.h"
+
+#ifdef __MINGW32__
+#include <windows.h>
+#endif
 
 extern bool cm_do_log;
 extern struct tw_config config;
