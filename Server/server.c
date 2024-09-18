@@ -732,6 +732,7 @@ void tw_server_loop(void) {
 		if(ret == -1) {
 			break;
 		}else if(ret == 0){
+#ifdef __MINGW32__
 			for(i = 0; i < sizeof(threads) / sizeof(threads[0]); i++){
 				if(threads[i].used){
 					DWORD ex;
@@ -742,6 +743,7 @@ void tw_server_loop(void) {
 					}
 				}
 			}
+#endif
 #ifdef SERVICE
 			if(status.dwCurrentState == SERVICE_STOP_PENDING){
 				break;
