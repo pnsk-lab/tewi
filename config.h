@@ -3,7 +3,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#undef NO_SSL
+#define NO_SSL
 
 /* DO NOT EDIT BELOW THIS LINE */
 

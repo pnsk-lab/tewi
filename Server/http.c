@@ -66,6 +66,7 @@ int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req) {
 #endif
 			int n = select(FD_SETSIZE, &fds, NULL, NULL, &tv);
 			if(n <= 0) {
+				cm_log("HTTP", "Timeout, disconncting");
 				free(header);
 				tw_free_request(req);
 				return -1;

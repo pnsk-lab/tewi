@@ -687,8 +687,8 @@ cleanup:
 		SSL_shutdown(s);
 	}
 	SSL_free(s);
-	close_socket(sock);
 #endif
+	close_socket(sock);
 #ifdef __MINGW32__
 	_endthreadex(0);
 #endif
