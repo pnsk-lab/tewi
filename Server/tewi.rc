@@ -1,0 +1,11 @@
+id ICON "./tewi.ico"
+VS_VERSION_INFO VERSIONINFO
+BEGIN
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "040904E4"
+		BEGIN
+			VALUE "ProductName", "Tewi HTTPd\0"
+		END
+	END
+END

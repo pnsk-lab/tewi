@@ -5,7 +5,7 @@ include $(PWD)/Platform/$(PLATFORM).mk
 .PHONY: all clean
 .SUFFIXES: .c .o
 
-OBJS = version.o main.o config.o server.o http.o module.o strptime.o $(EXTOBJS)
+OBJS = version.o main.o config.o server.o http.o module.o strptime.o $(EXTOBJS) $(PREOBJS)
 
 all: tewi$(EXEC)
 
@@ -14,6 +14,9 @@ tewi$(EXEC): $(OBJS) ../Common/common.a
 
 .c.o:
 	$(CC) $(CFLAGS) $(EXTCFLAGS) -c -o $@ $<
+
+tewi.res: tewi.rc tewi.ico
+	$(WINDRES) tewi.rc -O coff -o $@
 
 clean:
 	rm -f *.o tewi *.exe
