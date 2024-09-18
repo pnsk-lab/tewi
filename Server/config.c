@@ -232,6 +232,13 @@ int tw_config_read(const char* path) {
 							if(current->sslcert != NULL) free(current->sslcert);
 							current->sslcert = cm_strdup(r[1]);
 						}
+					} else if(cm_strcaseequ(r[0], "ServerRoot")) {
+						if(r[1] == NULL) {
+							cm_log("Config", "Missing path at line %d", ln);
+							stop = 1;
+						} else {
+							chdir(r[1]);
+						}
 					} else if(cm_strcaseequ(r[0], "DocumentRoot")) {
 						if(r[1] == NULL) {
 							cm_log("Config", "Missing path at line %d", ln);

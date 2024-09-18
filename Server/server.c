@@ -482,6 +482,7 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 					tw_http_error(s, sock, 403, name, port);
 				} else if(S_ISDIR(st.st_mode)) {
 					if(req.path[strlen(req.path) - 1] != '/') {
+						cm_log("Server", "Accessing directory without the slash at the end");
 						char* headers[3] = {"Location", cm_strcat(req.path, "/"), NULL};
 						_tw_process_page(s, sock, tw_http_status(308), NULL, NULL, NULL, 0, headers, 0, 0);
 						free(headers[1]);

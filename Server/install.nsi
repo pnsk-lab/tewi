@@ -13,17 +13,25 @@ Section
 	CreateDirectory "$INSTDIR\etc"
 	CreateDirectory "$INSTDIR\www"
 	CreateDirectory "$INSTDIR\www\icons"
+	CreateDirectory "$INSTDIR\modules"
 	CreateDirectory "$INSTDIR\bin"
+	SetOutPath "$INSTDIR"
+	File /oname=LICENSE.txt "../LICENSE"
 	SetOutPath "$INSTDIR\bin"
 	File "tewi.exe"
+	SetOutPath "$INSTDIR\modules"
+	File "../Module/*.dll"
 	SetOutPath "$INSTDIR\etc"
-	File /oname=tewi.conf.default "../example-win.conf"
+	SetOverWrite off
+	File /oname=tewi.conf "../example-win.conf"
 	SetOutPath "$INSTDIR\www"
 	File /oname=index.html "../itworks.html"
 	SetOutPath "$INSTDIR\www\icons"
 	File "../Icons/*.png"
+	SetOverWrite on
 
 	CreateDirectory "$SMPROGRAMS\Tewi HTTPd"
+	CreateShortcut "$SMPROGRAMS\Tewi HTTPd\License.lnk" "$INSTDIR\LICENSE.txt" ""
 	CreateShortcut "$SMPROGRAMS\Tewi HTTPd\Start Tewi HTTPd.lnk" "$INSTDIR\bin\tewi.exe" ""
 	CreateShortcut "$SMPROGRAMS\Tewi HTTPd\Start Tewi HTTPd (verbose).lnk" "$INSTDIR\bin\tewi.exe" "-v"
 	CreateShortcut "$SMPROGRAMS\Tewi HTTPd\Uninstall Tewi HTTPd.lnk" "$INSTDIR\uninstall.exe" ""
@@ -32,8 +40,6 @@ Section
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tewi HTTPd" "UninstallString" '"$INSTDIR\uninstall.exe"'
 
 	WriteUninstaller "$INSTDIR\uninstall.exe"
-
-	MessageBox MB_ICONEXCLAMATION|MB_OK "Example config is installed as $INSTDIR\etc\tewi.conf.default,$\r$\nBut Tewi HTTPd will try to use $INSTDIR\etc\tewi.conf."
 SectionEnd
 
 Section "Uninstall"
