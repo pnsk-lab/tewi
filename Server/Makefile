@@ -10,10 +10,10 @@ OBJS = version.o main.o config.o server.o http.o module.o strptime.o $(EXTOBJS)
 all: tewi$(EXEC)
 
 tewi$(EXEC): $(OBJS) ../Common/common.a
-	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(EXTLIBS) $(LIBS) ../Common/common.a
+	$(CC) $(LDFLAGS) $(EXTLDFLAGS) -o $@ $(OBJS) $(EXTLIBS) $(LIBS) ../Common/common.a
 
 .c.o:
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(EXTCFLAGS) -c -o $@ $<
 
 clean:
 	rm -f *.o tewi *.exe

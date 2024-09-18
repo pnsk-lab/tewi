@@ -635,7 +635,7 @@ namedzone:
                  * Our current timezone
                  */
                 ep = find_string(bp, &i,
-                             (const char * const *)tzname,
+                             (const char * const *)NULL,
                               NULL, 2);
                 if (ep != NULL) {
                     tm->tm_isdst = i;

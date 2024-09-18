@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
 #endif
 	} else if(strcmp(argv[1], "ldflags") == 0) {
 #ifndef NO_SSL
-		printf("-I %s/openssl/lib", argv[2]);
+		printf("-L %s/openssl/lib", argv[2]);
 #endif
 	} else if(strcmp(argv[1], "objs") == 0) {
 #ifndef NO_SSL

@@ -16,7 +16,7 @@ all: ./Server ./Module ./Manpage
 	cc -o $@ ./Server/option.c
 
 ./Server:: ./Common ./Server/option
-	$(MAKE) -C $@ $(FLAGS) EXTOBJS=`./Server/option objs ../` EXTLIBS=`./Server/option libs ../`
+	$(MAKE) -C $@ $(FLAGS) EXTOBJS="`./Server/option objs ../`" EXTLIBS="`./Server/option libs ../`" EXTCFLAGS="`./Server/option cflags ../`" EXTLDFLAGS="`./Server/option ldflags ../`"
 
 ./Module:: ./Common
 	$(MAKE) -C $@ $(FLAGS)
