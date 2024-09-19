@@ -150,7 +150,6 @@ int startup(int argc, char** argv) {
 	signal(SIGCHLD, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGCONT, SIG_IGN);
-	int i;
 	for(i = 1; i < 32; i++) signal(i, sig);
 #else
 	SetConsoleTitle(tw_server);
