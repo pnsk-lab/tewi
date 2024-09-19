@@ -835,6 +835,7 @@ void tw_server_loop(void) {
 					}
 #elif defined(__HAIKU__)
 					thread_id thr = spawn_thread(tw_server_pass, "Tewi HTTPd", 60, e);
+					resume_thread(thr);
 #else
 					pid_t pid = fork();
 					if(pid == 0) {
