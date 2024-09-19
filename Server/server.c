@@ -486,8 +486,8 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 			bool rej = false;
 #ifdef __MINGW32__
 			char* rpath = cm_strdup(path);
-			for(i = strlen(rpath) - 1; i >= 0; i++) {
-				if(rpath[i] != ':'){
+			for(i = strlen(rpath) - 1; i >= 0; i--) {
+				if(rpath[i] != ':') {
 					break;
 				}
 				rpath[i] = 0;
