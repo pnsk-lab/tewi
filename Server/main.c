@@ -143,6 +143,8 @@ int startup(int argc, char** argv) {
 	free(r);
 #ifndef __MINGW32__
 	signal(SIGCHLD, SIG_IGN);
+	signal(SIGPIPE, SIG_IGN);
+	signal(SIGCONT, SIG_IGN);
 #else
 	SetConsoleTitle(tw_server);
 #endif
