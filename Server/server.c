@@ -21,6 +21,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <sys/stat.h>
 #include <time.h>
 
@@ -765,6 +766,9 @@ void tw_server_loop(void) {
 		tv.tv_usec = 0;
 		int ret = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
 		if(ret == -1) {
+#ifndef __MINGW32__
+			cm_log("Server", "Select failure: %s", strerror(errno));
+#endif
 			break;
 		} else if(ret == 0) {
 #ifdef __MINGW32__
