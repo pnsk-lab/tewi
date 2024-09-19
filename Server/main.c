@@ -144,9 +144,6 @@ int startup(int argc, char** argv) {
 #ifndef __MINGW32__
 	signal(SIGCHLD, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
-#ifdef __HAIKU__
-	signal(5, SIG_IGN);
-#endif
 #else
 	SetConsoleTitle(tw_server);
 #endif

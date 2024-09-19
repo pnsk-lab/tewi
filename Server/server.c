@@ -831,7 +831,11 @@ void tw_server_loop(void) {
 						int j;
 						for(j = 0; j < sockcount; j++) close_socket(sockets[j]);
 						tw_server_pass(sock, config.ports[i] & (1ULL << 32), config.ports[i], claddr);
+#ifdef __HAIKU__
+						while(1);
+#else
 						_exit(0);
+#endif
 					} else {
 						close_socket(sock);
 					}
