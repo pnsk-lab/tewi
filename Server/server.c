@@ -487,10 +487,16 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 #ifdef __MINGW32__
 			char* rpath = cm_strdup(path);
 			for(i = strlen(rpath) - 1; i >= 0; i--) {
-				if(rpath[i] != ':') {
+				if(rpath[i] == '/') {
+					int j;
+					for(j = i + 1; rpath[j] != 0; j++) {
+						if(rpath[j] == ':' || rpath[j] == '.') {
+							rpath[j] = 0;
+							break;
+						}
+					}
 					break;
 				}
-				rpath[i] = 0;
 			}
 			for(i = 0; i < sizeof(reserved_names) / sizeof(reserved_names[0]); i++) {
 				char* n = cm_strcat("/", reserved_names[i]);
