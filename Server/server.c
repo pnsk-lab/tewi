@@ -828,6 +828,8 @@ void tw_server_loop(void) {
 #else
 					pid_t pid = fork();
 					if(pid == 0) {
+						int j;
+						for(j = 0; j < sockcount; j++) close_socket(sockets[j]);
 						tw_server_pass(sock, config.ports[i] & (1ULL << 32), config.ports[i], claddr);
 						_exit(0);
 					} else {
