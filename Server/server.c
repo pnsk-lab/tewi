@@ -485,9 +485,16 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 			cm_log("Server", "Filesystem path is %s", path);
 			bool rej = false;
 #ifdef __MINGW32__
+			char* rpath = cm_strdup(path);
+			for(i = strlen(rpath) - 1; i >= 0; i++) {
+				if(rpath[i] != ':'){
+					break;
+				}
+				rpath[i] = 0;
+			}
 			for(i = 0; i < sizeof(reserved_names) / sizeof(reserved_names[0]); i++) {
 				char* n = cm_strcat("/", reserved_names[i]);
-				if(cm_nocase_endswith(path, n)) {
+				if(cm_nocase_endswith(rpath, n)) {
 					tw_http_error(s, sock, 403, name, port);
 					free(n);
 					rej = true;
@@ -495,16 +502,8 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 					break;
 				}
 				free(n);
-				char* y = cm_strcat3("/", reserved_names[i], ":");
-				if(cm_nocase_endswith(path, y)) {
-					tw_http_error(s, sock, 403, name, port);
-					free(y);
-					rej = true;
-					cm_log("Server", "XP Patch ; rejecting access to device");
-					break;
-				}
-				free(y);
 			}
+			free(rpath);
 #endif
 			struct stat st;
 			if(!rej && stat(path, &st) == 0) {
