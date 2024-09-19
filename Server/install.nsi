@@ -1,5 +1,11 @@
 # $Id$
 
+VIFileVersion "${VERSION}"
+VIProductVersion "${VERSION}"
+VIAddVersionKey "FileVersion" "${VERSION}"
+VIAddVersionKey "LegalCopyright" "Public domain. Original by Nishi"
+VIAddVersionKey "FileDescription" "Tewi HTTPd Installer"
+
 LoadLanguageFile "${NSISDIR}\Contrib\Language files\Japanese.nlf"
 LoadLanguageFile "${NSISDIR}\Contrib\Language files\English.nlf"
 

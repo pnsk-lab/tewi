@@ -14,6 +14,6 @@ make clean || fail
 make PLATFORM=$1-service -j4 || fail
 cp Server/tewi.exe tewi-service.exe
 cd Server
-makensis install.nsi
+makensis /DVERSION=\"`make get-version`\" install.nsi
 rm -f tewi.exe tewi-service.exe
 cd ..
