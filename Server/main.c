@@ -36,17 +36,17 @@ int startup(int argc, char** argv);
 SERVICE_STATUS status;
 SERVICE_STATUS_HANDLE status_handle;
 
-void WINAPI servhandler(DWORD control){
-	switch(control){
-		case SERVICE_CONTROL_STOP:
-		case SERVICE_CONTROL_SHUTDOWN:
-			status.dwCurrentState = SERVICE_STOP_PENDING;
-			break;
+void WINAPI servhandler(DWORD control) {
+	switch(control) {
+	case SERVICE_CONTROL_STOP:
+	case SERVICE_CONTROL_SHUTDOWN:
+		status.dwCurrentState = SERVICE_STOP_PENDING;
+		break;
 	}
 	SetServiceStatus(status_handle, &status);
 }
 
-void WINAPI servmain(DWORD argc, LPSTR* argv){
+void WINAPI servmain(DWORD argc, LPSTR* argv) {
 	logfile = fopen(PREFIX "/logs/tewi.log", "a");
 	if(logfile == NULL) logfile = stderr;
 	status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
@@ -60,7 +60,7 @@ void WINAPI servmain(DWORD argc, LPSTR* argv){
 	if(status_handle == NULL) return;
 	if(SetServiceStatus(status_handle, &status) == 0) return;
 	int st = startup(argc, argv);
-	if(st != -1){
+	if(st != -1) {
 		status.dwWin32ExitCode = NO_ERROR;
 		status.dwServiceSpecificExitCode = st;
 		status.dwCurrentState = SERVICE_STOPPED;
@@ -87,20 +87,20 @@ int main(int argc, char** argv) {
 #endif
 }
 
-int startup(int argc, char** argv){
+int startup(int argc, char** argv) {
 	int i;
 	const char* confpath = PREFIX "/etc/tewi.conf";
-	if(argv != NULL){
+	if(argv != NULL) {
 		for(i = 1; i < argc; i++) {
 			if(argv[i][0] == '-') {
 				if(strcmp(argv[i], "--verbose") == 0 || strcmp(argv[i], "-v") == 0) {
 					if(!cm_do_log) {
 						cm_do_log = true;
-	#ifndef NO_SSL
+#ifndef NO_SSL
 						cm_log("", "This is Tewi HTTPd, version %s, using %s", tw_get_version(), OPENSSL_VERSION_TEXT);
-	#else
+#else
 						cm_log("", "This is Tewi HTTPd, version %s", tw_get_version());
-	#endif
+#endif
 					} else {
 						cm_do_log = true;
 					}

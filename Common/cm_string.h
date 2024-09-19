@@ -6,6 +6,8 @@
 #include <stdbool.h>
 
 int cm_hex(const char* str, int len);
+bool cm_nocase_endswith(const char* str, const char* end);
+bool cm_endswith(const char* str, const char* end);
 char* cm_html_escape(const char* str);
 char* cm_url_escape(const char* str);
 char* cm_strcat(const char* a, const char* b);

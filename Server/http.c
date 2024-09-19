@@ -82,7 +82,7 @@ int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req) {
 		}
 #endif
 		int len = tw_read(ssl, sock, buffer, 512);
-		if(len <= 0){
+		if(len <= 0) {
 			bad = true;
 			break;
 		}
@@ -284,11 +284,13 @@ getout:
 		if(req->path[i] == '%') {
 			if(req->path[i + 1] == 0) continue;
 			cbuf[0] = cm_hex(req->path + i + 1, 2);
-			char* tmp = result;
-			result = cm_strcat(tmp, cbuf);
-			free(tmp);
+			if(cbuf[0] != '\\') {
+				char* tmp = result;
+				result = cm_strcat(tmp, cbuf);
+				free(tmp);
+			}
 			i += 2;
-		} else {
+		} else if(req->path[i] != '\\') {
 			cbuf[0] = req->path[i];
 			char* tmp = result;
 			result = cm_strcat(tmp, cbuf);
@@ -324,7 +326,7 @@ getout:
 					p = cm_strdup("/");
 				}
 			} else if(strcmp(pth, ".") == 0) {
-			} else if(oldc != '\\') {
+			} else {
 				char* tmp = p;
 				p = cm_strcat3(tmp, pth, cbuf);
 				free(tmp);

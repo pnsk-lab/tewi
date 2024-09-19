@@ -7,6 +7,8 @@
 #include <ctype.h>
 
 char* cm_strcat(const char* a, const char* b) {
+	if(a == NULL) a = "";
+	if(b == NULL) b = "";
 	char* str = malloc(strlen(a) + strlen(b) + 1);
 	memcpy(str, a, strlen(a));
 	memcpy(str + strlen(a), b, strlen(b));
@@ -22,6 +24,24 @@ char* cm_strcat3(const char* a, const char* b, const char* c) {
 }
 
 char* cm_strdup(const char* str) { return cm_strcat(str, ""); }
+
+bool cm_endswith(const char* str, const char* end) {
+	if(strlen(str) < strlen(end)) return false;
+	int i;
+	for(i = strlen(str) - strlen(end); i < strlen(str); i++) {
+		if(str[i] != end[i - strlen(str) + strlen(end)]) return false;
+	}
+	return true;
+}
+
+bool cm_nocase_endswith(const char* str, const char* end) {
+	if(strlen(str) < strlen(end)) return false;
+	int i;
+	for(i = strlen(str) - strlen(end); i < strlen(str); i++) {
+		if(tolower(str[i]) != tolower(end[i - strlen(str) + strlen(end)])) return false;
+	}
+	return true;
+}
 
 char* cm_trimstart(const char* str) {
 	int i;

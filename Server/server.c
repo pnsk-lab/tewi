@@ -51,6 +51,10 @@ int sockcount = 0;
 SOCKADDR addresses[MAX_PORTS];
 int sockets[MAX_PORTS];
 
+#ifdef __MINGW32__
+const char* reserved_names[] = {"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
+#endif
+
 /* https://qiita.com/gyu-don/items/5a640c6d2252a860c8cd */
 int tw_wildcard_match(const char* wildcard, const char* target) {
 	const char *pw = wildcard, *pt = target;
@@ -428,7 +432,7 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 		char* vhost = cm_strdup(config.hostname);
 		int i;
 		time_t cmtime = 0;
-		if(req.headers != NULL){
+		if(req.headers != NULL) {
 			for(i = 0; req.headers[i] != NULL; i += 2) {
 				if(cm_strcaseequ(req.headers[i], "Host")) {
 					free(vhost);
@@ -479,8 +483,31 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 			cm_log("Server", "Document root is %s", vhost_entry->root == NULL ? "not set" : vhost_entry->root);
 			char* path = cm_strcat(vhost_entry->root == NULL ? "" : vhost_entry->root, req.path);
 			cm_log("Server", "Filesystem path is %s", path);
+			bool rej = false;
+#ifdef __MINGW32__
+			for(i = 0; i < sizeof(reserved_names) / sizeof(reserved_names[0]); i++) {
+				char* n = cm_strcat("/", reserved_names[i]);
+				if(cm_nocase_endswith(path, n)) {
+					tw_http_error(s, sock, 403, name, port);
+					free(n);
+					rej = true;
+					cm_log("Server", "XP Patch ; rejecting access to device");
+					break;
+				}
+				free(n);
+				char* y = cm_strcat3("/", reserved_names[i], ":");
+				if(cm_nocase_endswith(path, y)) {
+					tw_http_error(s, sock, 403, name, port);
+					free(y);
+					rej = true;
+					cm_log("Server", "XP Patch ; rejecting access to device");
+					break;
+				}
+				free(y);
+			}
+#endif
 			struct stat st;
-			if(stat(path, &st) == 0) {
+			if(!rej && stat(path, &st) == 0) {
 				if(!tw_permission_allowed(path, addr, req, vhost_entry)) {
 					tw_http_error(s, sock, 403, name, port);
 				} else if(S_ISDIR(st.st_mode)) {
@@ -647,6 +674,7 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 									fread(rmbuf, s.st_size, 1, fr);
 									addstring(&str, "<pre><code>%h</code></pre>\n", rmbuf);
 									fclose(fr);
+									free(rmbuf);
 								}
 								free(fpth);
 							}
@@ -681,11 +709,11 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 		}
 		free(vhost);
 		free(host);
-		tw_free_request(&req);
 	} else if(ret == -1) {
 	} else {
 		tw_http_error(s, sock, 400, name, port);
 	}
+	tw_free_request(&req);
 cleanup:
 #ifndef NO_SSL
 	if(sslworks) {
@@ -717,7 +745,7 @@ void tw_server_loop(void) {
 	int i;
 #ifdef __MINGW32__
 	struct thread_entry threads[2048];
-	for(i = 0; i < sizeof(threads) / sizeof(threads[0]); i++){
+	for(i = 0; i < sizeof(threads) / sizeof(threads[0]); i++) {
 		threads[i].used = false;
 	}
 #endif
@@ -731,13 +759,13 @@ void tw_server_loop(void) {
 		int ret = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
 		if(ret == -1) {
 			break;
-		}else if(ret == 0){
+		} else if(ret == 0) {
 #ifdef __MINGW32__
-			for(i = 0; i < sizeof(threads) / sizeof(threads[0]); i++){
-				if(threads[i].used){
+			for(i = 0; i < sizeof(threads) / sizeof(threads[0]); i++) {
+				if(threads[i].used) {
 					DWORD ex;
 					GetExitCodeThread(threads[i].handle, &ex);
-					if(ex != STILL_ACTIVE){
+					if(ex != STILL_ACTIVE) {
 						CloseHandle(threads[i].handle);
 						threads[i].used = false;
 					}
@@ -745,7 +773,7 @@ void tw_server_loop(void) {
 			}
 #endif
 #ifdef SERVICE
-			if(status.dwCurrentState == SERVICE_STOP_PENDING){
+			if(status.dwCurrentState == SERVICE_STOP_PENDING) {
 				break;
 			}
 #endif
@@ -765,18 +793,18 @@ void tw_server_loop(void) {
 					e->port = config.ports[i];
 					e->addr = claddr;
 					int j;
-					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++){
-						if(threads[j].used){
+					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
+						if(threads[j].used) {
 							DWORD ex;
 							GetExitCodeThread(threads[j].handle, &ex);
-							if(ex != STILL_ACTIVE){
+							if(ex != STILL_ACTIVE) {
 								CloseHandle(threads[j].handle);
 								threads[j].used = false;
 							}
 						}
 					}
-					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++){
-						if(!threads[j].used){
+					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
+						if(!threads[j].used) {
 							threads[j].handle = (HANDLE)_beginthreadex(NULL, 0, tw_server_pass, e, 0, NULL);
 							threads[j].used = true;
 							break;
