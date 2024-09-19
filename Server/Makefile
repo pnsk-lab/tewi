@@ -19,4 +19,4 @@ tewi.res: tewi.rc tewi.ico
 	$(WINDRES) tewi.rc -O coff -o $@
 
 clean:
-	rm -f *.o tewi *.exe
+	rm -f *.o tewi *.exe *.res
