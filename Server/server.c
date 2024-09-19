@@ -749,9 +749,13 @@ extern SERVICE_STATUS status;
 extern SERVICE_STATUS_HANDLE status_handle;
 #endif
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(__HAIKU__)
 struct thread_entry {
+#ifdef __HAIKU__
+	thread_id thread;
+#else
 	HANDLE handle;
+#endif
 	bool used;
 };
 #endif
@@ -759,7 +763,7 @@ struct thread_entry {
 void tw_server_loop(void) {
 	struct timeval tv;
 	int i;
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(__HAIKU__)
 	struct thread_entry threads[2048];
 	for(i = 0; i < sizeof(threads) / sizeof(threads[0]); i++) {
 		threads[i].used = false;
@@ -783,18 +787,6 @@ void tw_server_loop(void) {
 #endif
 			break;
 		} else if(ret == 0) {
-#ifdef __MINGW32__
-			for(i = 0; i < sizeof(threads) / sizeof(threads[0]); i++) {
-				if(threads[i].used) {
-					DWORD ex;
-					GetExitCodeThread(threads[i].handle, &ex);
-					if(ex != STILL_ACTIVE) {
-						CloseHandle(threads[i].handle);
-						threads[i].used = false;
-					}
-				}
-			}
-#endif
 #ifdef SERVICE
 			if(status.dwCurrentState == SERVICE_STOP_PENDING) {
 				break;
@@ -836,8 +828,28 @@ void tw_server_loop(void) {
 						}
 					}
 #elif defined(__HAIKU__)
-					thread_id thr = spawn_thread(tw_server_pass, "Tewi HTTPd", 60, e);
-					resume_thread(thr);
+					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
+						if(threads[j].used) {
+							thread_info info;
+							bool kill = false;
+							if(get_thread_info(threads[j].thread, &info) == B_OK){
+							}else{
+								kill = true;
+							}
+							if(kill){
+								printf("Kill thread %d\n", threads[j].thread);
+								threads[j].used = false;
+							}
+						}
+					}
+					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
+						if(!threads[j].used) {
+							threads[j].thread = spawn_thread(tw_server_pass, "Tewi HTTPd", 60, e);
+							threads[j].used = true;
+							resume_thread(threads[j].thread);
+							break;
+						}
+					}
 #else
 					pid_t pid = fork();
 					if(pid == 0) {
