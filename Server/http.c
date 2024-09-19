@@ -74,7 +74,7 @@ int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req) {
 #ifdef __HAIKU__
 			int n = select(32, &fds, NULL, NULL, &tv);
 #else
-			int n = select(FD_SETSIZE, &fds, NULL, NULL, &tv);
+		int n = select(FD_SETSIZE, &fds, NULL, NULL, &tv);
 #endif
 			if(n <= 0) {
 				cm_log("HTTP", "Timeout, disconncting");

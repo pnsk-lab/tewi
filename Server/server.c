@@ -833,11 +833,11 @@ void tw_server_loop(void) {
 						if(threads[j].used) {
 							thread_info info;
 							bool kill = false;
-							if(get_thread_info(threads[j].thread, &info) == B_OK){
-							}else{
+							if(get_thread_info(threads[j].thread, &info) == B_OK) {
+							} else {
 								kill = true;
 							}
-							if(kill){
+							if(kill) {
 								threads[j].used = false;
 							}
 						}

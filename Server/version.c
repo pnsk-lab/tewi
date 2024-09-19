@@ -8,7 +8,7 @@ const char* tw_version = TW_VERSION;
 
 const char* tw_platform =
 #if defined(PLATFORM)
-    PLATFORMM
+    PLATFORM
 #elif defined(__NetBSD__)
     "NetBSD"
 #elif defined(__linux__)
