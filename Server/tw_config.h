@@ -13,6 +13,9 @@
 #define NO_IPV6
 #else
 #include <netinet/in.h>
+#ifdef __HAIKU__
+#define NO_IPV6
+#endif
 #endif
 
 #ifdef NO_IPV6
