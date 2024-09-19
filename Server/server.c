@@ -43,6 +43,10 @@
 #include <netinet/tcp.h>
 #endif
 
+#ifdef __HAIKU__
+#include <OS.h>
+#endif
+
 extern struct tw_config config;
 extern char tw_server[];
 
@@ -391,7 +395,6 @@ char* tw_get_icon(const char* mime, struct tw_config_entry* vhost_entry) {
 	return icon;
 }
 
-#ifdef __MINGW32__
 struct pass_entry {
 	int sock;
 	int port;
@@ -399,7 +402,10 @@ struct pass_entry {
 	SOCKADDR addr;
 };
 
+#ifdef __MINGW32__
 unsigned int WINAPI tw_server_pass(void* ptr) {
+#elif defined(__HAIKU__)
+int32_t tw_server_pass(void* ptr) {
 	int sock = ((struct pass_entry*)ptr)->sock;
 	bool ssl = ((struct pass_entry*)ptr)->ssl;
 	int port = ((struct pass_entry*)ptr)->port;
@@ -801,12 +807,14 @@ void tw_server_loop(void) {
 					int clen = sizeof(claddr);
 					int sock = accept(sockets[i], (struct sockaddr*)&claddr, &clen);
 					cm_log("Server", "New connection accepted");
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(__HAIKU__)
 					struct pass_entry* e = malloc(sizeof(*e));
 					e->sock = sock;
 					e->ssl = config.ports[i] & (1ULL << 32);
 					e->port = config.ports[i];
 					e->addr = claddr;
+#endif
+#ifdef __MINGW32__
 					int j;
 					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
 						if(threads[j].used) {
@@ -825,17 +833,15 @@ void tw_server_loop(void) {
 							break;
 						}
 					}
+#elif defined(__HAIKU__)
+					thread_id thr = spawn_Thread(tw_server_pass, "Tewi HTTPd", 60, e);
 #else
 					pid_t pid = fork();
 					if(pid == 0) {
 						int j;
 						for(j = 0; j < sockcount; j++) close_socket(sockets[j]);
 						tw_server_pass(sock, config.ports[i] & (1ULL << 32), config.ports[i], claddr);
-#ifdef __HAIKU__
-						exit(0);
-#else
 						_exit(0);
-#endif
 					} else {
 						close_socket(sock);
 					}
