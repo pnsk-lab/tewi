@@ -8,6 +8,8 @@ fail() {
 	exit 1
 }
 
+rm -f install-nossl.exe install-ssl.exe
+
 VERSION=`make get-version`
 
 sed "s/undef NO_SSL/define NO_SSL/g" config.h.tmpl > config.h

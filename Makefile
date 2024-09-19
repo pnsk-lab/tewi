@@ -38,4 +38,4 @@ clean:
 	$(MAKE) -C ./Module $(FLAGS) clean
 	$(MAKE) -C ./Common $(FLAGS) clean
 	$(MAKE) -C ./Manpage $(FLAGS) clean
-	rm -f ./Server/option install-*ssl.exe
+	rm -f ./Server/option
