@@ -297,5 +297,44 @@ getout:
 	}
 	free(req->path);
 	req->path = result;
+
+	int incr = 0;
+	char* p = malloc(1);
+	p[0] = 0;
+	int j;
+	for(j = 0;; j++) {
+		if(req->path[j] == '/' || req->path[j] == 0) {
+			char oldc = req->path[j];
+			cbuf[0] = oldc;
+			req->path[j] = 0;
+
+			char* pth = req->path + incr;
+
+			if(strcmp(pth, "..") == 0) {
+				int k;
+				if(p[strlen(p) - 1] == '/') p[strlen(p) - 1] = 0;
+				for(k = strlen(p) - 1; k >= 0; k--) {
+					if(p[k] == '/') {
+						p[k + 1] = 0;
+						break;
+					}
+				}
+				if(strlen(p) == 0) {
+					free(p);
+					p = cm_strdup("/");
+				}
+			} else if(strcmp(pth, ".") == 0) {
+			} else if(oldc != '\\') {
+				char* tmp = p;
+				p = cm_strcat3(tmp, pth, cbuf);
+				free(tmp);
+			}
+
+			incr = j + 1;
+			if(oldc == 0) break;
+		}
+	}
+	free(req->path);
+	req->path = p;
 	return 0;
 }
