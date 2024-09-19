@@ -838,7 +838,6 @@ void tw_server_loop(void) {
 								kill = true;
 							}
 							if(kill){
-								printf("Kill thread %d\n", threads[j].thread);
 								threads[j].used = false;
 							}
 						}
