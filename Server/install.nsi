@@ -6,7 +6,7 @@ LoadLanguageFile "${NSISDIR}\Contrib\Language files\English.nlf"
 Name "Tewi HTTPd"
 OutFile "install.exe"
 InstallDir "C:\Tewi"
-Icon "tewi.ico"
+Icon "tewi-install.ico"
 LicenseData ../LICENSE
 
 LangString EXEC_ONLY ${LANG_ENGLISH} "Install the executable only"
