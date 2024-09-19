@@ -345,6 +345,7 @@ void addstring(char** str, const char* add, ...) {
 			free(tmp);
 		}
 	}
+	va_end(va);
 }
 
 char* tw_get_mime(const char* ext, struct tw_config_entry* vhost_entry) {
@@ -544,6 +545,7 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 								char* mime = tw_get_mime(ext, vhost_entry);
 								tw_process_page(s, sock, tw_http_status(200), mime, f, NULL, st.st_size, 0, 0);
 								fclose(f);
+								if(ext != NULL) free(ext);
 								free(p);
 								found = true;
 								break;
