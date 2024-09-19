@@ -131,7 +131,13 @@ int tw_server_init(void) {
 		memset(&addresses[i], 0, sizeof(addresses[i]));
 #ifdef NO_IPV6
 		addresses[i].sin_family = AF_INET;
+#ifdef __HAIKU__
+		if((addresses[i].sin_addr.s_addr = gethostaddr()) == -1){
+			addresses[i].sin_addr.s_addr = INADDR_ANY;
+		}
+#else
 		addresses[i].sin_addr.s_addr = INADDR_ANY;
+#endif
 		addresses[i].sin_port = htons(config.ports[i]);
 #else
 		addresses[i].sin6_family = AF_INET6;
