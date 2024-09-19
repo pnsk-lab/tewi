@@ -75,6 +75,11 @@ void WINAPI servmain(DWORD argc, LPSTR* argv) {
 }
 #endif
 
+void sig(int sign){
+	printf("%d\n", sign);
+	exit(0);
+}
+
 int main(int argc, char** argv) {
 	logfile = stderr;
 #ifdef SERVICE
@@ -145,6 +150,8 @@ int startup(int argc, char** argv) {
 	signal(SIGCHLD, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGCONT, SIG_IGN);
+	int i;
+	for(i = 1; i < 32; i++) signal(i, sig);
 #else
 	SetConsoleTitle(tw_server);
 #endif
