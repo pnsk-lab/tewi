@@ -764,7 +764,7 @@ void tw_server_loop(void) {
 		}
 		tv.tv_sec = 1;
 		tv.tv_usec = 0;
-		int ret = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
+		int ret = select(sockcount, &fdset, NULL, NULL, &tv);
 		if(ret == -1) {
 #ifndef __MINGW32__
 			cm_log("Server", "Select failure: %s", strerror(errno));
