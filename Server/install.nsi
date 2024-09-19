@@ -1,7 +1,7 @@
 # $Id$
 
-VIFileVersion "${VERSION}"
-VIProductVersion "${VERSION}"
+VIFileVersion "1.0.0.0"
+VIProductVersion "1.0.0.0"
 VIAddVersionKey "FileVersion" "${VERSION}"
 VIAddVersionKey "LegalCopyright" "Public domain. Original by Nishi"
 VIAddVersionKey "FileDescription" "Tewi HTTPd Installer"
