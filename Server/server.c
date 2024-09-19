@@ -79,7 +79,7 @@ int tw_wildcard_match(const char* wildcard, const char* target) {
 }
 
 void close_socket(int sock) {
-#if defined(__MINGW32__) || defined(__HAIKU__)
+#if defined(__MINGW32__)
 	closesocket(sock);
 #else
 	close(sock);

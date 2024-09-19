@@ -71,7 +71,11 @@ int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req) {
 #ifndef NO_SSL
 		if(ssl == NULL || !SSL_has_pending(ssl)) {
 #endif
+#ifdef __HAIKU__
+			int n = select(32, &fds, NULL, NULL, &tv);
+#else
 			int n = select(FD_SETSIZE, &fds, NULL, NULL, &tv);
+#endif
 			if(n <= 0) {
 				cm_log("HTTP", "Timeout, disconncting");
 				free(header);
