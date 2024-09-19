@@ -764,7 +764,11 @@ void tw_server_loop(void) {
 		}
 		tv.tv_sec = 1;
 		tv.tv_usec = 0;
-		int ret = select(sockcount, &fdset, NULL, NULL, &tv);
+#ifdef __HAIKU__
+		int ret = select(32, &fdset, NULL, NULL, &tv);
+#else
+		int ret = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
+#endif
 		if(ret == -1) {
 #ifndef __MINGW32__
 			cm_log("Server", "Select failure: %s", strerror(errno));
