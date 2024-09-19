@@ -828,6 +828,7 @@ void tw_server_loop(void) {
 						}
 					}
 #elif defined(__HAIKU__)
+					int j;
 					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
 						if(threads[j].used) {
 							thread_info info;
