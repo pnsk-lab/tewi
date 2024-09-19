@@ -738,6 +738,8 @@ cleanup:
 	close_socket(sock);
 #ifdef __MINGW32__
 	_endthreadex(0);
+#elif defined(__HAIKU__)
+	exit_thread(0);
 #endif
 	;
 }
