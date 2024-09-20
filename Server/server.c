@@ -406,13 +406,15 @@ struct pass_entry {
 unsigned int WINAPI tw_server_pass(void* ptr) {
 #elif defined(__HAIKU__)
 int32_t tw_server_pass(void* ptr) {
+#endif
+#if defined(__HAIKU__) || defined(__MINGW32__)
 	int sock = ((struct pass_entry*)ptr)->sock;
 	bool ssl = ((struct pass_entry*)ptr)->ssl;
 	int port = ((struct pass_entry*)ptr)->port;
 	SOCKADDR addr = ((struct pass_entry*)ptr)->addr;
 	free(ptr);
 #else
-void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
+	void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 #endif
 	char* name = config.hostname;
 
@@ -428,7 +430,7 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 		sslworks = true;
 	}
 #else
-	void* s = NULL;
+		void* s = NULL;
 #endif
 	struct tw_http_request req;
 	struct tw_http_response res;
@@ -454,7 +456,7 @@ void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 					cmtime = mktime(&tm);
 					cmtime -= (btm->tm_hour * 60 + btm->tm_min) * 60;
 #else
-					cmtime = timegm(&tm);
+						cmtime = timegm(&tm);
 #endif
 				}
 			}
@@ -739,7 +741,7 @@ cleanup:
 #ifdef __MINGW32__
 	_endthreadex(0);
 #elif defined(__HAIKU__)
-	exit_thread(0);
+		exit_thread(0);
 #endif
 	;
 }
@@ -779,7 +781,7 @@ void tw_server_loop(void) {
 #ifdef __HAIKU__
 		int ret = select(32, &fdset, NULL, NULL, &tv);
 #else
-		int ret = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
+			int ret = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
 #endif
 		if(ret == -1) {
 #ifndef __MINGW32__
@@ -828,28 +830,28 @@ void tw_server_loop(void) {
 						}
 					}
 #elif defined(__HAIKU__)
-					int j;
-					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
-						if(threads[j].used) {
-							thread_info info;
-							bool kill = false;
-							if(get_thread_info(threads[j].thread, &info) == B_OK) {
-							} else {
-								kill = true;
-							}
-							if(kill) {
-								threads[j].used = false;
+						int j;
+						for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
+							if(threads[j].used) {
+								thread_info info;
+								bool kill = false;
+								if(get_thread_info(threads[j].thread, &info) == B_OK) {
+								} else {
+									kill = true;
+								}
+								if(kill) {
+									threads[j].used = false;
+								}
 							}
 						}
-					}
-					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
-						if(!threads[j].used) {
-							threads[j].thread = spawn_thread(tw_server_pass, "Tewi HTTPd", 60, e);
-							threads[j].used = true;
-							resume_thread(threads[j].thread);
-							break;
+						for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
+							if(!threads[j].used) {
+								threads[j].thread = spawn_thread(tw_server_pass, "Tewi HTTPd", 60, e);
+								threads[j].used = true;
+								resume_thread(threads[j].thread);
+								break;
+							}
 						}
-					}
 #else
 					pid_t pid = fork();
 					if(pid == 0) {
