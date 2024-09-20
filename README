@@ -2,6 +2,5 @@ Simple HTTP daemon
 
 Put under public domain, except Server/strptime.{c,h} and Icons/*.
 
-http://nishi.boats/tewi
-
-Trac is at https://trac.nishi.boats/tewi
+Website: http://nishi.boats/tewi
+Trac   : https://trac.nishi.boats/tewi
