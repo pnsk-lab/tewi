@@ -3,3 +3,5 @@ Simple HTTP daemon
 Put under public domain, except Server/strptime.{c,h} and Icons/*.
 
 http://nishi.boats/tewi
+
+Trac at http://trac.nishi.boats/tewi
