@@ -2,6 +2,11 @@ Simple HTTP daemon
 
 Put under public domain, except Server/strptime.{c,h} and Icons/*.
 
+Original     : http://svn.nishi.boats/repo/tewi
+Git Mirror #1: http://git-mirror.nishi.boats/?p=tewi.git
+Git Mirror #2: https://git.chaotic.ninja/YakumoLabs/tewi
+Git Mirror #3: https://github.com/pnsk-lab/tewi
+
 Installers for Windows: http://f.nishi.boats/f/g/tewi
                         or, GitHub releases
 Website               : http://nishi.boats/tewi
