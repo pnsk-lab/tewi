@@ -1,0 +1,91 @@
+# $Id$
+
+name: "Build Tewi HTTPd"
+
+on:
+  workflow_dispatch:
+  push:
+
+concurrency:
+  group: "build"
+  cancel-in-progress: true
+
+jobs:
+  build-win32:
+    name: "Build for Windows 32-bit"
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install packages
+      run: sudo apt-get install nsis
+    - name: Build
+      run: ./installer.sh win32
+    - name: Rename
+      run: mv install-nossl.exe tewiinst32-nossl.exe && mv install-ssl.exe tewiinst32-ssl.exe
+    - name: Create a zipfile
+      run: zip -rv tewiinst32.zip tewiinst32-*.exe
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-win32
+        path: tewiinst32.zip
+
+  build-win64:
+    name: "Build for Windows 64-bit"
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install packages
+      run: sudo apt-get install nsis
+    - name: Build
+      run: ./installer.sh win64
+    - name: Rename
+      run: mv install-nossl.exe tewiinst64-nossl.exe && mv install-ssl.exe tewiinst64-ssl.exe
+    - name: Create a zipfile
+      run: zip -rv tewiinst64.zip tewiinst64-*.exe
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-win64
+        path: tewiinst64.zip
+
+  release:
+    name: "Release"
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    needs: [build-win32]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Download from build-win32
+      uses: actions/download-artifact@v4
+      with:
+        name: build-win32
+    - name: Download from build-win64
+      uses: actions/download-artifact@v4
+      with:
+        name: build-win64
+    - name: Extract
+      run: unzip tewiinst32.zip && unzip tewiinst64.zip
+    - name: Delete old release
+      run: gh release delete "$(make get-version)" --cleanup-tag -y || true
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Release
+      run: gh release create -t "v$(make get-version)" "$(make get-version)"  tewiinst32*.exe tewiinst64*.exe -n "Version \`$(make get-version)\` was build in this release"
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
