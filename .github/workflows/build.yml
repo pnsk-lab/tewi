@@ -22,7 +22,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Install packages
-      run: sudo apt-get install nsis
+      run: sudo apt-get install nsis mingw-w64
     - name: Build
       run: ./installer.sh win32
     - name: Rename
@@ -46,7 +46,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Install packages
-      run: sudo apt-get install nsis
+      run: sudo apt-get install nsis mingw-w64
     - name: Build
       run: ./installer.sh win64
     - name: Rename
