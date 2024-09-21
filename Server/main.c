@@ -132,9 +132,10 @@ int startup(int argc, char** argv) {
 					printf("Original by 2024 Nishi\n");
 					printf("\n");
 					printf("Usage: %s [--config|-C config] [--verbose|-v] [--version|-V]\n", argv[0]);
-					printf("--config  | -C config     : Specify config\n");
-					printf("--verbose | -v            : Verbose mode\n");
-					printf("--version | -V            : Version information\n");
+					printf("--config  | -C config      : Specify config\n");
+					printf("--logfile | -l logfile     : Specify logfile\n");
+					printf("--verbose | -v             : Verbose mode\n");
+					printf("--version | -V             : Version information\n");
 					return 0;
 				} else {
 					fprintf(stderr, "Unknown option: %s\n", argv[i]);
