@@ -27,6 +27,13 @@ all: ./Server ./Module ./Manpage
 ./Manpage::
 	$(MAKE) -C $@ $(FLAGS)
 
+install: all
+	mkdir -p $(PREFIX)/bin $(PREFIX)/lib/tewi $(PREFIX)/share/man/man5 $(PREFIX)/etc
+	if [ ! -e $(PREFIX)/etc/tewi.conf ]; then cp example.conf $(PREFIX)/etc/tewi.conf ; fi
+	cp ./Server/tewi $(PREFIX)/bin/
+	cp ./Module/*.so $(PREFIX)/lib/tewi/
+	cp ./Manpage/tewi.conf.5 $(PREFIX)/share/man/man5/
+
 format:
 	clang-format --verbose -i `find ./Server ./Common ./Module "(" -name "*.c" -or -name "*.h" ")" -and -not -name "strptime.*"` config.h
 
