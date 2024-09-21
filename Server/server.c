@@ -456,8 +456,8 @@ int32_t tw_server_pass(void* ptr) {
 		char* useragent = cm_strdup("");
 
 		int i;
-		for(i = 0; req.headers[i] != NULL; i += 2){
-			if(cm_strcaseequ(req.headers[i], "User-Agent")){
+		for(i = 0; req.headers[i] != NULL; i += 2) {
+			if(cm_strcaseequ(req.headers[i], "User-Agent")) {
 				free(useragent);
 				useragent = cm_strdup(req.headers[i + 1]);
 			}

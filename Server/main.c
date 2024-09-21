@@ -112,6 +112,20 @@ int startup(int argc, char** argv) {
 						return 1;
 					}
 					confpath = argv[i];
+				} else if(strcmp(argv[i], "--logfile") == 0 || strcmp(argv[i], "-l") == 0) {
+					i++;
+					if(argv[i] == NULL) {
+						fprintf(stderr, "Missing argument\n");
+						return 1;
+					}
+					if(logfile != NULL && logfile != stderr) {
+						fclose(logfile);
+					}
+					logfile = fopen(argv[i], "a");
+					if(logfile == NULL) {
+						fprintf(stderr, "Failed to open logfile\n");
+						return 1;
+					}
 				} else if(strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-V") == 0) {
 					printf("Tewi HTTPd Tewi/%s\n", tw_get_version());
 					printf("Under public domain.\n");
