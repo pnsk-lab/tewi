@@ -30,6 +30,8 @@
 #include <cm_dir.h>
 
 #ifdef __MINGW32__
+#include <ws2tcpip.h>
+#include <wspiapi.h>
 #include <winsock2.h>
 #include <process.h>
 #include <windows.h>
@@ -41,6 +43,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <netdb.h>
 #endif
 
 #ifdef __HAIKU__
@@ -432,6 +435,12 @@ int32_t tw_server_pass(void* ptr) {
 #else
 		void* s = NULL;
 #endif
+
+	char address[513];
+	address[0] = 0;
+	struct sockaddr* sa = (struct sockaddr*)&addr;
+	getnameinfo(sa, sizeof(addr), address, 512, NULL, 0, NI_NUMERICHOST);
+
 	struct tw_http_request req;
 	struct tw_http_response res;
 	struct tw_tool tools;
@@ -439,8 +448,37 @@ int32_t tw_server_pass(void* ptr) {
 	tw_init_tools(&tools);
 	int ret = tw_http_parse(s, sock, &req);
 	if(ret == 0) {
-		char* vhost = cm_strdup(config.hostname);
+		char date[513];
+		time_t t = time(NULL);
+		struct tm* tm = localtime(&t);
+		strftime(date, 512, "%a, %d %b %Y %H:%M:%S %Z", tm);
+
+		char* useragent = cm_strdup("");
+
 		int i;
+		for(i = 0; req.headers[i] != NULL; i += 2){
+			if(cm_strcaseequ(req.headers[i], "User-Agent")){
+				free(useragent);
+				useragent = cm_strdup(req.headers[i + 1]);
+			}
+		}
+
+		char* tmp = cm_strcat3(address, " - [", date);
+		char* tmp2 = cm_strcat3(tmp, "] \"", req.method);
+		char* tmp3 = cm_strcat3(tmp2, " ", req.path);
+		char* tmp4 = cm_strcat3(tmp3, " ", req.version);
+		char* tmp5 = cm_strcat3(tmp4, "\" \"", useragent);
+		char* log = cm_strcat(tmp5, "\"");
+		free(tmp);
+		free(tmp2);
+		free(tmp3);
+		free(tmp4);
+		free(tmp5);
+		free(useragent);
+		cm_force_log(log);
+		free(log);
+
+		char* vhost = cm_strdup(config.hostname);
 		time_t cmtime = 0;
 		if(req.headers != NULL) {
 			for(i = 0; req.headers[i] != NULL; i += 2) {

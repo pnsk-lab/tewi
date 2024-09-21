@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <signal.h>
+#include <stdlib.h>
 
 #ifndef NO_SSL
 #include <openssl/opensslv.h>
