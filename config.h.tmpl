@@ -4,11 +4,17 @@
 #define __CONFIG_H__
 
 #undef NO_SSL
+#define USE_POLL
 
 /* DO NOT EDIT BELOW THIS LINE */
 
 #ifdef NO_SSL
 #define SSL void
+#endif
+
+#if defined(__MINGW32__) && defined(USE_POLL)
+#undef USE_POLL
+/* Force select(2) for Windows */
 #endif
 
 #endif

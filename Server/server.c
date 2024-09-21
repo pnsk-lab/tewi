@@ -38,7 +38,11 @@
 
 #include "strptime.h"
 #else
+#ifdef USE_POLL
+#include <poll.h>
+#else
 #include <sys/select.h>
+#endif
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -53,7 +57,6 @@
 extern struct tw_config config;
 extern char tw_server[];
 
-fd_set fdset;
 int sockcount = 0;
 
 SOCKADDR addresses[MAX_PORTS];
@@ -801,7 +804,6 @@ struct thread_entry {
 #endif
 
 void tw_server_loop(void) {
-	struct timeval tv;
 	int i;
 #if defined(__MINGW32__) || defined(__HAIKU__)
 	struct thread_entry threads[2048];
@@ -809,17 +811,31 @@ void tw_server_loop(void) {
 		threads[i].used = false;
 	}
 #endif
+#ifdef USE_POLL
+	struct pollfd pollfds[sockcount];
+	for(i = 0; i < sockcount; i++) {
+		pollfds[i].fd = sockets[i];
+		pollfds[i].events = POLLIN | POLLPRI;
+	}
+#else
+		fd_set fdset;
+		struct timeval tv;
+#endif
 	while(1) {
-		FD_ZERO(&fdset);
-		for(i = 0; i < sockcount; i++) {
-			FD_SET(sockets[i], &fdset);
-		}
-		tv.tv_sec = 1;
-		tv.tv_usec = 0;
+#ifdef USE_POLL
+		int ret = poll(pollfds, sockcount, 1000);
+#else
+			FD_ZERO(&fdset);
+			for(i = 0; i < sockcount; i++) {
+				FD_SET(sockets[i], &fdset);
+			}
+			tv.tv_sec = 1;
+			tv.tv_usec = 0;
 #ifdef __HAIKU__
-		int ret = select(32, &fdset, NULL, NULL, &tv);
+			int ret = select(32, &fdset, NULL, NULL, &tv);
 #else
 			int ret = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
+#endif
 #endif
 		if(ret == -1) {
 #ifndef __MINGW32__
@@ -836,7 +852,13 @@ void tw_server_loop(void) {
 			/* connection */
 			int i;
 			for(i = 0; i < sockcount; i++) {
-				if(FD_ISSET(sockets[i], &fdset)) {
+				bool cond;
+#ifdef USE_POLL
+				cond = pollfds[i].revents & POLLIN;
+#else
+					cond = FD_ISSET(sockets[i], &fdset);
+#endif
+				if(cond) {
 					SOCKADDR claddr;
 					int clen = sizeof(claddr);
 					int sock = accept(sockets[i], (struct sockaddr*)&claddr, &clen);

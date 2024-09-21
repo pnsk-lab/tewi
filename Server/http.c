@@ -18,7 +18,11 @@
 #ifdef __MINGW32__
 #include <winsock2.h>
 #else
+#ifdef USE_POLL
+#include <poll.h>
+#else
 #include <sys/select.h>
+#endif
 #endif
 
 void tw_free_request(struct tw_http_request* req) {
@@ -45,7 +49,14 @@ int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req) {
 	char buffer[512];
 	char cbuf[2];
 	int phase = 0;
+
+#ifdef USE_POLL
+	struct pollfd pollfds[1];
+	pollfds[0].fd = sock;
+	pollfds[0].events = POLLIN | POLLPRI;
+#else
 	fd_set fds;
+#endif
 
 	bool bad = false;
 
@@ -63,18 +74,24 @@ int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req) {
 	int nl = 0;
 
 	while(1) {
+#ifndef USE_POLL
 		FD_ZERO(&fds);
 		FD_SET(sock, &fds);
 		struct timeval tv;
 		tv.tv_sec = 5;
 		tv.tv_usec = 0;
+#endif
 #ifndef NO_SSL
 		if(ssl == NULL || !SSL_has_pending(ssl)) {
 #endif
+#ifdef USE_POLL
+			int n = poll(pollfds, 1, 5000);
+#else
 #ifdef __HAIKU__
-			int n = select(32, &fds, NULL, NULL, &tv);
+		int n = select(32, &fds, NULL, NULL, &tv);
 #else
 		int n = select(FD_SETSIZE, &fds, NULL, NULL, &tv);
+#endif
 #endif
 			if(n <= 0) {
 				cm_log("HTTP", "Timeout, disconncting");
