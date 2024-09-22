@@ -84,6 +84,7 @@ void tw_config_init(void) {
 	config.root.icon_count = 0;
 	config.root.index_count = 0;
 	config.root.readme_count = 0;
+	config.root.hideport = 0;
 	config.vhost_count = 0;
 	config.module_count = 0;
 	config.extension = NULL;
@@ -185,6 +186,7 @@ int tw_config_read(const char* path) {
 								current->icon_count = 0;
 								current->index_count = 0;
 								current->readme_count = 0;
+								current->hideport = -1;
 								int i;
 								current->name = cm_strdup(vhost);
 								current->port = -1;
@@ -216,6 +218,10 @@ int tw_config_read(const char* path) {
 								;
 							config.ports[j] = port;
 						}
+					} else if(cm_strcaseequ(r[0], "HidePort")) {
+						current->hideport = 1;
+					} else if(cm_strcaseequ(r[0], "ShowPort")) {
+						current->hideport = 0;
 					} else if(cm_strcaseequ(r[0], "SSLKey")) {
 						if(r[1] == NULL) {
 							cm_log("Config", "Missing path at line %d", ln);

@@ -284,9 +284,14 @@ const char* tw_http_status(int code) {
 	}
 }
 
-char* tw_http_default_error(int code, char* name, int port) {
+char* tw_http_default_error(int code, char* name, int port, struct tw_config_entry* vhost) {
 	char address[1024];
-	sprintf(address, "<address>%s Server at %s Port %d</address>", tw_server, name, port);
+
+	if((vhost->hideport == -1 ? config.root.hideport : vhost->hideport) == 1) {
+		sprintf(address, "<address>%s Server at %s</address>", tw_server, name, port);
+	} else {
+		sprintf(address, "<address>%s Server at %s Port %d</address>", tw_server, name, port);
+	}
 
 	char* st = cm_strdup(tw_http_status(code));
 	char* st2;
@@ -305,8 +310,8 @@ char* tw_http_default_error(int code, char* name, int port) {
 	return buffer;
 }
 
-void tw_http_error(SSL* ssl, int sock, int error, char* name, int port) {
-	char* str = tw_http_default_error(error, name, port);
+void tw_http_error(SSL* ssl, int sock, int error, char* name, int port, struct tw_config_entry* vhost) {
+	char* str = tw_http_default_error(error, name, port, vhost);
 	tw_process_page(ssl, sock, tw_http_status(error), "text/html", NULL, str, strlen(str), 0, 0);
 	free(str);
 }
@@ -525,7 +530,7 @@ int32_t tw_server_pass(void* ptr) {
 					break;
 				}
 				if(co == _TW_MODULE_ERROR) {
-					tw_http_error(s, sock, (ret & 0xffff00) >> 8, name, port);
+					tw_http_error(s, sock, (ret & 0xffff00) >> 8, name, port, vhost_entry);
 					break;
 				}
 			}
@@ -565,7 +570,7 @@ int32_t tw_server_pass(void* ptr) {
 			struct stat st;
 			if(!rej && stat(path, &st) == 0) {
 				if(!tw_permission_allowed(path, addr, req, vhost_entry)) {
-					tw_http_error(s, sock, 403, name, port);
+					tw_http_error(s, sock, 403, name, port, vhost_entry);
 				} else if(S_ISDIR(st.st_mode)) {
 					if(req.path[strlen(req.path) - 1] != '/') {
 						cm_log("Server", "Accessing directory without the slash at the end");
@@ -737,7 +742,12 @@ int32_t tw_server_pass(void* ptr) {
 								free(fpth);
 							}
 							addstring(&str, "		<hr>\n");
-							addstring(&str, "		<address>%s Server at %s Port %d</address>\n", tw_server, name, port);
+							int hp = vhost_entry->hideport == -1 ? config.root.hideport : vhost_entry->hideport;
+							if(hp == 0) {
+								addstring(&str, "		<address>%s Server at %s Port %d</address>\n", tw_server, name, port);
+							} else {
+								addstring(&str, "		<address>%s Server at %s</address>\n", tw_server, name, port);
+							}
 							addstring(&str, "	</body>\n");
 							addstring(&str, "</html>\n");
 							tw_process_page(s, sock, tw_http_status(200), "text/html", NULL, str, strlen(str), 0, 0);
@@ -761,7 +771,7 @@ int32_t tw_server_pass(void* ptr) {
 					fclose(f);
 				}
 			} else {
-				tw_http_error(s, sock, 404, name, port);
+				tw_http_error(s, sock, 404, name, port, vhost_entry);
 			}
 			free(path);
 		}
@@ -769,7 +779,7 @@ int32_t tw_server_pass(void* ptr) {
 		free(host);
 	} else if(ret == -1) {
 	} else {
-		tw_http_error(s, sock, 400, name, port);
+		tw_http_error(s, sock, 400, name, port, &config.root);
 	}
 	tw_free_request(&req);
 cleanup:

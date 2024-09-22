@@ -60,6 +60,7 @@ struct tw_config_entry {
 	char* sslkey;
 	char* sslcert;
 	char* root;
+	int hideport;
 	struct tw_dir_entry dirs[MAX_DIRS];
 	int dir_count;
 	struct tw_mime_entry mimes[MAX_DIRS];
