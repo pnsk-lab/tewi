@@ -606,10 +606,11 @@ int32_t tw_server_pass(void* ptr) {
 							char* str = malloc(1);
 							str[0] = 0;
 							char** items = cm_scandir(path);
-							addstring(&str, "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n");
+							addstring(&str, "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n");
 							addstring(&str, "<html>\n");
 							addstring(&str, "	<head>\n");
 							addstring(&str, "		<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
+							addstring(&str, "		<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
 							addstring(&str, "		<title>Index of %h</title>\n", req.path);
 							addstring(&str, "	</head>\n");
 							addstring(&str, "	<body>\n");
