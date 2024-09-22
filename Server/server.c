@@ -557,7 +557,7 @@ int32_t tw_server_pass(void* ptr) {
 			for(i = 0; i < sizeof(reserved_names) / sizeof(reserved_names[0]); i++) {
 				char* n = cm_strcat("/", reserved_names[i]);
 				if(cm_nocase_endswith(rpath, n)) {
-					tw_http_error(s, sock, 403, name, port);
+					tw_http_error(s, sock, 403, name, port, vhost_entry);
 					free(n);
 					rej = true;
 					cm_log("Server", "XP Patch ; rejecting access to device");
