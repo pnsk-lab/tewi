@@ -6,7 +6,6 @@ fail() {
 	rm -f tewi.exe
 	rm -f generated.conf
 	rm -f itworks.html
-	mv config.h.bak config.h
 	exit 1
 }
 

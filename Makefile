@@ -40,7 +40,7 @@ install: all ./Tool/genconf ./Tool/itworks
 	cp ./Manpage/tewi.conf.5 $(PREFIX)/share/man/man5/
 
 format:
-	clang-format --verbose -i `find ./Server ./Common ./Module "(" -name "*.c" -or -name "*.h" ")" -and -not -name "strptime.*"` config.h
+	clang-format --verbose -i `find ./Server ./Common ./Module ./Tool "(" -name "*.c" -or -name "*.h" ")" -and -not -name "strptime.*"` config.h
 
 get-version:
 	@grep "define TW_VERSION" Server/tw_version.h | grep -Eo '"[^\]+' | sed -E 's/^"//g'
