@@ -81,6 +81,7 @@ struct tw_config {
 	void* modules[MAX_MODULES];
 	int module_count;
 	int vhost_count;
+	char* server_admin;
 	char* server_root;
 	char* extension;
 };

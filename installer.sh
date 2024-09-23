@@ -4,6 +4,8 @@
 fail() {
 	rm -f tewi-service.exe
 	rm -f tewi.exe
+	rm -f generated.conf
+	rm -f itworks.html
 	mv config.h.bak config.h
 	exit 1
 }
@@ -21,6 +23,8 @@ make clean || fail
 make PLATFORM=$1-service -j4 || fail
 cp Server/tewi.exe tewi-service.exe
 cd Server
+../Tool/genconf > ../generated.conf
+../Tool/itworks > ../itworks.html
 makensis -DVERSION=$VERSION install.nsi
 cp install.exe ../install-nossl.exe
 rm -f tewi.exe tewi-service.exe
@@ -35,7 +39,12 @@ make clean || fail
 make PLATFORM=$1-service -j4 || fail
 cp Server/tewi.exe tewi-service.exe
 cd Server
+../Tool/genconf > ../generated.conf
+../Tool/itworks > ../itworks.html
 makensis -DVERSION=$VERSION install.nsi
 cp install.exe ../install-ssl.exe
 rm -f tewi.exe tewi-service.exe
 cd ..
+
+rm itworks.html
+rm generated.conf

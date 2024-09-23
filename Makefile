@@ -10,13 +10,16 @@ FLAGS = PWD=$(PWD) PLATFORM=$(PLATFORM) PREFIX=$(PREFIX)
 
 .PHONY: all format clean ./Server ./Common ./Module ./Manpage get-version
 
-all: ./Server ./Module ./Manpage
+all: ./Server ./Module ./Manpage ./Tool/genconf ./Tool/itworks
 
-./Server/option: ./Server/option.c
-	cc -o $@ ./Server/option.c
+./Tool/option: ./Tool/option.c
+	cc -o $@ ./Tool/option.c
 
-./Server:: ./Common ./Server/option
-	$(MAKE) -C $@ $(FLAGS) EXTOBJS="`./Server/option objs ../`" EXTLIBS="`./Server/option libs ../`" EXTCFLAGS="`./Server/option cflags ../`" EXTLDFLAGS="`./Server/option ldflags ../`"
+./Tool/genconf: ./Tool/genconf.c
+	cc -o $@ ./Tool/genconf.c
+
+./Server:: ./Common ./Tool/option
+	$(MAKE) -C $@ $(FLAGS) EXTOBJS="`./Tool/option objs ../`" EXTLIBS="`./Tool/option libs ../`" EXTCFLAGS="`./Tool/option cflags ../`" EXTLDFLAGS="`./Tool/option ldflags ../`"
 
 ./Module:: ./Common
 	$(MAKE) -C $@ $(FLAGS)
@@ -27,9 +30,11 @@ all: ./Server ./Module ./Manpage
 ./Manpage::
 	$(MAKE) -C $@ $(FLAGS)
 
-install: all
-	mkdir -p $(PREFIX)/bin $(PREFIX)/lib/tewi $(PREFIX)/share/man/man5 $(PREFIX)/etc
-	if [ ! -e $(PREFIX)/etc/tewi.conf ]; then cp example.conf $(PREFIX)/etc/tewi.conf ; fi
+install: all ./Tool/genconf ./Tool/itworks
+	mkdir -p $(PREFIX)/bin $(PREFIX)/lib/tewi $(PREFIX)/share/man/man5 $(PREFIX)/etc $(PREFIX)/www
+	if [ ! -e $(PREFIX)/etc/tewi.conf ]; then ( ./Tool/genconf $(PREFIX) > $(PREFIX)/etc/tewi.conf || ( rm $(PREFIX)/etc/tewi.conf ; exit 1 ) ) ; fi
+	if [ ! -e $(PREFIX)/www/index.html ]; then ( ./Tool/itworks > $(PREFIX)/www/index.html || ( rm $(PREFIX)/www/index.html ; exit 1 ) ) ; fi
+	if [ ! -e $(PREFIX)/www/pbtewi.gif ]; then ( cp Binary/pbtewi.gif $(PREFIX)/www/ || ( rm $(PREFIX)/www/pbtewi.gif ; exit 1 ) ) ; fi
 	cp ./Server/tewi $(PREFIX)/bin/
 	cp ./Module/*.so $(PREFIX)/lib/tewi/
 	cp ./Manpage/tewi.conf.5 $(PREFIX)/share/man/man5/
@@ -45,4 +50,4 @@ clean:
 	$(MAKE) -C ./Module $(FLAGS) clean
 	$(MAKE) -C ./Common $(FLAGS) clean
 	$(MAKE) -C ./Manpage $(FLAGS) clean
-	rm -f ./Server/option
+	rm -f ./Tool/option ./Tool/genconf

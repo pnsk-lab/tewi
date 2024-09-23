@@ -89,7 +89,9 @@ void tw_config_init(void) {
 	config.module_count = 0;
 	config.extension = NULL;
 	config.server_root = cm_strdup(PREFIX);
+	config.server_admin = cm_strdup(SERVER_ADMIN);
 	gethostname(config.hostname, 1024);
+	chdir(config.server_root);
 }
 
 int tw_config_read(const char* path) {
@@ -246,6 +248,14 @@ int tw_config_read(const char* path) {
 							chdir(r[1]);
 							free(config.server_root);
 							config.server_root = cm_strdup(r[1]);
+						}
+					} else if(cm_strcaseequ(r[0], "ServerAdmin")) {
+						if(r[1] == NULL) {
+							cm_log("Config", "Missing email at line %d", ln);
+							stop = 1;
+						} else {
+							free(config.server_admin);
+							config.server_admin = cm_strdup(r[1]);
 						}
 					} else if(cm_strcaseequ(r[0], "DocumentRoot")) {
 						if(r[1] == NULL) {

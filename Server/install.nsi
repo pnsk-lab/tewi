@@ -12,7 +12,7 @@ LoadLanguageFile "${NSISDIR}\Contrib\Language files\English.nlf"
 Name "Tewi HTTPd"
 OutFile "install.exe"
 InstallDir "C:\Tewi"
-Icon "tewi-install.ico"
+Icon "../Binary/tewi-install.ico"
 LicenseData ../LICENSE
 
 LangString EXEC_ONLY ${LANG_ENGLISH} "Install the executable only"
@@ -42,9 +42,10 @@ Section
 	File "../Module/*.dll"
 	SetOutPath "$INSTDIR\etc"
 	SetOverWrite off
-	File /oname=tewi.conf "../example-win.conf"
+	File /oname=tewi.conf "../generated.conf"
 	SetOutPath "$INSTDIR\www"
 	File /oname=index.html "../itworks.html"
+	File /oname=pbtewi.gif "../Binary/pbtewi.gif"
 	SetOutPath "$INSTDIR\www\icons"
 	File "../Icons/*.png"
 	SetOverWrite on

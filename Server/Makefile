@@ -15,7 +15,7 @@ tewi$(EXEC): $(OBJS) ../Common/common.a
 .c.o:
 	$(CC) $(CFLAGS) $(EXTCFLAGS) -c -o $@ $<
 
-tewi.res: tewi.rc tewi.ico
+tewi.res: tewi.rc ../Binary/tewi.ico
 	$(WINDRES) tewi.rc -O coff -o $@
 
 clean:
