@@ -35,7 +35,7 @@ all: ./Server ./Module ./Manpage ./Tool/genconf ./Tool/itworks
 
 install: all ./Tool/genconf ./Tool/itworks
 	mkdir -p $(PREFIX)/bin $(PREFIX)/lib/tewi $(PREFIX)/share/man/man5 $(PREFIX)/etc $(PREFIX)/www
-	if [ ! -e $(PREFIX)/etc/tewi.conf ]; then ( ./Tool/genconf $(PREFIX) > $(PREFIX)/etc/tewi.conf || ( rm $(PREFIX)/etc/tewi.conf ; exit 1 ) ) ; fi
+	if [ ! -e $(PREFIX)/etc/tewi.conf ]; then ( ./Tool/genconf $(PREFIX) lib/tewi so > $(PREFIX)/etc/tewi.conf || ( rm $(PREFIX)/etc/tewi.conf ; exit 1 ) ) ; fi
 	if [ ! -e $(PREFIX)/www/index.html ]; then ( ./Tool/itworks > $(PREFIX)/www/index.html || ( rm $(PREFIX)/www/index.html ; exit 1 ) ) ; fi
 	if [ ! -e $(PREFIX)/www/pbtewi.gif ]; then ( cp Binary/pbtewi.gif $(PREFIX)/www/ || ( rm $(PREFIX)/www/pbtewi.gif ; exit 1 ) ) ; fi
 	cp ./Server/tewi $(PREFIX)/bin/

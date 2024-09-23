@@ -22,7 +22,7 @@ make clean || fail
 make PLATFORM=$1-service -j4 || fail
 cp Server/tewi.exe tewi-service.exe
 cd Server
-../Tool/genconf "C:/Tewi" > ../generated.conf
+../Tool/genconf "C:/Tewi" modules dll > ../generated.conf
 ../Tool/itworks > ../itworks.html
 makensis -DVERSION=$VERSION install.nsi
 cp install.exe ../install-nossl.exe
@@ -38,7 +38,7 @@ make clean || fail
 make PLATFORM=$1-service -j4 || fail
 cp Server/tewi.exe tewi-service.exe
 cd Server
-../Tool/genconf "C:/Tewi" > ../generated.conf
+../Tool/genconf "C:/Tewi" modules dll > ../generated.conf
 ../Tool/itworks > ../itworks.html
 makensis -DVERSION=$VERSION install.nsi
 cp install.exe ../install-ssl.exe

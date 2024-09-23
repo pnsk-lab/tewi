@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 int main(int argc, char** argv) {
-	if(argc < 2) {
+	if(argc < 4) {
 		return 1;
 	}
 	printf("##\n");
@@ -18,8 +18,8 @@ int main(int argc, char** argv) {
 	printf("\n");
 	printf("ServerAdmin %s\n", SERVER_ADMIN);
 	printf("\n");
-	printf("LoadModule lib/tewi/mod_cgi.so\n");
-	printf("#LoadModule lib/tewi/mod_proxy.so\n");
+	printf("LoadModule %s/mod_cgi.%s\n", argv[2], argv[3]);
+	printf("#LoadModule %s/mod_proxy.%s\n", argv[2], argv[3]);
 	printf("\n");
 	printf("Listen 80\n");
 	printf("#ListenSSL 443\n");
