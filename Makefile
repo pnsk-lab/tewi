@@ -40,7 +40,7 @@ install: all ./Tool/genconf ./Tool/itworks
 	if [ ! -e $(PREFIX)/www/pbtewi.gif ]; then ( cp Binary/pbtewi.gif $(PREFIX)/www/ || ( rm $(PREFIX)/www/pbtewi.gif ; exit 1 ) ) ; fi
 	cp ./Server/tewi $(PREFIX)/bin/
 	cp ./Module/*.so $(PREFIX)/lib/tewi/
-	cp ./Manpage/tewi.conf.5 $(PREFIX)/share/man/man5/
+	cp ./Manpage/tewi.8 $(PREFIX)/share/man/man8/
 
 format:
 	clang-format --verbose -i `find ./Server ./Common ./Module ./Tool "(" -name "*.c" -or -name "*.h" ")" -and -not -name "strptime.*"` config.h

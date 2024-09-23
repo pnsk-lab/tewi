@@ -2,10 +2,10 @@
 
 .PHONY: all clean
 
-all: tewi.conf.5
+all: tewi.8
 
-tewi.conf.5: tewi.conf.5.tmpl
-	sed "s%@PREFIX@%$(PREFIX)%g" tewi.conf.5.tmpl > $@ || rm -f $@
+tewi.8: tewi.8.tmpl
+	sed "s%@PREFIX@%$(PREFIX)%g" tewi.8.tmpl > $@ || rm -f $@
 
 clean:
-	rm -f tewi.conf.5
+	rm -f tewi.8
