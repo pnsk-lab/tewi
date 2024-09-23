@@ -91,7 +91,6 @@ void tw_config_init(void) {
 	config.server_root = cm_strdup(PREFIX);
 	config.server_admin = cm_strdup(SERVER_ADMIN);
 	gethostname(config.hostname, 1024);
-	chdir(config.server_root);
 }
 
 int tw_config_read(const char* path) {
