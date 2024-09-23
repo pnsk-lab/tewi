@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
 	printf("\n");
 	printf("ServerAdmin %s\n", SERVER_ADMIN);
 	printf("\n");
-	printf("LoadModule %s/mod_cgi.%s\n", argv[2], argv[3]);
+	printf("#LoadModule %s/mod_cgi.%s\n", argv[2], argv[3]);
 	printf("#LoadModule %s/mod_proxy.%s\n", argv[2], argv[3]);
 	printf("\n");
 	printf("Listen 80\n");
