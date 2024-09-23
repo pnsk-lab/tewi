@@ -525,12 +525,16 @@ int32_t tw_server_pass(void* ptr) {
 			if(mod_req != NULL) {
 				int ret = mod_req(&tools, &req, &res);
 				int co = ret & 0xff;
-				if(co == _TW_MODULE_PASS) continue;
-				if(co == _TW_MODULE_STOP) {
+				if(co == _TW_MODULE_PASS) {
+					continue;
+				} else if(co == _TW_MODULE_STOP) {
+					/* Handle response here ... */
 					res._processed = true;
 					break;
-				}
-				if(co == _TW_MODULE_ERROR) {
+				} else if(co == _TW_MODULE_STOP2) {
+					res._processed = true;
+					break;
+				} else if(co == _TW_MODULE_ERROR) {
 					tw_http_error(s, sock, (ret & 0xffff00) >> 8, name, port, vhost_entry);
 					break;
 				}

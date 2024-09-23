@@ -18,6 +18,7 @@ struct tw_tool {
 enum TW_MODULE_RETURN {
 	_TW_MODULE_PASS = 0, /* Pass to the next module. */
 	_TW_MODULE_STOP,     /* Do not pass to the next module. */
+	_TW_MODULE_STOP2,    /* Do not pass to the next module, and do not handle response. */
 	_TW_MODULE_ERROR,    /* Error, and do not pass to the next module. */
 
 	_TW_CONFIG_PARSED, /* Got parsed */
@@ -27,6 +28,7 @@ enum TW_MODULE_RETURN {
 
 #define TW_MODULE_PASS _TW_MODULE_PASS
 #define TW_MODULE_STOP _TW_MODULE_STOP
+#define TW_MODULE_STOP2 _TW_MODULE_STOP2
 #define TW_MODULE_ERROR(x) (_TW_MODULE_ERROR | ((x) << 8))
 
 #define TW_CONFIG_PARSED _TW_CONFIG_PARSED
