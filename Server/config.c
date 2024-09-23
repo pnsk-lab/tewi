@@ -244,6 +244,8 @@ int tw_config_read(const char* path) {
 							stop = 1;
 						} else {
 							chdir(r[1]);
+							free(config.server_root);
+							config.server_root = cm_strdup(r[1]);
 						}
 					} else if(cm_strcaseequ(r[0], "DocumentRoot")) {
 						if(r[1] == NULL) {
@@ -295,6 +297,7 @@ int tw_config_read(const char* path) {
 									break;
 								}
 							} else {
+								cm_log("Config", "Could not load the module at line %d", ln);
 								stop = 1;
 								break;
 							}
