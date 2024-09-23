@@ -502,7 +502,7 @@ int32_t tw_server_pass(void* ptr) {
 					cmtime = mktime(&tm);
 					cmtime -= (btm->tm_hour * 60 + btm->tm_min) * 60;
 #else
-						cmtime = timegm(&tm);
+					cmtime = timegm(&tm);
 #endif
 				}
 			}
@@ -513,6 +513,7 @@ int32_t tw_server_pass(void* ptr) {
 		for(i = 0; vhost[i] != 0; i++) {
 			if(vhost[i] == ':') {
 				host[i] = 0;
+				name = host;
 				port = atoi(host + i + 1);
 				break;
 			}
