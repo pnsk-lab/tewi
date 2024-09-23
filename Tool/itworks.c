@@ -14,7 +14,7 @@ int main() {
 	printf("	<body vlink=\"#000080\" text=\"#000000\" link=\"#0000FF\" bgcolor=\"#FFFFFF\" alink=\"#FF0000\">\n");
 	printf("		<h1 align=\"center\">It works! - Tewi HTTPd is installed on this website!</h1>\n");
 	printf("		<p>\n");
-	printf("			If you can see this page, then the people who own this domain have just installed <a href=\"http://nishi.boats/tewi\">Tewi HTTPd</a> successfully. They not have to add content to this directoryt and replace this placeholder page, or else point the server at their real content.\n");
+	printf("			If you can see this page, then the people who own this domain have just installed <a href=\"http://nishi.boats/tewi\">Tewi HTTPd</a> successfully. They now have to add content to this directoryt and replace this placeholder page, or else point the server at their real content.\n");
 	printf("		</p>\n");
 	printf("		<hr>\n");
 	printf("		<blockquote>\n");
@@ -25,7 +25,7 @@ int main() {
 	printf("			For the document, take a look at <a href=\"https://trac.nishi.boats/tewi\">Tewi HTTPd Trac</a>.\n");
 	printf("		</p>\n");
 	printf("		<p>\n");
-	printf("			The Webmaster of this site is free to use the iamge below on the Tewi HTTPd-powered Web server. Thanks for using Tewi HTTPd!\n");
+	printf("			The Webmaster of this site is free to use the image below on the Tewi HTTPd-powered Web server. Thanks for using Tewi HTTPd!\n");
 	printf("		</p>\n");
 	printf("		<div align=\"center\">\n");
 	printf("			<img src=\"/pbtewi.gif\">\n");
