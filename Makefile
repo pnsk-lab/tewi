@@ -18,6 +18,9 @@ all: ./Server ./Module ./Manpage ./Tool/genconf ./Tool/itworks
 ./Tool/genconf: ./Tool/genconf.c
 	cc -o $@ ./Tool/genconf.c
 
+./Tool/itworks: ./Tool/itworks.c
+	cc -o $@ ./Tool/itworks.c
+
 ./Server:: ./Common ./Tool/option
 	$(MAKE) -C $@ $(FLAGS) EXTOBJS="`./Tool/option objs ../`" EXTLIBS="`./Tool/option libs ../`" EXTCFLAGS="`./Tool/option cflags ../`" EXTLDFLAGS="`./Tool/option ldflags ../`"
 
