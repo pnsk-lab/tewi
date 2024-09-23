@@ -3,6 +3,10 @@
 #ifndef __TW_SERVER_H__
 #define __TW_SERVER_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "../config.h"
 
 #include <stddef.h>
@@ -20,6 +24,10 @@ size_t tw_write(SSL* ssl, int s, void* data, size_t len);
 #else
 size_t tw_read(void* ssl, int s, void* data, size_t len);
 size_t tw_write(void* ssl, int s, void* data, size_t len);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

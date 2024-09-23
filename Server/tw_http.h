@@ -3,6 +3,10 @@
 #ifndef __TW_HTTP_H__
 #define __TW_HTTP_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 
 #include "../config.h"
@@ -32,6 +36,10 @@ int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req);
 #else
 int tw_http_parse(void* ssl, int sock, struct tw_http_request* req);
 #endif
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

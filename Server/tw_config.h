@@ -3,6 +3,10 @@
 #ifndef __TW_CONFIG_H__
 #define __TW_CONFIG_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "tw_http.h"
 
 #include <stdint.h>
@@ -90,5 +94,9 @@ void tw_config_init(void);
 int tw_config_read(const char* path);
 struct tw_config_entry* tw_vhost_match(const char* name, int port);
 bool tw_permission_allowed(const char* path, SOCKADDR addr, struct tw_http_request req, struct tw_config_entry* vhost);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -502,7 +502,7 @@ int32_t tw_server_pass(void* ptr) {
 					cmtime = mktime(&tm);
 					cmtime -= (btm->tm_hour * 60 + btm->tm_min) * 60;
 #else
-					cmtime = timegm(&tm);
+						cmtime = timegm(&tm);
 #endif
 				}
 			}
