@@ -513,11 +513,11 @@ int32_t tw_server_pass(void* ptr) {
 		for(i = 0; vhost[i] != 0; i++) {
 			if(vhost[i] == ':') {
 				host[i] = 0;
-				name = host;
 				port = atoi(host + i + 1);
 				break;
 			}
 		}
+		name = host;
 		cm_log("Server", "Hostname is `%s', port is `%d'", host, port);
 		struct tw_config_entry* vhost_entry = tw_vhost_match(host, port);
 		for(i = 0; i < config.module_count; i++) {
