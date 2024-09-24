@@ -54,6 +54,8 @@ char** cm_scandir(const char* path) {
 		r[i + 1] = NULL;
 		free(old);
 
+		closedir(dir);
+
 		return r;
 	} else {
 		return NULL;
