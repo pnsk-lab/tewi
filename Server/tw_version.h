@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#define TW_VERSION "1.06B\0"
+#define TW_VERSION "1.06C\0"
 
 const char* tw_get_version(void);
 const char* tw_get_platform(void);
