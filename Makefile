@@ -12,13 +12,13 @@ FLAGS = PWD=$(PWD) PLATFORM=$(PLATFORM) PREFIX=$(PREFIX)
 
 all: ./Server ./Module ./Manpage ./Tool/genconf ./Tool/itworks
 
-./Tool/option: ./Tool/option.c
+./Tool/option: ./Tool/option.c config.h
 	cc -o $@ ./Tool/option.c
 
-./Tool/genconf: ./Tool/genconf.c
+./Tool/genconf: ./Tool/genconf.c config.h
 	cc -o $@ ./Tool/genconf.c
 
-./Tool/itworks: ./Tool/itworks.c
+./Tool/itworks: ./Tool/itworks.c config.h
 	cc -o $@ ./Tool/itworks.c
 
 ./Server:: ./Common ./Tool/option
