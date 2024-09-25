@@ -102,6 +102,9 @@ void tw_config_init(void) {
 	config.server_admin = cm_strdup(SERVER_ADMIN);
 	config.defined[0] = NULL;
 	gethostname(config.hostname, 1024);
+#ifdef HAS_CHROOT
+	tw_add_define("HAS_CHROOT");
+#endif
 }
 
 int tw_config_read(const char* path) {
@@ -273,6 +276,16 @@ int tw_config_read(const char* path) {
 							current->sslcert = cm_strdup(r[1]);
 						}
 #endif
+#ifdef HAS_CHROOT
+					} else if(cm_strcaseequ(r[0], "ChrootDirectory")) {
+						if(r[1] == NULL) {
+							cm_log("Config", "Missing path at line %d", ln);
+							stop = 1;
+						} else {
+							if(current->chroot_path != NULL) free(current->chroot_path);
+							current->chroot_path = cm_strdup(r[1]);
+						}
+#endif
 					} else if(cm_strcaseequ(r[0], "ForceLog")) {
 						if(r[1] == NULL) {
 							cm_log("Config", "Missing log at line %d", ln);
@@ -345,14 +358,6 @@ int tw_config_read(const char* path) {
 						} else {
 							if(current->root != NULL) free(current->root);
 							current->root = cm_strdup(strcmp(r[1], "/") == 0 ? "" : r[1]);
-						}
-					} else if(cm_strcaseequ(r[0], "ServerRoot")) {
-						if(r[1] == NULL) {
-							cm_log("Config", "Missing path at line %d", ln);
-							stop = 1;
-						} else {
-							if(config.server_root != NULL) free(config.server_root);
-							config.server_root = cm_strdup(r[1]);
 						}
 					} else if(cm_strcaseequ(r[0], "MIMEType")) {
 						if(r[1] == NULL) {

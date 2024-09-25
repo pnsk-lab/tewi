@@ -279,6 +279,8 @@ const char* tw_http_status(int code) {
 		return "403 Forbidden";
 	} else if(code == 404) {
 		return "404 Not Found";
+	} else if(code == 500) {
+		return "500 Internal Server Error";
 	} else {
 		return "400 Bad Request";
 	}
@@ -507,6 +509,7 @@ int32_t tw_server_pass(void* ptr) {
 				}
 			}
 		}
+		bool rej = false;
 		cm_log("Server", "Host is %s", vhost);
 		int port = s == NULL ? 80 : 443;
 		char* host = cm_strdup(vhost);
@@ -520,6 +523,20 @@ int32_t tw_server_pass(void* ptr) {
 		name = host;
 		cm_log("Server", "Hostname is `%s', port is `%d'", host, port);
 		struct tw_config_entry* vhost_entry = tw_vhost_match(host, port);
+#ifdef HAS_CHROOT
+		char* chrootpath = vhost_entry->chroot_path != NULL ? vhost_entry->chroot_path : config.root.chroot_path;
+		if(chrootpath != NULL) {
+			if(chdir(chrootpath) == 0) {
+				if(chroot(".") == 0) {
+					cm_log("Server", "Chroot successful");
+				}
+			} else {
+				cm_log("Server", "chdir() failed, cannot chroot");
+				tw_http_error(s, sock, 500, name, port, vhost_entry);
+				rej = true;
+			}
+		}
+#endif
 		for(i = 0; i < config.module_count; i++) {
 			tw_mod_request_t mod_req = (tw_mod_request_t)tw_module_symbol(config.modules[i], "mod_request");
 			if(mod_req != NULL) {
@@ -544,7 +561,6 @@ int32_t tw_server_pass(void* ptr) {
 			cm_log("Server", "Document root is %s", vhost_entry->root == NULL ? "not set" : vhost_entry->root);
 			char* path = cm_strcat(vhost_entry->root == NULL ? "" : vhost_entry->root, req.path);
 			cm_log("Server", "Filesystem path is %s", path);
-			bool rej = false;
 #ifdef __MINGW32__
 			char* rpath = cm_strdup(path);
 			for(i = strlen(rpath) - 1; i >= 0; i--) {
@@ -776,7 +792,9 @@ int32_t tw_server_pass(void* ptr) {
 					fclose(f);
 				}
 			} else {
-				tw_http_error(s, sock, 404, name, port, vhost_entry);
+				if(!rej) {
+					tw_http_error(s, sock, 404, name, port, vhost_entry);
+				}
 			}
 			free(path);
 		}

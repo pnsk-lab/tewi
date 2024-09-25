@@ -42,8 +42,7 @@ int main(int argc, char** argv) {
 	printf("Readme README\n");
 	printf("\n");
 	printf("DocumentRoot %s/www\n", argv[1]);
-	printf("\n");
 	printf("BeginDirectory %s/www\n", argv[1]);
-	printf("\tAllow all\n");
+	printf("	Allow all\n");
 	printf("EndDirectory\n", argv[1]);
 }
