@@ -10,7 +10,7 @@ FLAGS = PWD=$(PWD) PLATFORM=$(PLATFORM) PREFIX=$(PREFIX)
 
 .PHONY: all format clean ./Server ./Common ./Module get-version
 
-all: ./Server ./Module ./Manpage ./Tool/genconf ./Tool/itworks
+all: ./Server ./Module ./Tool/genconf ./Tool/itworks
 
 ./Tool/option: ./Tool/option.c config.h
 	cc -o $@ ./Tool/option.c
