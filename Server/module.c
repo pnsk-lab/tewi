@@ -58,6 +58,11 @@ void tw_add_version(const char* string) {
 
 void tw_add_define(const char* string) {
 	int i;
+	for(i = 0; config.defined[i] != NULL; i++) {
+		if(strcmp(config.defined[i], string) == 0) {
+			return;
+		}
+	}
 	for(i = 0; config.defined[i] != NULL; i++)
 		;
 	config.defined[i] = cm_strdup(string);
@@ -72,6 +77,7 @@ void tw_delete_define(const char* string) {
 			for(; config.defined[i] != NULL; i++) {
 				config.defined[i] = config.defined[i + 1];
 			}
+			break;
 		}
 	}
 }
