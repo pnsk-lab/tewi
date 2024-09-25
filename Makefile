@@ -33,6 +33,9 @@ all: ./Server ./Module ./Manpage ./Tool/genconf ./Tool/itworks
 ./Manpage::
 	$(MAKE) -C $@ $(FLAGS)
 
+./README: ./README.tmpl
+	sed "s/@VERSION@/`grep "define TW_VERSION" Server/tw_version.h | grep -Eo '"[^\]+' | sed -E 's/^"//g'`/g" ./README.tmpl > $@
+
 install: all ./Tool/genconf ./Tool/itworks
 	mkdir -p $(PREFIX)/bin $(PREFIX)/lib/tewi $(PREFIX)/share/man/man5 $(PREFIX)/etc $(PREFIX)/www
 	if [ ! -e $(PREFIX)/etc/tewi.conf ]; then ( ./Tool/genconf $(PREFIX) lib/tewi so > $(PREFIX)/etc/tewi.conf || ( rm $(PREFIX)/etc/tewi.conf ; exit 1 ) ) ; fi
