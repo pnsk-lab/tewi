@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#include "../config.h"
+
 #include "tw_http.h"
 
 #include <stdint.h>
@@ -61,8 +63,10 @@ struct tw_icon_entry {
 struct tw_config_entry {
 	char* name;
 	int port;
+#ifndef NO_SSL
 	char* sslkey;
 	char* sslcert;
+#endif
 	char* root;
 	int hideport;
 	struct tw_dir_entry dirs[MAX_DIRS];
@@ -75,11 +79,15 @@ struct tw_config_entry {
 	int index_count;
 	char* readmes[MAX_README];
 	int readme_count;
+#ifdef HAS_CHROOT
+	char* chroot_path;
+#endif
 };
 
 struct tw_config {
 	uint64_t ports[MAX_PORTS + 1]; /* If port & (1 << 32) is non-zero, it is SSL */
 	char hostname[1025];
+	char* defined[1025];
 	struct tw_config_entry root;
 	struct tw_config_entry vhosts[MAX_VHOSTS];
 	void* modules[MAX_MODULES];

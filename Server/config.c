@@ -72,12 +72,19 @@ void tw_config_init(void) {
 		config.ports[i] = -1;
 	}
 	for(i = 0; i < MAX_VHOSTS; i++) {
+#ifndef NO_SSL
 		config.vhosts[i].sslkey = NULL;
 		config.vhosts[i].sslcert = NULL;
+#endif
 		config.vhosts[i].root = NULL;
+#ifdef HAS_CHROOT
+		config.vhosts[i].chroot_path = NULL;
+#endif
 	}
+#ifndef NO_SSL
 	config.root.sslkey = NULL;
 	config.root.sslcert = NULL;
+#endif
 	config.root.root = NULL;
 	config.root.mime_count = 0;
 	config.root.dir_count = 0;
@@ -85,11 +92,15 @@ void tw_config_init(void) {
 	config.root.index_count = 0;
 	config.root.readme_count = 0;
 	config.root.hideport = 0;
+#ifdef HAS_CHROOT
+	config.root.chroot_path = NULL;
+#endif
 	config.vhost_count = 0;
 	config.module_count = 0;
 	config.extension = NULL;
 	config.server_root = cm_strdup(PREFIX);
 	config.server_admin = cm_strdup(SERVER_ADMIN);
+	config.defined[0] = NULL;
 	gethostname(config.hostname, 1024);
 }
 
@@ -98,6 +109,8 @@ int tw_config_read(const char* path) {
 	char cbuf[2];
 	cbuf[1] = 0;
 	int ln = 0;
+	int ifbr = 0;
+	int ignore = -1;
 	FILE* f = fopen(path, "r");
 	if(f != NULL) {
 		char* line = malloc(1);
@@ -114,12 +127,31 @@ int tw_config_read(const char* path) {
 				if(strlen(l) > 0 && l[0] != '#') {
 					char** r = cm_split(l, " \t");
 					int i;
-					if(cm_strcaseequ(r[0], "Include") || cm_strcaseequ(r[0], "IncludeOptional")) {
+					if(ignore != -1 && ifbr >= ignore) {
+						if(cm_strcaseequ(r[0], "EndIf")) ifbr--;
+						if(ifbr == 0) {
+							ignore = -1;
+						}
+					} else if(cm_strcaseequ(r[0], "Include") || cm_strcaseequ(r[0], "IncludeOptional")) {
 						for(i = 1; r[i] != NULL; i++) {
 							if(tw_config_read(r[i]) != 0 && cm_strcaseequ(r[0], "Include")) {
 								stop = 1;
 								break;
 							}
+						}
+					} else if(cm_strcaseequ(r[0], "Define")) {
+						if(r[1] == NULL) {
+							cm_log("Config", "Missing name at line %d", ln);
+							stop = 1;
+						} else {
+							tw_add_define(r[1]);
+						}
+					} else if(cm_strcaseequ(r[0], "Undefine")) {
+						if(r[1] == NULL) {
+							cm_log("Config", "Missing name at line %d", ln);
+							stop = 1;
+						} else {
+							tw_delete_define(r[1]);
 						}
 					} else if(cm_strcaseequ(r[0], "BeginDirectory")) {
 						if(dir != NULL) {
@@ -223,6 +255,7 @@ int tw_config_read(const char* path) {
 						current->hideport = 1;
 					} else if(cm_strcaseequ(r[0], "ShowPort")) {
 						current->hideport = 0;
+#ifndef NO_SSL
 					} else if(cm_strcaseequ(r[0], "SSLKey")) {
 						if(r[1] == NULL) {
 							cm_log("Config", "Missing path at line %d", ln);
@@ -238,6 +271,55 @@ int tw_config_read(const char* path) {
 						} else {
 							if(current->sslcert != NULL) free(current->sslcert);
 							current->sslcert = cm_strdup(r[1]);
+						}
+#endif
+					} else if(cm_strcaseequ(r[0], "ForceLog")) {
+						if(r[1] == NULL) {
+							cm_log("Config", "Missing log at line %d", ln);
+							stop = 1;
+						} else {
+							cm_force_log(r[1]);
+						}
+					} else if(cm_strcaseequ(r[0], "EndIf")) {
+						if(ifbr == 0) {
+							cm_log("Config", "Missing BeginIf at line %d", ln);
+							stop = 1;
+						}
+						ifbr--;
+					} else if(cm_strcaseequ(r[0], "BeginIf") || cm_strcaseequ(r[0], "BeginIfNot")) {
+						if(r[1] == NULL) {
+							cm_log("Config", "Missing condition type at line %d", ln);
+						} else {
+							ifbr++;
+							bool ign = false;
+							if(cm_strcaseequ(r[1], "False")) {
+								ign = true;
+							} else if(cm_strcaseequ(r[1], "True")) {
+							} else if(cm_strcaseequ(r[1], "Defined")) {
+								if(r[2] == NULL) {
+									cm_log("Config", "Missing name at line %d", ln);
+									stop = 1;
+								} else {
+									int i;
+									bool fndit = false;
+									for(i = 0; config.defined[i] != NULL; i++) {
+										if(strcmp(config.defined[i], r[2]) == 0) {
+											fndit = true;
+											break;
+										}
+									}
+									if(!fndit) {
+										ign = true;
+									}
+								}
+							} else {
+								cm_log("Config", "Unknown condition type at line %d", ln);
+								stop = 1;
+							}
+							if(cm_strcaseequ(r[0], "BeginIfNot")) ign = !ign;
+							if(ign) {
+								ignore = ifbr - 1;
+							}
 						}
 					} else if(cm_strcaseequ(r[0], "ServerRoot")) {
 						if(r[1] == NULL) {

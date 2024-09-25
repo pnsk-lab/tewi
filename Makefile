@@ -8,7 +8,7 @@ include Platform/$(PLATFORM).mk
 
 FLAGS = PWD=$(PWD) PLATFORM=$(PLATFORM) PREFIX=$(PREFIX)
 
-.PHONY: all format clean ./Server ./Common ./Module ./Manpage get-version
+.PHONY: all format clean ./Server ./Common ./Module get-version
 
 all: ./Server ./Module ./Manpage ./Tool/genconf ./Tool/itworks
 
@@ -30,10 +30,7 @@ all: ./Server ./Module ./Manpage ./Tool/genconf ./Tool/itworks
 ./Common::
 	$(MAKE) -C $@ $(FLAGS)
 
-./Manpage::
-	$(MAKE) -C $@ $(FLAGS)
-
-./README: ./README.tmpl
+./README: ./README.tmpl ./Server/tw_version.h
 	sed "s/@VERSION@/`grep "define TW_VERSION" Server/tw_version.h | grep -Eo '"[^\]+' | sed -E 's/^"//g'`/g" ./README.tmpl > $@
 
 install: all ./Tool/genconf ./Tool/itworks
@@ -43,7 +40,6 @@ install: all ./Tool/genconf ./Tool/itworks
 	if [ ! -e $(PREFIX)/www/pbtewi.gif ]; then ( cp Binary/pbtewi.gif $(PREFIX)/www/ || ( rm $(PREFIX)/www/pbtewi.gif ; exit 1 ) ) ; fi
 	cp ./Server/tewi $(PREFIX)/bin/
 	cp ./Module/*.so $(PREFIX)/lib/tewi/
-	cp ./Manpage/tewi.8 $(PREFIX)/share/man/man8/
 
 format:
 	clang-format --verbose -i `find ./Server ./Common ./Module ./Tool "(" -name "*.c" -or -name "*.h" ")" -and -not -name "strptime.*"` config.h
@@ -55,5 +51,4 @@ clean:
 	$(MAKE) -C ./Server $(FLAGS) clean
 	$(MAKE) -C ./Module $(FLAGS) clean
 	$(MAKE) -C ./Common $(FLAGS) clean
-	$(MAKE) -C ./Manpage $(FLAGS) clean
 	rm -f ./Tool/option ./Tool/genconf

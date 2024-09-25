@@ -9,6 +9,7 @@
 #include <cm_string.h>
 #include <cm_log.h>
 
+#include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 
@@ -55,9 +56,30 @@ void tw_add_version(const char* string) {
 	}
 }
 
+void tw_add_define(const char* string) {
+	int i;
+	for(i = 0; config.defined[i] != NULL; i++)
+		;
+	config.defined[i] = cm_strdup(string);
+	config.defined[i + 1] = NULL;
+}
+
+void tw_delete_define(const char* string) {
+	int i;
+	for(i = 0; config.defined[i] != NULL; i++) {
+		if(strcmp(config.defined[i], string) == 0) {
+			free(config.defined[i]);
+			for(; config.defined[i] != NULL; i++) {
+				config.defined[i] = config.defined[i + 1];
+			}
+		}
+	}
+}
+
 void tw_init_tools(struct tw_tool* tools) {
 	tools->log = cm_log;
 	tools->add_version = tw_add_version;
+	tools->add_define = tw_add_define;
 }
 
 int tw_module_init(void* mod) {

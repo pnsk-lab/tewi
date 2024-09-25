@@ -13,6 +13,8 @@ extern "C" {
 struct tw_tool {
 	void (*log)(const char* name, const char* log, ...);
 	void (*add_version)(const char* string);
+	void (*add_define)(const char* string);
+	void (*delete_define)(const char* string);
 };
 
 enum TW_MODULE_RETURN {
@@ -44,6 +46,10 @@ void* tw_module_load(const char* path);
 void* tw_module_symbol(void* mod, const char* sym);
 void tw_init_tools(struct tw_tool* tools);
 int tw_module_init(void* mod);
+
+void tw_add_version(const char* string);
+void tw_add_define(const char* string);
+void tw_delete_define(const char* string);
 #endif
 
 #ifdef __cplusplus
