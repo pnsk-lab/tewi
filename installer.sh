@@ -1,6 +1,12 @@
 #!/bin/sh
 # $Id$
 
+if [ "x$1" = "x" ]; then
+	echo "Usage: $0 win32"
+	echo "       $0 win64"
+	exit 1
+fi
+
 fail() {
 	rm -f tewi-service.exe
 	rm -f tewi.exe
