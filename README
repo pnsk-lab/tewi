@@ -17,7 +17,6 @@ Server/      Directory containing source code for the server
 Module/      Directory containing source code for the module
 Tool/        Directory containing source code for the compile time configs
 Common/      Directory containing source code for the common codes
-Manpage/     Directory containing manpage
 Binary/      Directory containing binary stuff
 Icons/       Directory containing icons for directory indexing
 
