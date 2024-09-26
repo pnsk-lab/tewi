@@ -274,7 +274,7 @@ const char* tw_http_status(int code) {
 	if(code == 200) {
 		return "200 OK";
 	} else if(code == 301) {
-		return "308 Moved Permanently";
+		return "301 Moved Permanently";
 	} else if(code == 308) {
 		return "308 Permanent Redirect";
 	} else if(code == 400) {
