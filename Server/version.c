@@ -17,6 +17,8 @@ const char* tw_platform =
     "Windows"
 #elif defined(__HAIKU__)
     "Haiku"
+#elif defined(__CYGWIN__)
+    "Cygwin"
 #else
     "Unix"
 #endif

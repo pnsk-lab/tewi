@@ -30,8 +30,10 @@
 #include <cm_dir.h>
 
 #ifdef __MINGW32__
+#ifndef NO_GETADDRINFO
 #include <ws2tcpip.h>
 #include <wspiapi.h>
+#endif
 #include <winsock2.h>
 #include <process.h>
 #include <windows.h>
@@ -47,7 +49,9 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#ifndef NO_GETADDRINFO
 #include <netdb.h>
+#endif
 #endif
 
 #ifdef __HAIKU__
@@ -448,8 +452,10 @@ int32_t tw_server_pass(void* ptr) {
 
 	char address[513];
 	address[0] = 0;
+#ifndef NO_GETADDRINFO
 	struct sockaddr* sa = (struct sockaddr*)&addr;
 	getnameinfo(sa, sizeof(addr), address, 512, NULL, 0, NI_NUMERICHOST);
+#endif
 
 	struct tw_http_request req;
 	struct tw_http_response res;
