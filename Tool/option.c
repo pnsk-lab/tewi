@@ -28,4 +28,5 @@ int main(int argc, char** argv) {
 #endif
 	}
 	printf("\n");
+	return 0;
 }

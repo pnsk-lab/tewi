@@ -32,4 +32,5 @@ int main() {
 	printf("		</div>\n");
 	printf("	</body>\n");
 	printf("</html>\n");
+	return 0;
 }

@@ -86,6 +86,7 @@ int main(int argc, char** argv) {
 	if(st != -1) return st;
 	tw_server_loop();
 #endif
+	return 0;
 }
 
 int startup(int argc, char** argv) {

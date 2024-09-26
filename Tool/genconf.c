@@ -45,4 +45,5 @@ int main(int argc, char** argv) {
 	printf("BeginDirectory %s/www\n", argv[1]);
 	printf("	Allow all\n");
 	printf("EndDirectory\n", argv[1]);
+	return 0;
 }
