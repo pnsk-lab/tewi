@@ -796,8 +796,12 @@ int32_t tw_server_pass(void* ptr) {
 					char* mime = tw_get_mime(ext, vhost_entry);
 					if(ext != NULL) free(ext);
 					FILE* f = fopen(path, "rb");
-					tw_process_page(s, sock, tw_http_status(200), mime, f, NULL, st.st_size, st.st_mtime, cmtime);
-					fclose(f);
+					if(f == NULL) {
+						tw_http_error(s, sock, 403, name, port, vhost_entry);
+					} else {
+						tw_process_page(s, sock, tw_http_status(200), mime, f, NULL, st.st_size, st.st_mtime, cmtime);
+						fclose(f);
+					}
 				}
 			} else {
 				if(!rej) {
