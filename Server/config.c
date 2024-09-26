@@ -409,7 +409,7 @@ int tw_config_read(const char* path) {
 						for(i = 1; r[i] != NULL; i++) {
 							current->indexes[current->index_count++] = cm_strdup(r[i]);
 						}
-					} else if(cm_strcaseequ(r[0], "Readme")) {
+					} else if(cm_strcaseequ(r[0], "ReadmeFile")) {
 						for(i = 1; r[i] != NULL; i++) {
 							current->readmes[current->readme_count++] = cm_strdup(r[i]);
 						}

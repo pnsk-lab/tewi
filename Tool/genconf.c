@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
 	printf("Icon misc/parent /icons/parent.png\n");
 	printf("DirectoryIndex index.html\n");
 	printf("\n");
-	printf("Readme README\n");
+	printf("ReadmeFile README\n");
 	printf("\n");
 	printf("DocumentRoot %s/www\n", argv[1]);
 	printf("BeginDirectory %s/www\n", argv[1]);
