@@ -273,6 +273,8 @@ void tw_process_page(SSL* ssl, int sock, const char* status, const char* type, F
 const char* tw_http_status(int code) {
 	if(code == 200) {
 		return "200 OK";
+	} else if(code == 301) {
+		return "308 Moved Permanently";
 	} else if(code == 308) {
 		return "308 Permanent Redirect";
 	} else if(code == 400) {
@@ -602,7 +604,7 @@ int32_t tw_server_pass(void* ptr) {
 					if(req.path[strlen(req.path) - 1] != '/') {
 						cm_log("Server", "Accessing directory without the slash at the end");
 						char* headers[3] = {"Location", cm_strcat(req.path, "/"), NULL};
-						_tw_process_page(s, sock, tw_http_status(308), NULL, NULL, NULL, 0, headers, 0, 0);
+						_tw_process_page(s, sock, tw_http_status(301), NULL, NULL, NULL, 0, headers, 0, 0);
 						free(headers[1]);
 					} else {
 						char** indexes = vhost_entry->index_count == 0 ? config.root.indexes : vhost_entry->indexes;
