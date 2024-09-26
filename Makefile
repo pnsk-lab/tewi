@@ -51,4 +51,4 @@ clean:
 	$(MAKE) -C ./Server $(FLAGS) clean
 	$(MAKE) -C ./Module $(FLAGS) clean
 	$(MAKE) -C ./Common $(FLAGS) clean
-	rm -f ./Tool/option ./Tool/genconf
+	rm -f ./Tool/option ./Tool/genconf ./Tool/itworks
