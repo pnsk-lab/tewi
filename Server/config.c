@@ -105,6 +105,9 @@ void tw_config_init(void) {
 #ifdef HAS_CHROOT
 	tw_add_define("HAS_CHROOT");
 #endif
+#ifndef NO_SSL
+	tw_add_define("HAS_SSL");
+#endif
 }
 
 int tw_config_read(const char* path) {
@@ -244,7 +247,11 @@ int tw_config_read(const char* path) {
 							vhost = NULL;
 							current = &config.root;
 						}
-					} else if(cm_strcaseequ(r[0], "Listen") || cm_strcaseequ(r[0], "ListenSSL")) {
+					} else if(cm_strcaseequ(r[0], "Listen")
+#ifndef NO_SSL
+						  || cm_strcaseequ(r[0], "ListenSSL")
+#endif
+					) {
 						for(i = 1; r[i] != NULL; i++) {
 							uint64_t port = atoi(r[i]);
 							cm_log("Config", "Going to listen at port %d%s", (int)port, cm_strcaseequ(r[0], "ListenSSL") ? " with SSL" : "");
