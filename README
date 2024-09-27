@@ -1,5 +1,5 @@
 
-Tewi HTTPd version 2.01
+Tewi HTTPd version 2.02-wip
 
 Original by Nishi <nishi@nishi.boats>
 
@@ -44,3 +44,4 @@ NetBSD                       Working on NetBSD/amd64 10.0
 Haiku                        Working
 PlayStation Portable         Working, missing module support
                              TODO: Get multi-threading working (maybe)
+PlayStation 3                TODO
