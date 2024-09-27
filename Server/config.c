@@ -101,7 +101,11 @@ void tw_config_init(void) {
 	config.server_root = cm_strdup(PREFIX);
 	config.server_admin = cm_strdup(SERVER_ADMIN);
 	config.defined[0] = NULL;
+#ifdef _PSP
+	strcpy(config.hostname, "psp");
+#else
 	gethostname(config.hostname, 1024);
+#endif
 #ifdef HAS_CHROOT
 	tw_add_define("HAS_CHROOT");
 #endif
@@ -410,7 +414,7 @@ int tw_config_read(const char* path) {
 							current->indexes[current->index_count++] = cm_strdup(r[i]);
 						}
 					} else if(cm_strcaseequ(r[0], "ReadmeFile") || cm_strcaseequ(r[0], "Readme")) {
-						if(cm_strcaseequ(r[0], "Readme")){
+						if(cm_strcaseequ(r[0], "Readme")) {
 							cm_force_log("NOTE: Readme directive is deprecated.");
 						}
 						for(i = 1; r[i] != NULL; i++) {

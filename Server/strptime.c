@@ -35,7 +35,7 @@
 //#include <sys/cdefs.h>
 //__RCSID("$NetBSD: strptime.c,v 1.62 2017/08/24 01:01:09 ginsbach Exp $");
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__)
 
 #include <ctype.h>
 #include <string.h>

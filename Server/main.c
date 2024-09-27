@@ -25,6 +25,16 @@
 #include <windows.h>
 #endif
 
+#ifdef _PSP
+#include <pspkernel.h>
+#include <pspdebug.h>
+
+PSP_MODULE_INFO("Tewi HTTPd", PSP_MODULE_USER, 1, 1);
+PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
+
+#define printf(...) pspDebugScreenPrintf(__VA_ARGS__)
+#endif
+
 extern bool cm_do_log;
 extern struct tw_config config;
 extern FILE* logfile;
@@ -82,6 +92,10 @@ int main(int argc, char** argv) {
 	SERVICE_TABLE_ENTRY table[] = {{"Tewi HTTPd", servmain}, {NULL, NULL}};
 	StartServiceCtrlDispatcher(table);
 #else
+#ifdef _PSP
+	pspDebugScreenInit();
+	pspDebugScreenSetXY(0, 0);
+#endif
 	int st = startup(argc, argv);
 	if(st != -1) return st;
 	tw_server_loop();
@@ -113,6 +127,7 @@ int startup(int argc, char** argv) {
 						return 1;
 					}
 					confpath = argv[i];
+#ifndef _PSP
 				} else if(strcmp(argv[i], "--logfile") == 0 || strcmp(argv[i], "-l") == 0) {
 					i++;
 					if(argv[i] == NULL) {
@@ -127,6 +142,7 @@ int startup(int argc, char** argv) {
 						fprintf(stderr, "Failed to open logfile\n");
 						return 1;
 					}
+#endif
 				} else if(strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-V") == 0) {
 					printf("Tewi HTTPd Tewi/%s\n", tw_get_version());
 					printf("Under public domain.\n");
@@ -134,7 +150,9 @@ int startup(int argc, char** argv) {
 					printf("\n");
 					printf("Usage: %s [--config|-C config] [--verbose|-v] [--version|-V]\n", argv[0]);
 					printf("--config  | -C config      : Specify config\n");
+#ifndef _PSP
 					printf("--logfile | -l logfile     : Specify logfile\n");
+#endif
 					printf("--verbose | -v             : Verbose mode\n");
 					printf("--version | -V             : Version information\n");
 					return 0;

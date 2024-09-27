@@ -13,13 +13,22 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+extern struct tw_config config;
+
+#ifdef _PSP
+void* tw_module_load(const char* path) { return NULL; }
+
+void* tw_module_symbol(void* mod, const char* sym) { return NULL; }
+
+int tw_module_init(void* mod) { return 1; }
+
+#else
+
 #ifdef __MINGW32__
 #include <windows.h>
 #else
 #include <dlfcn.h>
 #endif
-
-extern struct tw_config config;
 
 void* tw_module_load(const char* path) {
 	char* p = getcwd(NULL, 0);
@@ -45,6 +54,19 @@ void* tw_module_symbol(void* mod, const char* sym) {
 	return dlsym(mod, sym);
 #endif
 }
+
+int tw_module_init(void* mod) {
+	tw_mod_init_t mod_init = (tw_mod_init_t)tw_module_symbol(mod, "mod_init");
+	if(mod_init == NULL) {
+		cm_log("Module", "Could not init a module");
+		return 1;
+	} else {
+		struct tw_tool tools;
+		tw_init_tools(&tools);
+		return mod_init(&config, &tools);
+	}
+}
+#endif
 
 void tw_add_version(const char* string) {
 	if(config.extension == NULL) {
@@ -86,16 +108,4 @@ void tw_init_tools(struct tw_tool* tools) {
 	tools->log = cm_log;
 	tools->add_version = tw_add_version;
 	tools->add_define = tw_add_define;
-}
-
-int tw_module_init(void* mod) {
-	tw_mod_init_t mod_init = (tw_mod_init_t)tw_module_symbol(mod, "mod_init");
-	if(mod_init == NULL) {
-		cm_log("Module", "Could not init a module");
-		return 1;
-	} else {
-		struct tw_tool tools;
-		tw_init_tools(&tools);
-		return mod_init(&config, &tools);
-	}
 }

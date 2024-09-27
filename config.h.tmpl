@@ -27,6 +27,26 @@
 /* Windows should not have chroot */
 #endif
 
+#if defined(_PSP) && !defined(NO_IPV6)
+#define NO_IPV6
+/* PSP does not have IPv6 */
+#endif
+
+#if defined(_PSP) && defined(USE_POLL)
+#undef USE_POLL
+/* Force select(2) for PSP */
+#endif
+
+#if defined(_PSP) && defined(HAS_CHROOT)
+#undef HAS_CHROOT
+/* PSP should not have chroot */
+#endif
+
+#if defined(_PSP) && !defined(NO_GETADDRINFO)
+#define NO_GETADDRINFO
+/* PSP should not have getaddrinfo */
+#endif
+
 #endif
 
 /*

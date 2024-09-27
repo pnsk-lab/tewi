@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <time.h>
 
 #include <cm_string.h>
@@ -52,6 +53,10 @@
 #ifndef NO_GETADDRINFO
 #include <netdb.h>
 #endif
+#endif
+
+#ifdef _PSP
+#include "strptime.h"
 #endif
 
 #ifdef __HAIKU__
@@ -506,7 +511,7 @@ int32_t tw_server_pass(void* ptr) {
 				} else if(cm_strcaseequ(req.headers[i], "If-Modified-Since")) {
 					struct tm tm;
 					strptime(req.headers[i + 1], "%a, %d %b %Y %H:%M:%S GMT", &tm);
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_PSP)
 					time_t t = 0;
 					struct tm* btm = localtime(&t);
 					cmtime = mktime(&tm);
@@ -906,7 +911,7 @@ void tw_server_loop(void) {
 #endif
 				if(cond) {
 					SOCKADDR claddr;
-					int clen = sizeof(claddr);
+					socklen_t clen = sizeof(claddr);
 					int sock = accept(sockets[i], (struct sockaddr*)&claddr, &clen);
 					cm_log("Server", "New connection accepted");
 #if defined(__MINGW32__) || defined(__HAIKU__)

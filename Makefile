@@ -3,6 +3,7 @@
 PWD = `pwd`
 PLATFORM = generic
 PREFIX = /usr/local
+MODULE = ./Module
 
 include Platform/$(PLATFORM).mk
 
@@ -10,7 +11,7 @@ FLAGS = PWD=$(PWD) PLATFORM=$(PLATFORM) PREFIX=$(PREFIX)
 
 .PHONY: all format clean ./Server ./Common ./Module get-version
 
-all: ./Server ./Module ./Tool/genconf ./Tool/itworks
+all: ./Server $(MODULE) ./Tool/genconf ./Tool/itworks
 
 ./Tool/option: ./Tool/option.c config.h
 	cc -o $@ ./Tool/option.c

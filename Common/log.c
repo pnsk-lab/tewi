@@ -11,6 +11,10 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#ifdef _PSP
+#include <pspdebug.h>
+#endif
+
 FILE* logfile;
 
 bool cm_do_log = false;
@@ -22,7 +26,11 @@ void cm_force_log(const char* log) {
 	struct tm* tm = localtime(&t);
 	char date[513];
 	strftime(date, 512, "%a %b %d %H:%M:%S %Z %Y", tm);
+#ifdef _PSP
+	pspDebugScreenPrintf("[%s] %s\n", date, log);
+#else
 	fprintf(logfile, "[%s] %s\n", date, log);
+#endif
 	fflush(logfile);
 }
 
@@ -68,7 +76,11 @@ void cm_log(const char* name, const char* log, ...) {
 		}
 	}
 
+#ifdef _PSP
+	pspDebugScreenPrintf("%s %s\n", namebuf, result);
+#else
 	fprintf(logfile, "%s %s\n", namebuf, result);
+#endif
 	va_end(args);
 
 	free(result);
