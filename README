@@ -30,3 +30,17 @@ Version Number Defined
 | | +- Bug fixes / security fixes
 | +--- Minor features
 +----- Breaking changes
+
+Platform support
+--------------------------
+Currently, these platforms are supported:
+
+Windows 9x                   Experimental port, buggy
+                             TODO: Get it more stable
+                             TODO: Use MinGW not Cygwin
+Windows NT 4.0 and later     Working on NT 4.0 SP6a
+Linux                        Working on Debian GNU/Linux 12 (x86_64)
+NetBSD                       Working on NetBSD/amd64 10.0
+Haiku                        Working
+PlayStation Portable         Working, missing module support
+                             TODO: Get multi-threading working (maybe)
