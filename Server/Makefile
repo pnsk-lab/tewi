@@ -16,7 +16,7 @@ tewi$(EXEC): $(OBJS) ../Common/common.a
 	$(SERVADD)
 
 tewi.pbp: tewi_strip$(EXEC) param.sfo
-	pack-pbp $@ param.sfo NULL NULL NULL NULL NULL tewi_strip$(EXEC) NULL
+	pack-pbp $@ param.sfo ../Binary/psp.png NULL NULL NULL NULL tewi_strip$(EXEC) NULL
 
 param.sfo:
 	mksfoex -d MEMSIZE=1 'Tewi HTTPd' $@

@@ -430,8 +430,10 @@ struct pass_entry {
 unsigned int WINAPI tw_server_pass(void* ptr) {
 #elif defined(__HAIKU__)
 int32_t tw_server_pass(void* ptr) {
+#elif defined(_PSP)
+int tw_server_pass(void* ptr) {
 #endif
-#if defined(__HAIKU__) || defined(__MINGW32__)
+#if defined(__HAIKU__) || defined(__MINGW32__) || defined(_PSP)
 	int sock = ((struct pass_entry*)ptr)->sock;
 	bool ssl = ((struct pass_entry*)ptr)->ssl;
 	int port = ((struct pass_entry*)ptr)->port;
@@ -854,6 +856,8 @@ struct thread_entry {
 };
 #endif
 
+extern int running;
+
 void tw_server_loop(void) {
 	int i;
 #if defined(__MINGW32__) || defined(__HAIKU__)
@@ -872,7 +876,7 @@ void tw_server_loop(void) {
 		fd_set fdset;
 		struct timeval tv;
 #endif
-	while(1) {
+	while(running) {
 #ifdef USE_POLL
 		int ret = poll(pollfds, sockcount, 1000);
 #else
@@ -914,7 +918,7 @@ void tw_server_loop(void) {
 					socklen_t clen = sizeof(claddr);
 					int sock = accept(sockets[i], (struct sockaddr*)&claddr, &clen);
 					cm_log("Server", "New connection accepted");
-#if defined(__MINGW32__) || defined(__HAIKU__)
+#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_PSP)
 					struct pass_entry* e = malloc(sizeof(*e));
 					e->sock = sock;
 					e->ssl = config.ports[i] & (1ULL << 32);
@@ -940,29 +944,31 @@ void tw_server_loop(void) {
 							break;
 						}
 					}
+#elif defined(_PSP)
+						tw_server_pass(e);
 #elif defined(__HAIKU__)
-						int j;
-						for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
-							if(threads[j].used) {
-								thread_info info;
-								bool kill = false;
-								if(get_thread_info(threads[j].thread, &info) == B_OK) {
-								} else {
-									kill = true;
-								}
-								if(kill) {
-									threads[j].used = false;
-								}
+					int j;
+					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
+						if(threads[j].used) {
+							thread_info info;
+							bool kill = false;
+							if(get_thread_info(threads[j].thread, &info) == B_OK) {
+							} else {
+								kill = true;
+							}
+							if(kill) {
+								threads[j].used = false;
 							}
 						}
-						for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
-							if(!threads[j].used) {
-								threads[j].thread = spawn_thread(tw_server_pass, "Tewi HTTPd", 60, e);
-								threads[j].used = true;
-								resume_thread(threads[j].thread);
-								break;
-							}
+					}
+					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
+						if(!threads[j].used) {
+							threads[j].thread = spawn_thread(tw_server_pass, "Tewi HTTPd", 60, e);
+							threads[j].used = true;
+							resume_thread(threads[j].thread);
+							break;
 						}
+					}
 #else
 					pid_t pid = fork();
 					if(pid == 0) {

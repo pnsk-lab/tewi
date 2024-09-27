@@ -19,6 +19,8 @@ const char* tw_platform =
     "Haiku"
 #elif defined(__CYGWIN__)
     "Cygwin"
+#elif defined(_PSP)
+    "PSP"
 #else
     "Unix"
 #endif
