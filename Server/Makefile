@@ -21,6 +21,19 @@ tewi.pbp: tewi_strip$(EXEC) param.sfo
 param.sfo:
 	mksfoex -d MEMSIZE=1 'Tewi HTTPd' $@
 
+tewi.self: tewi_strip$(EXEC)
+	sprxlinker tewi_strip$(EXEC)
+	make_self_npdrm tewi_strip$(EXEC) $@ UP0001-TEWI_00-0000000000000000
+	fself tewi_strip$(EXEC) tewi.fake.self
+
+tewi.pkg: tewi.self
+	mkdir -p pkg/USRDIR
+	cp /usr/local/ps3dev/bin/ICON0.PNG pkg/ICON0.PNG
+	make_self_npdrm tewi.elf pkg/USRDIR/EBOOT.BIN UP0001-TEWI_00-0000000000000000
+	sfo.py --title "Tewi HTTPd" --appid "TEWI" -f /usr/local/ps3dev/bin/sfo.xml pkg/PARAM.SFO
+	pkg.py --contentid UP0001-TEWI_00-0000000000000000 pkg/ $@
+	rm -rf pkg
+
 .c.o:
 	$(CC) $(CFLAGS) $(EXTCFLAGS) -c -o $@ $<
 
@@ -28,4 +41,4 @@ tewi.res: tewi.rc ../Binary/tewi.ico
 	$(WINDRES) tewi.rc -O coff -o $@
 
 clean:
-	rm -f *.o tewi *.exe *.res *.elf *.sfo *.pbp
+	rm -f *.o tewi *.exe *.res *.elf *.sfo *.pbp *.self *.pkg

@@ -21,6 +21,8 @@ const char* tw_platform =
     "Cygwin"
 #elif defined(_PSP)
     "PSP"
+#elif defined(__PPU__)
+    "PS3"
 #else
     "Unix"
 #endif

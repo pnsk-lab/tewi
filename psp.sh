@@ -2,6 +2,7 @@
 # $Id$
 export PSPDEV=/usr/local/pspdev
 export PATH=$PATH:/usr/local/pspdev/bin
+cat config.h.tmpl | sed -E 's/#undef (NO_SSL)/#define \1/g' > config.h
 rm -rf httpd
 make PLATFORM=psp DESTDIR=httpd/ install
 mv httpd/ms0:/PSP/GAME/httpd/* httpd/

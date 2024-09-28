@@ -18,6 +18,9 @@ extern "C" {
 #include <winsock2.h>
 #define NO_IPV6
 #else
+#ifdef __PPU__
+#include <net/net.h>
+#endif
 #include <netinet/in.h>
 #ifdef __HAIKU__
 #define NO_IPV6

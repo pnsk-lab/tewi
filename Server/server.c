@@ -42,14 +42,20 @@
 #include "strptime.h"
 #else
 #ifdef USE_POLL
+#ifdef __PPU__
+#include <net/poll.h>
+#else
 #include <poll.h>
+#endif
 #else
 #include <sys/select.h>
 #endif
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#ifndef __PPU__
 #include <netinet/tcp.h>
+#endif
 #ifndef NO_GETADDRINFO
 #include <netdb.h>
 #endif
@@ -135,11 +141,13 @@ int tw_server_init(void) {
 			cm_log("Server", "setsockopt failure (reuseaddr)");
 			return 1;
 		}
+#ifndef __PPU__
 		if(setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (void*)&yes, sizeof(yes)) < 0) {
 			close_socket(sock);
 			cm_log("Server", "setsockopt failure (nodelay)");
 			return 1;
 		}
+#endif
 #ifndef NO_IPV6
 		int no = 0;
 		if(setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, (void*)&no, sizeof(no)) < 0) {
@@ -430,10 +438,10 @@ struct pass_entry {
 unsigned int WINAPI tw_server_pass(void* ptr) {
 #elif defined(__HAIKU__)
 int32_t tw_server_pass(void* ptr) {
-#elif defined(_PSP)
+#elif defined(_PSP) || defined(__PPU__)
 int tw_server_pass(void* ptr) {
 #endif
-#if defined(__HAIKU__) || defined(__MINGW32__) || defined(_PSP)
+#if defined(__HAIKU__) || defined(__MINGW32__) || defined(_PSP) || defined(__PPU__)
 	int sock = ((struct pass_entry*)ptr)->sock;
 	bool ssl = ((struct pass_entry*)ptr)->ssl;
 	int port = ((struct pass_entry*)ptr)->port;
@@ -513,7 +521,7 @@ int tw_server_pass(void* ptr) {
 				} else if(cm_strcaseequ(req.headers[i], "If-Modified-Since")) {
 					struct tm tm;
 					strptime(req.headers[i + 1], "%a, %d %b %Y %H:%M:%S GMT", &tm);
-#if defined(__MINGW32__) || defined(_PSP)
+#if defined(__MINGW32__) || defined(_PSP) || defined(__PPU__)
 					time_t t = 0;
 					struct tm* btm = localtime(&t);
 					cmtime = mktime(&tm);
@@ -918,7 +926,7 @@ void tw_server_loop(void) {
 					socklen_t clen = sizeof(claddr);
 					int sock = accept(sockets[i], (struct sockaddr*)&claddr, &clen);
 					cm_log("Server", "New connection accepted");
-#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_PSP)
+#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_PSP) || defined(__PPU__)
 					struct pass_entry* e = malloc(sizeof(*e));
 					e->sock = sock;
 					e->ssl = config.ports[i] & (1ULL << 32);
@@ -944,7 +952,7 @@ void tw_server_loop(void) {
 							break;
 						}
 					}
-#elif defined(_PSP)
+#elif defined(_PSP) || defined(__PPU__)
 						tw_server_pass(e);
 #elif defined(__HAIKU__)
 					int j;

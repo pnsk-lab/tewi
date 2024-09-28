@@ -101,8 +101,10 @@ void tw_config_init(void) {
 	config.server_root = cm_strdup(PREFIX);
 	config.server_admin = cm_strdup(SERVER_ADMIN);
 	config.defined[0] = NULL;
-#ifdef _PSP
+#if defined(_PSP)
 	strcpy(config.hostname, "psp");
+#elif defined(__PPU__)
+	strcpy(config.hostname, "ps3");
 #else
 	gethostname(config.hostname, 1024);
 #endif

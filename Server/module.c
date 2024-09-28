@@ -15,7 +15,7 @@
 
 extern struct tw_config config;
 
-#ifdef _PSP
+#if defined(_PSP) || defined(__PPU__)
 void* tw_module_load(const char* path) { return NULL; }
 
 void* tw_module_symbol(void* mod, const char* sym) { return NULL; }

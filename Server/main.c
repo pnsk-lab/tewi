@@ -240,6 +240,9 @@ int main(int argc, char** argv) {
 		sceKernelExitGame();
 	}
 	printf("Connected, My IP is %s\n", info.ip);
+#elif defined(__PPU__)
+	printf("PS3 Bootstrap, Tewi/%s\n", tw_get_version());
+	netInitialize();
 #endif
 	int st = startup(argc, argv);
 	if(st != -1) {

@@ -19,7 +19,11 @@
 #include <winsock2.h>
 #else
 #ifdef USE_POLL
+#ifdef __PPU__
+#include <net/poll.h>
+#else
 #include <poll.h>
+#endif
 #else
 #include <sys/select.h>
 #endif
