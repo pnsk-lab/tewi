@@ -44,4 +44,5 @@ NetBSD                       Working on NetBSD/amd64 10.0
 Haiku                        Working
 PlayStation Portable         Working, missing module support
                              TODO: Get multi-threading working (maybe)
-PlayStation 3                TODO
+PlayStation 3                Working, missing module support
+                             TODO: Get multi-threading working (maybe)
