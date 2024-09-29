@@ -1,6 +1,6 @@
 # $Id$
 
-PREFIX = /dev_hdd0/httpd
+PREFIX = /dev_hdd0/game/TEWI_00-0/USRDIR
 
 CC = ppu-gcc
 AR = ppu-ar

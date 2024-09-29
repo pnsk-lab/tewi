@@ -308,42 +308,42 @@ int tt_height;
 
 void tt_putstr(const char* str) {
 	int i;
-	for(i = 0; str[i] != 0; i++){
+	for(i = 0; str[i] != 0; i++) {
 		tvram[tt_y * tt_width + tt_x] = str[i];
-		if(str[i] == '\n'){
+		if(str[i] == '\n') {
 			tt_x = 0;
 			tt_y++;
-		}else{
+		} else {
 			tt_x++;
-			if(tt_x == tt_width){
+			if(tt_x == tt_width) {
 				tt_x = 0;
 				tt_y++;
 			}
 		}
-		if(tt_y == tt_height){
+		if(tt_y == tt_height) {
 			tt_y--;
 			int x, y;
-			for(y = 0; y < tt_height - 1; y++){
-				for(x = 0; x < tt_width; x++){
+			for(y = 0; y < tt_height - 1; y++) {
+				for(x = 0; x < tt_width; x++) {
 					tvram[y * tt_width + x] = tvram[(y + 1) * tt_width + x];
 				}
 			}
-			for(x = 0; x < tt_width; x++){
+			for(x = 0; x < tt_width; x++) {
 				tvram[(tt_height - 1) * tt_width + x] = 0;
 			}
 		}
 	}
 }
 
-void tt_putchar(struct rsx_buffer* buffer, int x, int y, uint8_t c){
+void tt_putchar(struct rsx_buffer* buffer, int x, int y, uint8_t c) {
 	int i, j;
 	if(c < 0x20) c = 0x20;
 	if(c >= 0x7f) c = 0x20;
-	for(i = 0; i < 7; i++){
+	for(i = 0; i < 7; i++) {
 		uint8_t l = font[(c - 0x20) * 8 + i];
-		for(j = 0; j < 5; j++){
+		for(j = 0; j < 5; j++) {
 			uint32_t c = 0;
-			if(l & (1 << 7)){
+			if(l & (1 << 7)) {
 				c = 0xffffff;
 			}
 			l = l << 1;
@@ -387,17 +387,17 @@ void tt_printf(const char* tmpl, ...) {
 	for(i = 0; tmpl[i] != 0; i++) {
 		if(tmpl[i] == '%') {
 			i++;
-			if(tmpl[i] == 's'){
+			if(tmpl[i] == 's') {
 				char* tmp = log;
 				log = cm_strcat(tmp, va_arg(va, char*));
 				free(tmp);
-			}else if(tmpl[i] == 'd'){
+			} else if(tmpl[i] == 'd') {
 				char buf[513];
 				sprintf(buf, "%d", va_arg(va, int));
 				char* tmp = log;
 				log = cm_strcat(tmp, buf);
 				free(tmp);
-			}else if(tmpl[i] == '%'){
+			} else if(tmpl[i] == '%') {
 				char* tmp = log;
 				log = cm_strcat(tmp, "%");
 				free(tmp);

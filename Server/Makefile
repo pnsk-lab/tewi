@@ -28,8 +28,8 @@ tewi.self: tewi_strip$(EXEC)
 
 tewi.pkg: tewi.self
 	mkdir -p pkg/USRDIR
-	cp /usr/local/ps3dev/bin/ICON0.PNG pkg/ICON0.PNG
-	make_self_npdrm tewi.elf pkg/USRDIR/EBOOT.BIN UP0001-TEWI_00-0000000000000000
+	cp ../Binary/ps3.png pkg/ICON0.PNG
+	make_self_npdrm tewi_strip$(EXEC) pkg/USRDIR/EBOOT.BIN UP0001-TEWI_00-0000000000000000
 	sfo.py --title "Tewi HTTPd" --appid "TEWI" -f /usr/local/ps3dev/bin/sfo.xml pkg/PARAM.SFO
 	pkg.py --contentid UP0001-TEWI_00-0000000000000000 pkg/ $@
 	rm -rf pkg
