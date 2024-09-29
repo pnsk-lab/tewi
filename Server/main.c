@@ -42,7 +42,9 @@ PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
 #define STDERR_LOG(...) pspDebugScreenPrintf(__VA_ARGS__)
 #elif defined(__ps2sdk__)
 #include <debug.h>
+#include <iopcontrol.h>
 #include <sifrpc.h>
+#include <kernel.h>
 
 #define printf(...) scr_printf(__VA_ARGS__)
 #define STDERR_LOG(...) scr_printf(__VA_ARGS__)
@@ -626,10 +628,13 @@ int main(int argc, char** argv) {
 	netInitialize();
 #elif defined(__ps2sdk__)
 	SifInitRpc(0);
+	while(!SifIopReset("", 0))
+		;
+	while(!SifIopSync())
+		;
 	init_scr();
 	scr_printf("PS2 Bootstrap, Tewi/%s\n", tw_get_version());
-	while(1)
-		;
+	SleepThread();
 #endif
 	int st = startup(argc, argv);
 	if(st != -1) {
