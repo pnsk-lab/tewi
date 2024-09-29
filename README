@@ -45,6 +45,5 @@ Haiku                    Working
 PlayStation Portable     Working, missing module support
                          TODO: Get multi-threading working (maybe)
 PlayStation 2            Not working
-PlayStation 3            Working on RPCS3, missing module support
-                         I don't know if it works on real machine or not.
+PlayStation 3            Working, missing module support
                          TODO: Get multi-threading working (maybe)
