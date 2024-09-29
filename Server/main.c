@@ -46,6 +46,16 @@ PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
 
 #define printf(...) scr_printf(__VA_ARGS__)
 #define STDERR_LOG(...) scr_printf(__VA_ARGS__)
+#elif defined(__PPU__)
+#include <rsx/gcm_sys.h>
+#include <rsx/rsx.h>
+#include <sysutil/video.h>
+#include <malloc.h>
+#include <sys/thread.h>
+#include <stdarg.h>
+
+#define printf(...) tt_printf(__VA_ARGS__)
+#define STDERR_LOG(...) tt_printf(__VA_ARGS__)
 #else
 #define STDERR_LOG(...) fprintf(stderr, __VA_ARGS__)
 #endif
@@ -113,6 +123,296 @@ int psp_callback_thread(SceSize args, void* argp) {
 	sceKernelSleepThreadCB();
 	return 0;
 }
+#endif
+
+#ifdef __PPU__
+uint32_t depth_pitch;
+uint32_t depth_offset;
+uint32_t* depth_buffer;
+
+#define CB_SIZE 0x100000
+#define HOST_SIZE (32 * 1024 * 1024)
+
+struct rsx_buffer {
+	int width, height, id;
+	uint32_t* ptr;
+	uint32_t offset;
+};
+
+void wait_rsx(gcmContextData* ctx, uint32_t label) {
+	rsxSetWriteBackendLabel(ctx, GCM_INDEX_TYPE_32B, label);
+
+	rsxFlushBuffer(ctx);
+
+	while(*(uint32_t*)gcmGetLabelAddress(GCM_INDEX_TYPE_32B) != label) usleep(50);
+
+	label++;
+}
+
+void wait_rsx_until_idle(gcmContextData* ctx) {
+	uint32_t label = 1;
+	rsxSetWriteBackendLabel(ctx, GCM_INDEX_TYPE_32B, label);
+	rsxSetWaitLabel(ctx, GCM_INDEX_TYPE_32B, label);
+	label++;
+	wait_rsx(ctx, label);
+}
+
+void get_resolution(int* width, int* height) {
+	videoState state;
+	videoResolution res;
+	if(videoGetState(0, 0, &state) != 0) {
+		return;
+	}
+
+	if(state.state != 0) {
+		return;
+	}
+
+	if(videoGetResolution(state.displayMode.resolution, &res) != 0) {
+		return;
+	}
+	*width = res.width;
+	*height = res.height;
+}
+
+void make_buffer(struct rsx_buffer* buffer, int id) {
+	int w, h;
+	get_resolution(&w, &h);
+
+	buffer->ptr = (uint32_t*)rsxMemalign(64, 4 * w * h);
+	if(buffer->ptr == NULL) return;
+
+	if(rsxAddressToOffset(buffer->ptr, &buffer->offset) != 0) return;
+
+	if(gcmSetDisplayBuffer(id, buffer->offset, 4 * w, w, h) != 0) return;
+	buffer->width = w;
+	buffer->height = h;
+	buffer->id = id;
+}
+
+gcmContextData* init_screen(void) {
+	void* host = memalign(1024 * 1024, HOST_SIZE);
+	gcmContextData* ctx = NULL;
+	videoState state;
+	videoConfiguration vconfig;
+	videoResolution res;
+	rsxInit(&ctx, CB_SIZE, HOST_SIZE, host);
+	if(ctx == NULL) {
+		free(host);
+		return NULL;
+	}
+
+	if(videoGetState(0, 0, &state) != 0) {
+		rsxFinish(ctx, 0);
+		free(host);
+		return NULL;
+	}
+
+	if(state.state != 0) {
+		rsxFinish(ctx, 0);
+		free(host);
+		return NULL;
+	}
+
+	if(videoGetResolution(state.displayMode.resolution, &res) != 0) {
+		rsxFinish(ctx, 0);
+		free(host);
+		return NULL;
+	}
+
+	memset(&vconfig, 0, sizeof(vconfig));
+	vconfig.resolution = state.displayMode.resolution;
+	vconfig.format = VIDEO_BUFFER_FORMAT_XRGB;
+	vconfig.pitch = res.width * 4;
+	vconfig.aspect = state.displayMode.aspect;
+
+	wait_rsx_until_idle(ctx);
+
+	if(videoConfigure(0, &vconfig, NULL, 0) != 0) {
+		rsxFinish(ctx, 0);
+		free(host);
+		return NULL;
+	}
+
+	if(videoGetState(0, 0, &state) != 0) {
+		rsxFinish(ctx, 0);
+		free(host);
+		return NULL;
+	}
+	gcmSetFlipMode(GCM_FLIP_VSYNC);
+
+	depth_pitch = res.width * 4;
+	depth_buffer = (uint32_t*)rsxMemalign(64, (res.height * depth_pitch) * 2);
+	rsxAddressToOffset(depth_buffer, &depth_offset);
+
+	gcmResetFlipStatus();
+
+	return ctx;
+}
+
+void set_render_target(gcmContextData* context, struct rsx_buffer* buffer) {
+	gcmSurface sf;
+
+	sf.colorFormat = GCM_SURFACE_X8R8G8B8;
+	sf.colorTarget = GCM_SURFACE_TARGET_0;
+	sf.colorLocation[0] = GCM_LOCATION_RSX;
+	sf.colorOffset[0] = buffer->offset;
+	sf.colorPitch[0] = depth_pitch;
+
+	sf.colorLocation[1] = GCM_LOCATION_RSX;
+	sf.colorLocation[2] = GCM_LOCATION_RSX;
+	sf.colorLocation[3] = GCM_LOCATION_RSX;
+	sf.colorOffset[1] = 0;
+	sf.colorOffset[2] = 0;
+	sf.colorOffset[3] = 0;
+	sf.colorPitch[1] = 64;
+	sf.colorPitch[2] = 64;
+	sf.colorPitch[3] = 64;
+
+	sf.depthFormat = GCM_SURFACE_ZETA_Z16;
+	sf.depthLocation = GCM_LOCATION_RSX;
+	sf.depthOffset = depth_offset;
+	sf.depthPitch = depth_pitch;
+
+	sf.type = GCM_TEXTURE_LINEAR;
+	sf.antiAlias = GCM_SURFACE_CENTER_1;
+
+	sf.width = buffer->width;
+	sf.height = buffer->height;
+	sf.x = 0;
+	sf.y = 0;
+
+	rsxSetSurface(context, &sf);
+}
+
+void wait_flip(void) {
+	while(gcmGetFlipStatus() != 0) usleep(200);
+	gcmResetFlipStatus();
+}
+
+void flip(gcmContextData* ctx, uint32_t buffer) {
+	if(gcmSetFlip(ctx, buffer) == 0) {
+		rsxFlushBuffer(ctx);
+		gcmSetWaitFlip(ctx);
+	}
+}
+
+uint8_t* tvram;
+
+extern uint8_t font[];
+
+int tt_x = 0;
+int tt_y = 0;
+int tt_width;
+int tt_height;
+
+void tt_putstr(const char* str) {
+	int i;
+	for(i = 0; str[i] != 0; i++){
+		tvram[tt_y * tt_width + tt_x] = str[i];
+		if(str[i] == '\n'){
+			tt_x = 0;
+			tt_y++;
+		}else{
+			tt_x++;
+			if(tt_x == tt_width){
+				tt_x = 0;
+				tt_y++;
+			}
+		}
+		if(tt_y == tt_height){
+			tt_y--;
+			int x, y;
+			for(y = 0; y < tt_height - 1; y++){
+				for(x = 0; x < tt_width; x++){
+					tvram[y * tt_width + x] = tvram[(y + 1) * tt_width + x];
+				}
+			}
+			for(x = 0; x < tt_width; x++){
+				tvram[(tt_height - 1) * tt_width + x] = 0;
+			}
+		}
+	}
+}
+
+void tt_putchar(struct rsx_buffer* buffer, int x, int y, uint8_t c){
+	int i, j;
+	if(c < 0x20) c = 0x20;
+	if(c >= 0x7f) c = 0x20;
+	for(i = 0; i < 7; i++){
+		uint8_t l = font[(c - 0x20) * 8 + i];
+		for(j = 0; j < 5; j++){
+			uint32_t c = 0;
+			if(l & (1 << 7)){
+				c = 0xffffff;
+			}
+			l = l << 1;
+			buffer->ptr[(y * 8 + i) * buffer->width + x * 6 + j] = c;
+		}
+	}
+}
+
+void draw(struct rsx_buffer* buffer, int current) {
+	int i, j, c;
+	for(i = 0; i < buffer->height / 8; i++) {
+		for(j = 0; j < buffer->width / 6; j++) {
+			uint8_t c = tvram[i * (buffer->width / 6) + j];
+			tt_putchar(buffer, j, i, c);
+		}
+	}
+}
+
+#define BUFFERS 2
+gcmContextData* ctx;
+struct rsx_buffer buffers[BUFFERS];
+
+void text_thread(void* arg) {
+	int current = 0;
+	while(1) {
+		wait_flip();
+		draw(&buffers[current], current);
+		flip(ctx, buffers[current].id);
+		current++;
+		if(current >= BUFFERS) current = 0;
+	}
+}
+
+void tt_printf(const char* tmpl, ...) {
+	va_list va;
+	va_start(va, tmpl);
+	int i;
+	char cbuf[2];
+	cbuf[1] = 0;
+	char* log = cm_strdup("");
+	for(i = 0; tmpl[i] != 0; i++) {
+		if(tmpl[i] == '%') {
+			i++;
+			if(tmpl[i] == 's'){
+				char* tmp = log;
+				log = cm_strcat(tmp, va_arg(va, char*));
+				free(tmp);
+			}else if(tmpl[i] == 'd'){
+				char buf[513];
+				sprintf(buf, "%d", va_arg(va, int));
+				char* tmp = log;
+				log = cm_strcat(tmp, buf);
+				free(tmp);
+			}else if(tmpl[i] == '%'){
+				char* tmp = log;
+				log = cm_strcat(tmp, "%");
+				free(tmp);
+			}
+		} else {
+			cbuf[0] = tmpl[i];
+			char* tmp = log;
+			log = cm_strcat(tmp, cbuf);
+			free(tmp);
+		}
+	}
+	va_end(va);
+	tt_putstr(log);
+}
+
 #endif
 
 int main(int argc, char** argv) {
@@ -248,6 +548,17 @@ int main(int argc, char** argv) {
 	}
 	printf("Connected, My IP is %s\n", info.ip);
 #elif defined(__PPU__)
+	int i;
+	ctx = init_screen();
+	int w, h;
+	get_resolution(&w, &h);
+	tt_width = w / 6;
+	tt_height = h / 8;
+	tvram = malloc((w / 6) * (h / 8));
+	for(i = 0; i < BUFFERS; i++) make_buffer(&buffers[i], i);
+	flip(ctx, BUFFERS - 1);
+	sys_ppu_thread_t id;
+	sysThreadCreate(&id, text_thread, NULL, 1500, 0x1000, THREAD_JOINABLE, "TextThread");
 	printf("PS3 Bootstrap, Tewi/%s\n", tw_get_version());
 	netInitialize();
 #elif defined(__ps2sdk__)
@@ -264,6 +575,11 @@ int main(int argc, char** argv) {
 		while(running) sceKernelDelayThread(50 * 1000);
 		sceKernelExitGame();
 #else
+#ifdef __PPU__
+		printf("Error code %d\n", st);
+		while(1)
+			;
+#endif
 		return st;
 #endif
 	}

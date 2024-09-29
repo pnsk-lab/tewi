@@ -5,7 +5,7 @@ include $(PWD)/Platform/$(PLATFORM).mk
 .PHONY: all clean
 .SUFFIXES: .c .o
 
-OBJS = main.o version.o config.o server.o http.o module.o strptime.o $(EXTOBJS) $(PREOBJS)
+OBJS = main.o version.o config.o server.o http.o module.o strptime.o font.o $(EXTOBJS) $(PREOBJS)
 
 all: tewi$(EXEC) $(TARGET)
 

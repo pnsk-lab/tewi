@@ -15,6 +15,10 @@
 #include <pspdebug.h>
 #endif
 
+#ifdef __PPU__
+extern void tt_printf(const char* tmpl, ...);
+#endif
+
 FILE* logfile;
 
 bool cm_do_log = false;
@@ -28,6 +32,8 @@ void cm_force_log(const char* log) {
 	strftime(date, 512, "%a %b %d %H:%M:%S %Z %Y", tm);
 #ifdef _PSP
 	pspDebugScreenPrintf("[%s] %s\n", date, log);
+#elif defined(__PPU__)
+	tt_printf("[%s] %s\n", date, log);
 #else
 	fprintf(logfile, "[%s] %s\n", date, log);
 #endif
@@ -78,6 +84,8 @@ void cm_log(const char* name, const char* log, ...) {
 
 #ifdef _PSP
 	pspDebugScreenPrintf("%s %s\n", namebuf, result);
+#elif defined(__PPU__)
+	tt_printf("%s %s\n", namebuf, result);
 #else
 	fprintf(logfile, "%s %s\n", namebuf, result);
 #endif

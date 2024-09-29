@@ -6,7 +6,7 @@ CC = ppu-gcc
 AR = ppu-ar
 CFLAGS = -g -DPREFIX=\"$(PREFIX)\" -I $(PWD)/Common -I /usr/local/ps3dev/ppu/include
 LDFLAGS = -L /usr/local/ps3dev/ppu/lib
-LIBS = -lnet -lsysmodule -lsysutil -lrt -llv2
+LIBS = -lnet -lsysmodule -lsysutil -lrt -llv2 -lrsx -lgcm_sys
 EXEC = .elf
 LIB = .so
 MODULE =
