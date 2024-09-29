@@ -33,6 +33,7 @@ tewi.pkg: tewi.self
 	sfo.py --title "Tewi HTTPd" --appid "TEWI" -f /usr/local/ps3dev/bin/sfo.xml pkg/PARAM.SFO
 	pkg.py --contentid UP0001-TEWI_00-0000000000000000 pkg/ $@
 	rm -rf pkg
+	package_finalize $@
 
 .c.o:
 	$(CC) $(CFLAGS) $(EXTCFLAGS) -c -o $@ $<
