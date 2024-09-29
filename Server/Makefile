@@ -27,8 +27,13 @@ tewi.self: tewi_strip$(EXEC)
 	fself tewi_strip$(EXEC) tewi.fake.self
 
 tewi.pkg: tewi.self
-	mkdir -p pkg/USRDIR
+	mkdir -p pkg/USRDIR/etc
+	mkdir -p pkg/USRDIR/www
 	cp ../Binary/ps3.png pkg/ICON0.PNG
+	../Tool/genconf /dev_hdd0/game/TEWI_00-0/USRDIR lib/tewi so > pkg/USRDIR/etc/tewi.conf
+	cp ../Binary/pbtewi.gif pkg/USRDIR/www/
+	convert '../Binary/pbtewi.gif[0]' pkg/USRDIR/pbtewi.png
+	../Tool/itworks > pkg/USRDIR/www/index.html
 	make_self_npdrm tewi_strip$(EXEC) pkg/USRDIR/EBOOT.BIN UP0001-TEWI_00-0000000000000000
 	sfo.py --title "Tewi HTTPd" --appid "TEWI" -f /usr/local/ps3dev/bin/sfo.xml pkg/PARAM.SFO
 	pkg.py --contentid UP0001-TEWI_00-0000000000000000 pkg/ $@

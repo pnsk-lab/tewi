@@ -11,7 +11,7 @@ FLAGS = PWD=$(PWD) PLATFORM=$(PLATFORM) PREFIX=$(PREFIX)
 
 .PHONY: all format clean ./Server ./Common ./Module get-version
 
-all: ./Server $(MODULE) ./Tool/genconf ./Tool/itworks
+all: ./Server $(MODULE)
 
 ./Tool/option: ./Tool/option.c config.h
 	cc -o $@ ./Tool/option.c
@@ -22,7 +22,7 @@ all: ./Server $(MODULE) ./Tool/genconf ./Tool/itworks
 ./Tool/itworks: ./Tool/itworks.c config.h
 	cc -o $@ ./Tool/itworks.c
 
-./Server:: ./Common ./Tool/option
+./Server:: ./Common ./Tool/option ./Tool/genconf ./Tool/itworks
 	$(MAKE) -C $@ $(FLAGS) EXTOBJS="`./Tool/option objs ../`" EXTLIBS="`./Tool/option libs ../`" EXTCFLAGS="`./Tool/option cflags ../`" EXTLDFLAGS="`./Tool/option ldflags ../`"
 
 ./Module:: ./Common

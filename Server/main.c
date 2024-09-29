@@ -53,6 +53,7 @@ PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
 #include <malloc.h>
 #include <sys/thread.h>
 #include <stdarg.h>
+#include <png.h>
 
 #define printf(...) tt_printf(__VA_ARGS__)
 #define STDERR_LOG(...) tt_printf(__VA_ARGS__)
@@ -329,7 +330,7 @@ void tt_putstr(const char* str) {
 				}
 			}
 			for(x = 0; x < tt_width; x++) {
-				tvram[(tt_height - 1) * tt_width + x] = 0;
+				tvram[(tt_height - 1) * tt_width + x] = 0x20;
 			}
 		}
 	}
@@ -337,17 +338,18 @@ void tt_putstr(const char* str) {
 
 void tt_putchar(struct rsx_buffer* buffer, int x, int y, uint8_t c) {
 	int i, j;
+	if(c == 0) return;
 	if(c < 0x20) c = 0x20;
 	if(c >= 0x7f) c = 0x20;
-	for(i = 0; i < 7; i++) {
-		uint8_t l = font[(c - 0x20) * 8 + i];
-		for(j = 0; j < 5; j++) {
-			uint32_t c = 0;
+	for(i = 0; i < 8; i++) {
+		uint8_t l = i == 7 ? 0 : font[(c - 0x20) * 8 + i];
+		for(j = 0; j < 6; j++) {
+			uint32_t col = 0;
 			if(l & (1 << 7)) {
-				c = 0xffffff;
+				col = 0xffffff;
 			}
 			l = l << 1;
-			buffer->ptr[(y * 8 + i) * buffer->width + x * 6 + j] = c;
+			buffer->ptr[(y * 8 + i) * buffer->width + x * 6 + j] = col;
 		}
 	}
 }
@@ -362,7 +364,7 @@ void draw(struct rsx_buffer* buffer, int current) {
 	}
 }
 
-#define BUFFERS 2
+#define BUFFERS 1
 gcmContextData* ctx;
 struct rsx_buffer buffers[BUFFERS];
 
@@ -411,6 +413,66 @@ void tt_printf(const char* tmpl, ...) {
 	}
 	va_end(va);
 	tt_putstr(log);
+}
+
+void show_png(void) {
+	FILE* f = fopen(PREFIX "/pbtewi.png", "rb");
+	if(f == NULL) {
+		f = fopen(PREFIX "/../ICON0.PNG", "rb");
+	}
+	if(f == NULL) return;
+	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	png_infop info = png_create_info_struct(png);
+	if(setjmp(png_jmpbuf(png))) {
+		png_destroy_read_struct(&png, &info, NULL);
+		fclose(f);
+		return;
+	}
+
+	png_init_io(png, f);
+	png_read_info(png, info);
+
+	int width = png_get_image_width(png, info);
+	int height = png_get_image_height(png, info);
+	int depth = png_get_bit_depth(png, info);
+	int type = png_get_color_type(png, info);
+
+	if(depth == 16) png_set_strip_16(png);
+	if(type == PNG_COLOR_TYPE_PALETTE) png_set_palette_to_rgb(png);
+	if(type == PNG_COLOR_TYPE_GRAY && depth < 8) png_set_expand_gray_1_2_4_to_8(png);
+	if(png_get_valid(png, info, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png);
+	if(type == PNG_COLOR_TYPE_RGB || type == PNG_COLOR_TYPE_GRAY || type == PNG_COLOR_TYPE_PALETTE) png_set_filler(png, 0xFF, PNG_FILLER_AFTER);
+	if(type == PNG_COLOR_TYPE_GRAY || type == PNG_COLOR_TYPE_GRAY_ALPHA) png_set_gray_to_rgb(png);
+	png_read_update_info(png, info);
+	png_bytep* rows = (png_bytep*)malloc(sizeof(*rows) * (height));
+
+	int i;
+
+	for(i = 0; i < height; i++) {
+		rows[i] = (png_byte*)malloc(png_get_rowbytes(png, info));
+	}
+
+	png_read_image(png, rows);
+
+	for(i = 0; i < height; i++) {
+		int j;
+		for(j = 0; j < width; j++) {
+			png_bytep byte = &(rows[i][j * 4]);
+			uint32_t col = (byte[0] << 16) | (byte[1] << 8) | (byte[2]);
+			int k;
+			for(k = 0; k < BUFFERS; k++) {
+				buffers[k].ptr[buffers[k].width * i - width + j] = col;
+			}
+		}
+	}
+
+	png_destroy_read_struct(&png, &info, NULL);
+	fclose(f);
+
+	for(i = 0; i < height; i++) {
+		free(rows[i]);
+	}
+	free(rows);
 }
 
 #endif
@@ -560,6 +622,7 @@ int main(int argc, char** argv) {
 	sys_ppu_thread_t id;
 	sysThreadCreate(&id, text_thread, NULL, 1500, 0x1000, THREAD_JOINABLE, "TextThread");
 	printf("PS3 Bootstrap, Tewi/%s\n", tw_get_version());
+	show_png();
 	netInitialize();
 #elif defined(__ps2sdk__)
 	SifInitRpc(0);
