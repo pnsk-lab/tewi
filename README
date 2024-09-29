@@ -1,5 +1,5 @@
 
-Tewi HTTPd version 2.02-wip
+Tewi HTTPd version 2.03
 
 Original by Nishi <nishi@nishi.boats>
 
@@ -35,15 +35,16 @@ Platform support
 --------------------------
 Currently, these platforms are supported:
 
-Windows 9x                   Experimental port, buggy
-                             TODO: Get it more stable
-                             TODO: Use MinGW not Cygwin
-Windows NT 4.0 and later     Working on NT 4.0 SP6a
-Linux                        Working on Debian GNU/Linux 12 (x86_64)
-NetBSD                       Working on NetBSD/amd64 10.0
-Haiku                        Working
-PlayStation Portable         Working, missing module support
-                             TODO: Get multi-threading working (maybe)
-PlayStation 2                Not working
-PlayStation 3                Working, missing module support
-                             TODO: Get multi-threading working (maybe)
+Windows 9x               Experimental port, buggy
+                         TODO: Get it more stable
+                         TODO: Use MinGW not Cygwin
+Windows NT 4.0/later     Working on NT 4.0 SP6a
+Linux                    Working on Debian GNU/Linux 12 (x86_64)
+NetBSD                   Working on NetBSD/amd64 10.0
+Haiku                    Working
+PlayStation Portable     Working, missing module support
+                         TODO: Get multi-threading working (maybe)
+PlayStation 2            Not working
+PlayStation 3            Working on RPCS3, missing module support
+                         I don't know if it works on real machine or not.
+                         TODO: Get multi-threading working (maybe)
