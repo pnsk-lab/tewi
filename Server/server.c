@@ -61,7 +61,7 @@
 #endif
 #endif
 
-#ifdef _PSP
+#if defined(_PSP) || defined(__ps2sdk__)
 #include "strptime.h"
 #endif
 
@@ -521,7 +521,7 @@ int tw_server_pass(void* ptr) {
 				} else if(cm_strcaseequ(req.headers[i], "If-Modified-Since")) {
 					struct tm tm;
 					strptime(req.headers[i + 1], "%a, %d %b %Y %H:%M:%S GMT", &tm);
-#if defined(__MINGW32__) || defined(_PSP) || defined(__PPU__)
+#if defined(__MINGW32__) || defined(_PSP) || defined(__PPU__) || defined(__ps2sdk__)
 					time_t t = 0;
 					struct tm* btm = localtime(&t);
 					cmtime = mktime(&tm);

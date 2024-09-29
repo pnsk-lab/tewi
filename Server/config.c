@@ -105,6 +105,8 @@ void tw_config_init(void) {
 	strcpy(config.hostname, "psp");
 #elif defined(__PPU__)
 	strcpy(config.hostname, "ps3");
+#elif defined(__ps2sdk__)
+	strcpy(config.hostname, "ps2");
 #else
 	gethostname(config.hostname, 1024);
 #endif

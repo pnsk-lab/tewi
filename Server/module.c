@@ -15,7 +15,7 @@
 
 extern struct tw_config config;
 
-#if defined(_PSP) || defined(__PPU__)
+#if defined(_PSP) || defined(__PPU__) || defined(__ps2sdk__)
 void* tw_module_load(const char* path) { return NULL; }
 
 void* tw_module_symbol(void* mod, const char* sym) { return NULL; }

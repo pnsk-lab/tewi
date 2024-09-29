@@ -5,14 +5,14 @@ include $(PWD)/Platform/$(PLATFORM).mk
 .PHONY: all clean
 .SUFFIXES: .c .o
 
-OBJS = version.o main.o config.o server.o http.o module.o strptime.o $(EXTOBJS) $(PREOBJS)
+OBJS = main.o version.o config.o server.o http.o module.o strptime.o $(EXTOBJS) $(PREOBJS)
 
 all: tewi$(EXEC) $(TARGET)
 
 tewi_strip$(EXEC): tewi$(EXEC)
 
 tewi$(EXEC): $(OBJS) ../Common/common.a
-	$(CC) $(LDFLAGS) $(EXTLDFLAGS) -o $@ $(OBJS) $(EXTLIBS) $(LIBS) ../Common/common.a
+	$(CC) $(LDFLAGS) $(EXTLDFLAGS) -o $@ $(OBJS) $(EXTLIBS) ../Common/common.a $(LIBS)
 	$(SERVADD)
 
 tewi.pbp: tewi_strip$(EXEC) param.sfo
