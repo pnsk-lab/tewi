@@ -14,6 +14,7 @@ jobs:
   build-win32:
     name: "Build for Windows 32-bit"
     runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, '[release') }}
 
     permissions:
       contents: write
@@ -42,6 +43,7 @@ jobs:
   build-win64:
     name: "Build for Windows 64-bit"
     runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, '[release') }}
 
     permissions:
       contents: write
@@ -70,6 +72,7 @@ jobs:
   release:
     name: "Release"
     runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, '[release') }}
 
     permissions:
       contents: write
