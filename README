@@ -1,5 +1,5 @@
 
-Tewi HTTPd version 2.03B
+Tewi HTTPd version 2.03D
 
 Original by Nishi <nishi@nishi.boats>
 
@@ -35,9 +35,10 @@ Platform support
 --------------------------
 Currently, these platforms are supported:
 
-Windows 9x               Experimental port, buggy
-                         TODO: Get it more stable
-                         TODO: Use MinGW not Cygwin
+Windows 9x               Working if I compile it using Borland C++ 5.x
+                         or Visual C++ 6.0/Open Watcom 2.0
+                         TODO: Get directory listing working on
+                                       Borland/VC++
 Windows NT 4.0/later     Working on NT 4.0 SP6a
 Linux                    Working on Debian GNU/Linux 12 (x86_64)
 NetBSD                   Working on NetBSD/amd64 10.0
