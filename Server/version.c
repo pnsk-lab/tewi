@@ -13,8 +13,10 @@ const char* tw_platform =
     "NetBSD"
 #elif defined(__linux__)
     "Linux"
-#elif defined(__MINGW32__) || defined(_MSC_VER)
-    "Windows"
+#elif defined(__MINGW32__)
+    "Windows-MinGW32"
+#elif defined(_MSC_VER)
+    "Windows-MSVC"
 #elif defined(__HAIKU__)
     "Haiku"
 #elif defined(__CYGWIN__)

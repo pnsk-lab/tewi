@@ -166,11 +166,11 @@ int tw_server_init(void) {
 #ifdef NO_IPV6
 		addresses[i].sin_family = AF_INET;
 		addresses[i].sin_addr.s_addr = INADDR_ANY;
-		addresses[i].sin_port = htons(config.ports[i]);
+		addresses[i].sin_port = htons(config.ports[i] & 0xffff);
 #else
 		addresses[i].sin6_family = AF_INET6;
 		addresses[i].sin6_addr = in6addr_any;
-		addresses[i].sin6_port = htons(config.ports[i]);
+		addresses[i].sin6_port = htons(config.ports[i] & 0xffff);
 #endif
 		if(bind(sock, (struct sockaddr*)&addresses[i], sizeof(addresses[i])) < 0) {
 			close_socket(sock);
@@ -889,7 +889,7 @@ cleanup:
 #elif defined(__HAIKU__)
 		exit_thread(0);
 #endif
-	;
+	return 0;
 }
 
 #ifdef SERVICE
