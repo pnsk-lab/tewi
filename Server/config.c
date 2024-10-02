@@ -10,11 +10,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(__BORLANDC__)
 #include <unistd.h>
 #endif
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
 #include <winsock2.h>
 #endif
 
@@ -266,14 +266,14 @@ int tw_config_read(const char* path) {
 #endif
 					) {
 						for(i = 1; r[i] != NULL; i++) {
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__BORLANDC__)
 							uint32_t port = atoi(r[i]);
 #else
 							uint64_t port = atoi(r[i]);
 #endif
 							int j;
 							cm_log("Config", "Going to listen at port %d%s", (int)port, cm_strcaseequ(r[0], "ListenSSL") ? " with SSL" : "");
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__BORLANDC__)
 							if(cm_strcaseequ(r[0], "ListenSSL")) port |= (1UL << 31);
 #else
 							if(cm_strcaseequ(r[0], "ListenSSL")) port |= (1ULL << 31);

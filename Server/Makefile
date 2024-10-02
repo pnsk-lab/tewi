@@ -13,7 +13,7 @@ all: tewi$(EXEC) $(TARGET)
 
 tewi_strip$(EXEC): tewi$(EXEC)
 
-tewi$(EXEC): $(OBJS) ../Common/common.$(STATIC)
+tewi$(EXEC): $(OBJS) ../Common/common.$(STATIC) $(REQOBJS)
 	$(CC) $(LDFLAGS) $(EXTLDFLAGS) -o $@ $(OBJS) $(EXTLIBS) ../Common/common.$(STATIC) $(LIBS)
 	$(SERVADD)
 
@@ -47,6 +47,12 @@ tewi.pkg: tewi.self
 
 tewi.res: tewi.rc ../Binary/tewi.ico
 	$(WINDRES) tewi.rc -O coff -o $@
+
+tewi_vc6.res: tewi.rc ../Binary/tewi.ico
+	rc /fo$@ tewi.rc
+
+tewi_bcc.res: tewi.rc ../Binary/tewi.ico
+	brc32 -r -fo$@ tewi.rc
 
 clean:
 	rm -f *.o tewi *.exe *.res *.elf *.sfo *.pbp *.self *.pkg *.obj

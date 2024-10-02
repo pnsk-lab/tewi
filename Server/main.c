@@ -4,7 +4,13 @@
 
 #include "../config.h"
 
-#ifndef _MSC_VER
+#ifdef __BORLANDC__
+
+#pragma resource "tewi_bcc.res"
+
+#endif
+
+#if !defined(_MSC_VER) && !defined(__BORLANDC__)
 #include <unistd.h>
 #endif
 #include <stdio.h>
@@ -24,7 +30,7 @@
 #include "tw_server.h"
 #include "tw_version.h"
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
 #include <windows.h>
 #endif
 
@@ -61,7 +67,7 @@ PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
 
 #define printf(...) tt_printf(__VA_ARGS__)
 #define STDERR_LOG(...) tt_printf(__VA_ARGS__)
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) || defined(__BORLANDC__)
 void STDERR_LOG(const char* format, ...) {
 	va_list args;
 	va_start(args, format);
@@ -783,7 +789,7 @@ int startup(int argc, char** argv) {
 	r = cm_strcat(tw_server, " running...");
 	cm_force_log(r);
 	free(r);
-#if !defined(__MINGW32__) && !defined(_MSC_VER)
+#if !defined(__MINGW32__) && !defined(_MSC_VER) && !defined(__BORLANDC__)
 	signal(SIGCHLD, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
 #else

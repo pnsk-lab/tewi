@@ -1,6 +1,6 @@
 /* $Id$ */
 
-#include "../Server/tw_module.h"
+#include <tw_module.h>
 
 #include <cm_string.h>
 

@@ -2,14 +2,15 @@
 
 PREFIX = C:/Tewi
 
-CC = ../vc6.sh
-AR = lib
-AR_FLAGS = /nologo /out:
+CC = ../bcc.sh
+AR = tlib
+AR_FLAGS =
+AR_PROC = grep -Eo "[^ ]+" | xargs -I {} echo + {}
 CFLAGS = -g -std=c99 -DPREFIX=\"$(PREFIX)\" -I ../Common -fPIC
 LDFLAGS =
-LIBS = -lws2_32 -ladvapi32 -llibcmt
+LIBS = -lws2_32
 EXEC =
 STATIC = lib
 LIBSUF = .dll
 OBJ = obj
-PREOBJS = tewi_vc6.res
+REQOBJS = tewi_bcc.res

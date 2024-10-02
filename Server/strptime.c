@@ -35,7 +35,7 @@
 //#include <sys/cdefs.h>
 //__RCSID("$NetBSD: strptime.c,v 1.62 2017/08/24 01:01:09 ginsbach Exp $");
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
 
 #include <ctype.h>
 #include <string.h>
@@ -103,9 +103,30 @@ static const unsigned char *find_string(const unsigned char *, int *, const char
 
 #define isleap_sum(a, b)	isleap((a) % 400 + (b) % 400)
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__BORLANDC__)
 #define tzname              _tzname
 #define strncasecmp         _strnicmp
+#endif
+
+#ifdef __BORLANDC__
+char* cm_strdup(const char* str);
+
+int _strnicmp(const char* _a, const char* _b, int len){
+	char* a = cm_strdup(_a);
+	char* b = cm_strdup(_b);
+	int i;
+	char* r;
+	for(i = 0; a[i] != 0; i++){
+		a[i] = tolower(a[i]);
+	}
+	for(i = 0; b[i] != 0; i++){
+		b[i] = tolower(b[i]);
+	}
+	r = strncmp(a, b, len);
+	free(a);
+	free(b);
+	return r;
+}
 #endif
 
 #ifdef TM_ZONE
@@ -399,7 +420,7 @@ recurse:
             continue;
 
 #ifndef TIME_MAX
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__BORLANDC__)
 #define TIME_MAX	INT32_MAX
 #else
 #define TIME_MAX	INT64_MAX
@@ -408,7 +429,7 @@ recurse:
         case 's':	/* seconds since the epoch */
             {
                 time_t sse = 0;
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__BORLANDC__)
                 uint32_t rulim = TIME_MAX;
 #else
                 uint64_t rulim = TIME_MAX;
@@ -425,7 +446,7 @@ recurse:
                     rulim /= 10;
                 } while ((sse * 10 <= TIME_MAX) &&
                      rulim && *bp >= '0' && *bp <= '9');
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__BORLANDC__)
                 if (sse < 0 || (uint32_t)sse > TIME_MAX) {
 #else
                 if (sse < 0 || (uint64_t)sse > TIME_MAX) {
@@ -434,7 +455,7 @@ recurse:
                     continue;
                 }
 #ifdef _WIN32
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__BORLANDC__)
 		if (1)
 #else
                 if (localtime_s(tm, &sse) == 0)

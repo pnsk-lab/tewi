@@ -18,7 +18,7 @@ int cm_sort(const void* _a, const void* _b) {
 }
 
 char** cm_scandir(const char* path) {
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__BORLANDC__)
 	return NULL;
 #else
 	DIR* dir = opendir(path);

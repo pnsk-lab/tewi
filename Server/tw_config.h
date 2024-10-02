@@ -14,7 +14,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
 #include <winsock2.h>
 #define NO_IPV6
 #else
@@ -42,7 +42,7 @@ extern "C" {
 #define MAX_INDEX 1024
 #define MAX_README 8
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__BORLANDC__)
 #define NUM1024 1024UL
 #else
 #define NUM1024 1024ULL
@@ -94,7 +94,7 @@ struct tw_config_entry {
 };
 
 struct tw_config {
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__BORLANDC__)
 	uint32_t ports[MAX_PORTS + 1];
 #else
 	uint64_t ports[MAX_PORTS + 1]; /* If port & (1 << 32) is non-zero, it is SSL */

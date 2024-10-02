@@ -13,7 +13,7 @@ all: mod_cgi$(LIBSUF) mod_proxy$(LIBSUF)
 	$(CC) $(LDFLAGS) -shared -o $@ $< ../Common/common.$(STATIC) $(LIBS)
 
 .c.$(OBJ):
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -I ../Server -c -o $@ $<
 
 clean:
-	rm -f *.o *.so *.a *.dll *.dll
+	rm -f *.o *.so *.a *.dll
