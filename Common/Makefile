@@ -2,7 +2,7 @@
 
 OBJ=o
 STATIC=a
-AR_FLAGS=rcs 
+AR_FLAGS=rcs
 AR_PROC=cat
 include $(PWD)/Platform/$(PLATFORM).mk
 
@@ -13,7 +13,10 @@ OBJS = string.$(OBJ) log.$(OBJ) dir.$(OBJ)
 
 all: common.$(STATIC)
 
-common.$(STATIC): $(OBJS)
+common.a: $(OBJS)
+	$(AR) rcs $@ `echo $(OBJS) | $(AR_PROC)`
+
+common.lib: $(OBJS)
 	$(AR) $(AR_FLAGS)$@ `echo $(OBJS) | $(AR_PROC)`
 
 .c.$(OBJ):
