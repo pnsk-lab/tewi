@@ -39,17 +39,25 @@ Section
 	CreateDirectory "$INSTDIR\modules"
 	CreateDirectory "$INSTDIR\bin"
 	SetOutPath "$INSTDIR"
-	File /oname=LICENSE.txt "../LICENSE"
+	!cd ..
+	File /oname=LICENSE.txt "LICENSE"
 	SetOutPath "$INSTDIR\modules"
-	File "../Module/*.dll"
+	!cd Module
+	File "*.dll"
+	!cd ..
 	SetOutPath "$INSTDIR\etc"
 	SetOverWrite off
-	File /oname=tewi.conf "../generated.conf"
+	File /oname=tewi.conf "generated.conf"
 	SetOutPath "$INSTDIR\www"
-	File /oname=index.html "../itworks.html"
-	File /oname=pbtewi.gif "../Binary/pbtewi.gif"
+	File /oname=index.html "itworks.html"
+	!cd Binary
+	File /oname=pbtewi.gif "pbtewi.gif"
+	!cd ..
 	SetOutPath "$INSTDIR\www\icons"
-	File "../Icons/*.png"
+	!cd Icons
+	File "*.png"
+	!cd ..
+	!cd Server
 	SetOverWrite on
 
 	CreateDirectory "$SMPROGRAMS\Tewi HTTPd"
@@ -72,10 +80,13 @@ SectionEnd
 
 Section "$(EXEC_ONLY)" SEL_EXEC
 	SetOutPath "$INSTDIR\bin"
-	File "../tewi.exe"
+	!cd ..
+	File "tewi.exe"
+	!cd Server
 	WriteINIStr $INSTDIR\install.ini uninstall service false
 SectionEnd
 
+!ifndef ONLY_EXEC
 Section /o "$(SERV_TOO)" SEL_SERVICE
 	WriteINIStr $INSTDIR\install.ini uninstall service true
 	FileOpen $9 $INSTDIR\install.bat w
@@ -87,8 +98,10 @@ Section /o "$(SERV_TOO)" SEL_SERVICE
 	Sleep 1000
 	CreateDirectory "$INSTDIR\logs"
 	SetOutPath "$INSTDIR\bin"
-	File "../tewi.exe"
-	File /oname=tewisrv.exe "../tewi-service.exe"
+	!cd ..
+	File "tewi.exe"
+	File /oname=tewisrv.exe "tewi-service.exe"
+	!cd Server
 	FileOpen $9 $INSTDIR\install.bat w
 	FileWrite $9 '"$SYSDIR\sc.exe" delete "TewiHTTPd"$\r$\n'
 	FileWrite $9 '"$SYSDIR\sc.exe" create "TewiHTTPd" DisplayName= "Tewi HTTPd" binpath= "$INSTDIR\bin\tewisrv.exe" start= "auto"$\r$\n'
@@ -98,6 +111,7 @@ Section /o "$(SERV_TOO)" SEL_SERVICE
 	Pop $0
 	Delete $INSTDIR\install.bat
 SectionEnd
+!endif
 
 Function .onInit
 	StrCpy $1 ${SEL_EXEC}
@@ -106,7 +120,9 @@ FunctionEnd
 Function .onSelChange
 	!insertmacro StartRadioButtons $1
 	!insertmacro RadioButton ${SEL_EXEC}
+	!ifndef ONLY_EXEC
 	!insertmacro RadioButton ${SEL_SERVICE}
+	!endif
 	!insertmacro EndRadioButtons
 FunctionEnd
 

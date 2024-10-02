@@ -28,6 +28,7 @@ int tw_module_init(void* mod) { return 1; }
 
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
 #include <windows.h>
+#include <direct.h>
 #else
 #include <dlfcn.h>
 #endif

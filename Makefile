@@ -32,7 +32,7 @@ all: ./Server $(MODULE)
 	$(MAKE) -C $@ $(FLAGS)
 
 ./README: ./README.tmpl ./Server/tw_version.h
-	sed "s/@VERSION@/`grep "define TW_VERSION" Server/tw_version.h | grep -Eo '"[^\]+' | sed -E 's/^"//g'`/g" ./README.tmpl > $@
+	sed "s/@VERSION@/`grep "define TW_VERSION" Server/tw_version.h | grep -Eo '"[^\]+' | sed 's/^"//g'`/g" ./README.tmpl > $@
 
 install: all ./Tool/genconf ./Tool/itworks
 	mkdir -p $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib/tewi $(DESTDIR)$(PREFIX)/etc $(DESTDIR)$(PREFIX)/www
@@ -46,7 +46,7 @@ format:
 	clang-format --verbose -i `find ./Server ./Common ./Module ./Tool "(" -name "*.c" -or -name "*.h" ")" -and -not -name "strptime.*"` config.h
 
 get-version:
-	@grep "define TW_VERSION" Server/tw_version.h | grep -Eo '"[^\]+' | sed -E 's/^"//g'
+	@grep "define TW_VERSION" Server/tw_version.h | grep -Eo '"[^\]+' | sed 's/^"//g'
 
 clean:
 	$(MAKE) -C ./Server $(FLAGS) clean
