@@ -510,7 +510,6 @@ void show_png(void) {
 #endif
 
 int main(int argc, char** argv) {
-	printf("%s\n", get_registry("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Tewi HTTPd", "InstallDir"));
 	logfile = stderr;
 #ifdef SERVICE
 	SERVICE_TABLE_ENTRY table[] = {{"Tewi HTTPd", servmain}, {NULL, NULL}};
