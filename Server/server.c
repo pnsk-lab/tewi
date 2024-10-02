@@ -32,7 +32,7 @@
 #include <cm_log.h>
 #include <cm_dir.h>
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #ifndef NO_GETADDRINFO
 #include <ws2tcpip.h>
 #include <wspiapi.h>
@@ -84,7 +84,7 @@ int sockcount = 0;
 SOCKADDR addresses[MAX_PORTS];
 int sockets[MAX_PORTS];
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 const char* reserved_names[] = {"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
 #endif
 
@@ -111,7 +111,7 @@ int tw_wildcard_match(const char* wildcard, const char* target) {
 }
 
 void close_socket(int sock) {
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 	closesocket(sock);
 #else
 	close(sock);
@@ -120,7 +120,7 @@ void close_socket(int sock) {
 
 int tw_server_init(void) {
 	int i;
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 0), &wsa);
 #endif
@@ -449,7 +449,7 @@ struct pass_entry {
 	SOCKADDR addr;
 };
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #define NO_RETURN_THREAD
 void tw_server_pass(void* ptr) {
 #elif defined(__HAIKU__)
@@ -457,7 +457,7 @@ int32_t tw_server_pass(void* ptr) {
 #elif defined(_PSP) || defined(__PPU__)
 int tw_server_pass(void* ptr) {
 #endif
-#if defined(__HAIKU__) || defined(__MINGW32__) || defined(_PSP) || defined(__PPU__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__HAIKU__) || defined(__MINGW32__) || defined(_PSP) || defined(__PPU__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #define FREE_PTR
 	int sock = ((struct pass_entry*)ptr)->sock;
 	bool ssl = ((struct pass_entry*)ptr)->ssl;
@@ -551,7 +551,7 @@ int tw_server_pass(void* ptr) {
 					time_t t;
 					struct tm* btm;
 					strptime(req.headers[i + 1], "%a, %d %b %Y %H:%M:%S GMT", &tm);
-#if defined(__MINGW32__) || defined(_PSP) || defined(__PPU__) || defined(__ps2sdk__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_PSP) || defined(__PPU__) || defined(__ps2sdk__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 					t = 0;
 					btm = localtime(&t);
 					cmtime = mktime(&tm);
@@ -618,7 +618,7 @@ int tw_server_pass(void* ptr) {
 			cm_log("Server", "Document root is %s", vhost_entry->root == NULL ? "not set" : vhost_entry->root);
 			path = cm_strcat(vhost_entry->root == NULL ? "" : vhost_entry->root, req.path);
 			cm_log("Server", "Filesystem path is %s", path);
-#if defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 			for(i = strlen(path) - 1; i >= 0; i--) {
 				if(path[i] == '/') {
 					path[i] = 0;
@@ -627,7 +627,7 @@ int tw_server_pass(void* ptr) {
 				}
 			}
 #endif
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 			rpath = cm_strdup(path);
 			for(i = strlen(rpath) - 1; i >= 0; i--) {
 				if(rpath[i] == '/') {
@@ -898,7 +898,7 @@ cleanup:
 	SSL_free(s);
 #endif
 	close_socket(sock);
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 	_endthread();
 #elif defined(__HAIKU__)
 		exit_thread(0);
@@ -913,7 +913,7 @@ extern SERVICE_STATUS status;
 extern SERVICE_STATUS_HANDLE status_handle;
 #endif
 
-#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 struct thread_entry {
 #ifdef __HAIKU__
 	thread_id thread;
@@ -932,7 +932,7 @@ void tw_server_loop(void) {
 	fd_set fdset;
 	struct timeval tv;
 #endif
-#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 	struct thread_entry threads[2048];
 	for(i = 0; i < sizeof(threads) / sizeof(threads[0]); i++) {
 		threads[i].used = false;
@@ -963,7 +963,7 @@ void tw_server_loop(void) {
 #endif
 #endif
 		if(ret == -1) {
-#if !defined(__MINGW32__) && !defined(_MSC_VER) && !defined(__BORLANDC__)
+#if !defined(__MINGW32__) && !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(__WATCOMC__)
 			cm_log("Server", "Select failure: %s", strerror(errno));
 #endif
 			break;
@@ -987,7 +987,7 @@ void tw_server_loop(void) {
 					SOCKADDR claddr;
 					socklen_t clen = sizeof(claddr);
 					int sock = accept(sockets[i], (struct sockaddr*)&claddr, &clen);
-#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_PSP) || defined(__PPU__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_PSP) || defined(__PPU__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 					int j;
 					struct pass_entry* e = malloc(sizeof(*e));
 					cm_log("Server", "New connection accepted");
@@ -1000,7 +1000,7 @@ void tw_server_loop(void) {
 					e->port = config.ports[i];
 					e->addr = claddr;
 #endif
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 					_beginthread(tw_server_pass, 0, e);
 #elif defined(_PSP) || defined(__PPU__)
 						tw_server_pass(e);

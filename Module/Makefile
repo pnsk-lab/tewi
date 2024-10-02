@@ -2,6 +2,7 @@
 
 OBJ=o
 STATIC=a
+END=_dll
 include $(PWD)/Platform/$(PLATFORM).mk
 
 .PHONY: all clean

@@ -26,7 +26,7 @@ int tw_module_init(void* mod) { return 1; }
 
 #else
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #include <windows.h>
 #include <direct.h>
 #else
@@ -37,7 +37,7 @@ void* tw_module_load(const char* path) {
 	char* p = getcwd(NULL, 0);
 	void* lib;
 	chdir(config.server_root);
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 	lib = LoadLibraryA(path);
 #else
 	lib = dlopen(path, RTLD_LAZY);
@@ -51,7 +51,7 @@ void* tw_module_load(const char* path) {
 }
 
 void* tw_module_symbol(void* mod, const char* sym) {
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 	return GetProcAddress(mod, sym);
 #else
 	return dlsym(mod, sym);

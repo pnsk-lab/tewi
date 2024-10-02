@@ -5,8 +5,10 @@
 #include "cm_string.h"
 
 #include <sys/stat.h>
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(__WATCOMC__)
 #include <dirent.h>
+#elif defined(__WATCOMC__)
+#include <direct.h>
 #endif
 #include <stdlib.h>
 #include <string.h>

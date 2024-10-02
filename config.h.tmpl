@@ -17,17 +17,17 @@
 #define SSL void
 #endif
 
-#if (defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)) && defined(USE_POLL)
+#if (defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)) && defined(USE_POLL)
 #undef USE_POLL
 /* Force select(2) for Windows */
 #endif
 
-#if (defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)) && defined(HAS_CHROOT)
+#if (defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)) && defined(HAS_CHROOT)
 #undef HAS_CHROOT
 /* Windows should not have chroot */
 #endif
 
-#if (defined(_MSC_VER) || defined(__BORLANDC__)) && !defined(NO_GETADDRINFO)
+#if (defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)) && !defined(NO_GETADDRINFO)
 #define NO_GETADDRINFO
 /* Do not use getaddrinfo */
 #endif

@@ -16,9 +16,11 @@ const char* tw_platform =
 #elif defined(__MINGW32__)
     "Windows-MinGW32"
 #elif defined(_MSC_VER)
-    "Windows-MSVC"
+    "Windows-VisualC"
 #elif defined(__BORLANDC__)
-    "Windows-BCC"
+    "Windows-Borland"
+#elif defined(__WATCOMC__)
+    "Windows-Watcom"
 #elif defined(__HAIKU__)
     "Haiku"
 #elif defined(__CYGWIN__)

@@ -789,7 +789,7 @@ int startup(int argc, char** argv) {
 	r = cm_strcat(tw_server, " running...");
 	cm_force_log(r);
 	free(r);
-#if !defined(__MINGW32__) && !defined(_MSC_VER) && !defined(__BORLANDC__)
+#if !defined(__MINGW32__) && !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(__WATCOMC__)
 	signal(SIGCHLD, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
 #else

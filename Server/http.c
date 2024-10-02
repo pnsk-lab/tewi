@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #include <winsock2.h>
 #else
 #ifdef USE_POLL
