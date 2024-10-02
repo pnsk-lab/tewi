@@ -5,7 +5,9 @@
 #include "cm_string.h"
 
 #include <sys/stat.h>
+#ifndef _MSC_VER
 #include <dirent.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 
@@ -16,11 +18,14 @@ int cm_sort(const void* _a, const void* _b) {
 }
 
 char** cm_scandir(const char* path) {
+#ifdef _MSC_VER
+	return NULL;
+#else
 	DIR* dir = opendir(path);
 	if(dir != NULL) {
 		char** r = malloc(sizeof(*r));
-		r[0] = NULL;
 		struct dirent* d;
+		r[0] = NULL;
 		while((d = readdir(dir)) != NULL) {
 			if(strcmp(d->d_name, ".") != 0 && strcmp(d->d_name, "..") != 0) {
 				struct stat s;
@@ -60,4 +65,5 @@ char** cm_scandir(const char* path) {
 	} else {
 		return NULL;
 	}
+#endif
 }

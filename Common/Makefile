@@ -1,19 +1,22 @@
 # $Id$
 
+OBJ=o
+STATIC=a
+AR_FLAGS=rcs 
 include $(PWD)/Platform/$(PLATFORM).mk
 
 .PHONY: all clean
-.SUFFIXES: .c .o
+.SUFFIXES: .c .$(OBJ)
 
-OBJS = string.o log.o dir.o
+OBJS = string.$(OBJ) log.$(OBJ) dir.$(OBJ)
 
-all: common.a
+all: common.$(STATIC)
 
-common.a: $(OBJS)
-	$(AR) rcs $@ $(OBJS)
+common.$(STATIC): $(OBJS)
+	$(AR) $(AR_FLAGS)$@ $(OBJS)
 
-.c.o:
+.c.$(OBJ):
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f *.o *.a
+	rm -f *.o *.a *.lib

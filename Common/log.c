@@ -41,21 +41,22 @@ void cm_force_log(const char* log) {
 }
 
 void cm_log(const char* name, const char* log, ...) {
-	if(!cm_do_log) return;
 	va_list args;
-	va_start(args, log);
 	char namebuf[LOGNAME_LENGTH + 1];
+	int i;
+	char* result;
+	char cbuf[2];
+	if(!cm_do_log) return;
+	va_start(args, log);
 	memset(namebuf, '.', LOGNAME_LENGTH);
 	namebuf[LOGNAME_LENGTH] = 0;
-	int i;
 	for(i = 0; name[i] != 0 && i < LOGNAME_LENGTH; i++) {
 		namebuf[i] = name[i];
 	}
 
-	char* result = malloc(1);
+	result = malloc(1);
 	result[0] = 0;
 
-	char cbuf[2];
 	cbuf[1] = 0;
 
 	for(i = 0; log[i] != 0; i++) {
@@ -69,14 +70,14 @@ void cm_log(const char* name, const char* log, ...) {
 			} else if(log[i] == 'd') {
 				int a = va_arg(args, int);
 				char buf[128];
-				sprintf(buf, "%d", a);
 				char* tmp = result;
+				sprintf(buf, "%d", a);
 				result = cm_strcat(tmp, buf);
 				free(tmp);
 			}
 		} else {
-			cbuf[0] = log[i];
 			char* tmp = result;
+			cbuf[0] = log[i];
 			result = cm_strcat(tmp, cbuf);
 			free(tmp);
 		}

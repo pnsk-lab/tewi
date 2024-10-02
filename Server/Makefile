@@ -1,18 +1,20 @@
 # $Id$
 
+OBJ=o
+STATIC=a
 include $(PWD)/Platform/$(PLATFORM).mk
 
 .PHONY: all clean
-.SUFFIXES: .c .o
+.SUFFIXES: .c .$(OBJ)
 
-OBJS = main.o version.o config.o server.o http.o module.o strptime.o font.o $(EXTOBJS) $(PREOBJS)
+OBJS = main.$(OBJ) version.$(OBJ) config.$(OBJ) server.$(OBJ) http.$(OBJ) module.$(OBJ) strptime.$(OBJ) font.$(OBJ) $(EXTOBJS) $(PREOBJS)
 
 all: tewi$(EXEC) $(TARGET)
 
 tewi_strip$(EXEC): tewi$(EXEC)
 
-tewi$(EXEC): $(OBJS) ../Common/common.a
-	$(CC) $(LDFLAGS) $(EXTLDFLAGS) -o $@ $(OBJS) $(EXTLIBS) ../Common/common.a $(LIBS)
+tewi$(EXEC): $(OBJS) ../Common/common.$(STATIC)
+	$(CC) $(LDFLAGS) $(EXTLDFLAGS) -o $@ $(OBJS) $(EXTLIBS) ../Common/common.$(STATIC) $(LIBS)
 	$(SERVADD)
 
 tewi.pbp: tewi_strip$(EXEC) param.sfo
@@ -40,11 +42,11 @@ tewi.pkg: tewi.self
 	rm -rf pkg
 	package_finalize $@
 
-.c.o:
+.c.$(OBJ):
 	$(CC) $(CFLAGS) $(EXTCFLAGS) -c -o $@ $<
 
 tewi.res: tewi.rc ../Binary/tewi.ico
 	$(WINDRES) tewi.rc -O coff -o $@
 
 clean:
-	rm -f *.o tewi *.exe *.res *.elf *.sfo *.pbp *.self *.pkg
+	rm -f *.o tewi *.exe *.res *.elf *.sfo *.pbp *.self *.pkg *.obj

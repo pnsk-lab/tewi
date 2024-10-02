@@ -4,7 +4,9 @@
 
 #include "../config.h"
 
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
@@ -22,7 +24,7 @@
 #include "tw_server.h"
 #include "tw_version.h"
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #include <windows.h>
 #endif
 
@@ -59,6 +61,13 @@ PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
 
 #define printf(...) tt_printf(__VA_ARGS__)
 #define STDERR_LOG(...) tt_printf(__VA_ARGS__)
+#elif defined(_MSC_VER)
+void STDERR_LOG(const char* format, ...){
+	va_list args;
+	va_start(args, format);
+	vfprintf(stderr, format, args);
+	va_end(args);
+}
 #else
 #define STDERR_LOG(...) fprintf(stderr, __VA_ARGS__)
 #endif
@@ -71,7 +80,7 @@ char tw_server[2048];
 
 int startup(int argc, char** argv);
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 char* get_registry(const char* main, const char* sub) {
 	DWORD bufsize = 512;
 	HKEY handle;
@@ -510,6 +519,7 @@ void show_png(void) {
 #endif
 
 int main(int argc, char** argv) {
+	int st;
 	logfile = stderr;
 #ifdef SERVICE
 	SERVICE_TABLE_ENTRY table[] = {{"Tewi HTTPd", servmain}, {NULL, NULL}};
@@ -666,7 +676,7 @@ int main(int argc, char** argv) {
 	scr_printf("PS2 Bootstrap, Tewi/%s\n", tw_get_version());
 	SleepThread();
 #endif
-	int st = startup(argc, argv);
+	st = startup(argc, argv);
 	if(st != -1) {
 #ifdef _PSP
 		printf("Error code %d\n", st);
@@ -691,7 +701,8 @@ int main(int argc, char** argv) {
 
 int startup(int argc, char** argv) {
 	int i;
-#ifdef __MINGW32__
+	char* r;
+#if defined(__MINGW32__) || defined(_MSC_VER)
 	char* confpath = cm_strdup(PREFIX "/etc/tewi.conf");
 	char* regpath = get_registry("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Tewi HTTPd", "InstallDir");
 	if(regpath != NULL) {
@@ -769,10 +780,10 @@ int startup(int argc, char** argv) {
 		return 1;
 	}
 	sprintf(tw_server, "Tewi/%s (%s)%s", tw_get_version(), tw_get_platform(), config.extension == NULL ? "" : config.extension);
-	char* r = cm_strcat(tw_server, " running...");
+	r = cm_strcat(tw_server, " running...");
 	cm_force_log(r);
 	free(r);
-#ifndef __MINGW32__
+#if !defined(__MINGW32__) && !defined(_MSC_VER)
 	signal(SIGCHLD, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
 #else

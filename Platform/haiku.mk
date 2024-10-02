@@ -6,4 +6,4 @@ CFLAGS = -g -std=c99 -DPREFIX=\"$(PREFIX)\" -I $(PWD)/Common -fPIC
 LDFLAGS =
 LIBS = -lnetwork
 EXEC =
-LIB = .so
+LIBSUF = .so

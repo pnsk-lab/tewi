@@ -9,9 +9,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
-#ifdef __MINGW32__
+#ifndef _MSC_VER
+#include <unistd.h>
+#endif
+
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #include <winsock2.h>
 #endif
 
@@ -37,11 +40,12 @@ bool tw_permission_allowed(const char* path, SOCKADDR addr, struct tw_http_reque
 	bool perm = false;
 again:
 	for(i = 0; i < vhost->dir_count; i++) {
+		char* noslash;
 		struct tw_dir_entry* e = &vhost->dirs[i];
 		pathstart = false;
 		if(strlen(path) >= strlen(e->dir)) {
-			pathstart = true;
 			int j;
+			pathstart = true;
 			for(j = 0; path[j] != 0 && e->dir[j] != 0; j++) {
 				if(path[j] != e->dir[j]) {
 					pathstart = false;
@@ -49,7 +53,7 @@ again:
 				}
 			}
 		}
-		char* noslash = cm_strdup(e->dir);
+		noslash = cm_strdup(e->dir);
 		noslash[strlen(noslash) - 1] = 0;
 		if(strcmp(e->dir, path) == 0 || strcmp(noslash, path) == 0 || pathstart) {
 			found = true;
@@ -119,25 +123,26 @@ void tw_config_init(void) {
 }
 
 int tw_config_read(const char* path) {
-	cm_log("Config", "Reading %s", path);
 	char cbuf[2];
-	cbuf[1] = 0;
 	int ln = 0;
 	int ifbr = 0;
 	int ignore = -1;
-	FILE* f = fopen(path, "r");
+	FILE* f;
+	cm_log("Config", "Reading %s", path);
+	f = fopen(path, "r");
+	cbuf[1] = 0;
 	if(f != NULL) {
 		char* line = malloc(1);
-		line[0] = 0;
 		int stop = 0;
 		struct tw_config_entry* current = &config.root;
 		char* vhost = NULL;
 		char* dir = NULL;
+		line[0] = 0;
 		while(stop == 0) {
 			int c = fread(cbuf, 1, 1, f);
 			if(cbuf[0] == '\n' || c <= 0) {
-				ln++;
 				char* l = cm_trim(line);
+				ln++;
 				if(strlen(l) > 0 && l[0] != '#') {
 					char** r = cm_split(l, " \t");
 					int i;
@@ -226,6 +231,7 @@ int tw_config_read(const char* path) {
 								cm_log("Config", "Missing virtual host at line %d", ln);
 								stop = 1;
 							} else {
+								int i;
 								vhost = cm_strdup(r[1]);
 								current = &config.vhosts[config.vhost_count++];
 								current->dir_count = 0;
@@ -234,7 +240,6 @@ int tw_config_read(const char* path) {
 								current->index_count = 0;
 								current->readme_count = 0;
 								current->hideport = -1;
-								int i;
 								current->name = cm_strdup(vhost);
 								current->port = -1;
 								for(i = 0; vhost[i] != 0; i++) {
@@ -261,10 +266,18 @@ int tw_config_read(const char* path) {
 #endif
 					) {
 						for(i = 1; r[i] != NULL; i++) {
+#ifdef _MSC_VER
+							uint32_t port = atoi(r[i]);
+#else
 							uint64_t port = atoi(r[i]);
-							cm_log("Config", "Going to listen at port %d%s", (int)port, cm_strcaseequ(r[0], "ListenSSL") ? " with SSL" : "");
-							if(cm_strcaseequ(r[0], "ListenSSL")) port |= (1ULL << 32);
+#endif
 							int j;
+							cm_log("Config", "Going to listen at port %d%s", (int)port, cm_strcaseequ(r[0], "ListenSSL") ? " with SSL" : "");
+#ifdef _MSC_VER
+							if(cm_strcaseequ(r[0], "ListenSSL")) port |= (1UL << 31);
+#else
+							if(cm_strcaseequ(r[0], "ListenSSL")) port |= (1ULL << 31);
+#endif
 							for(j = 0; config.ports[j] != -1; j++)
 								;
 							config.ports[j] = port;
@@ -318,8 +331,8 @@ int tw_config_read(const char* path) {
 						if(r[1] == NULL) {
 							cm_log("Config", "Missing condition type at line %d", ln);
 						} else {
-							ifbr++;
 							bool ign = false;
+							ifbr++;
 							if(cm_strcaseequ(r[1], "False")) {
 								ign = true;
 							} else if(cm_strcaseequ(r[1], "True")) {
@@ -428,12 +441,12 @@ int tw_config_read(const char* path) {
 						stop = 1;
 						if(r[0] != NULL) {
 							int argc;
-							for(argc = 0; r[argc] != NULL; argc++)
-								;
-							stop = 0;
 							int i;
 							bool called = false;
 							struct tw_tool tools;
+							for(argc = 0; r[argc] != NULL; argc++)
+								;
+							stop = 0;
 							tw_init_tools(&tools);
 							for(i = 0; i < config.module_count; i++) {
 								tw_mod_config_t mod_config = (tw_mod_config_t)tw_module_symbol(config.modules[i], "mod_config");

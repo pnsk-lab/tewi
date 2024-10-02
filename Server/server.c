@@ -15,22 +15,24 @@
 #include "tw_module.h"
 #include "tw_version.h"
 
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 #include <string.h>
 #include <stdbool.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <time.h>
 
 #include <cm_string.h>
 #include <cm_log.h>
 #include <cm_dir.h>
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #ifndef NO_GETADDRINFO
 #include <ws2tcpip.h>
 #include <wspiapi.h>
@@ -69,6 +71,10 @@
 #include <OS.h>
 #endif
 
+#ifndef S_ISDIR
+#define S_ISDIR(x) ((x) & _S_IFDIR)
+#endif
+
 extern struct tw_config config;
 extern char tw_server[];
 
@@ -77,7 +83,7 @@ int sockcount = 0;
 SOCKADDR addresses[MAX_PORTS];
 int sockets[MAX_PORTS];
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 const char* reserved_names[] = {"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
 #endif
 
@@ -104,7 +110,7 @@ int tw_wildcard_match(const char* wildcard, const char* target) {
 }
 
 void close_socket(int sock) {
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 	closesocket(sock);
 #else
 	close(sock);
@@ -113,7 +119,7 @@ void close_socket(int sock) {
 
 int tw_server_init(void) {
 	int i;
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 0), &wsa);
 #endif
@@ -121,12 +127,14 @@ int tw_server_init(void) {
 		;
 	sockcount = i;
 	for(i = 0; config.ports[i] != -1; i++) {
+		int yes = 1;
+		int no = 0;
 #ifdef NO_IPV6
 		int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 #else
 		int sock = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
 #endif
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 		if(sock == INVALID_SOCKET)
 #else
 		if(sock < 0)
@@ -135,7 +143,6 @@ int tw_server_init(void) {
 			cm_log("Server", "Socket creation failure");
 			return 1;
 		}
-		int yes = 1;
 		if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (void*)&yes, sizeof(yes)) < 0) {
 			close_socket(sock);
 			cm_log("Server", "setsockopt failure (reuseaddr)");
@@ -149,7 +156,6 @@ int tw_server_init(void) {
 		}
 #endif
 #ifndef NO_IPV6
-		int no = 0;
 		if(setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, (void*)&no, sizeof(no)) < 0) {
 			close_socket(sock);
 			cm_log("Server", "setsockopt failure (IPv6)");
@@ -222,6 +228,7 @@ size_t tw_write(SSL* ssl, int s, void* data, size_t len) {
 
 void _tw_process_page(SSL* ssl, int sock, const char* status, const char* type, FILE* f, const unsigned char* doc, size_t size, char** headers, time_t mtime, time_t cmtime) {
 	char construct[512];
+	size_t incr;
 	if(mtime != 0 && cmtime != 0 && mtime <= cmtime) {
 		status = "304 Not Modified";
 		type = NULL;
@@ -230,7 +237,11 @@ void _tw_process_page(SSL* ssl, int sock, const char* status, const char* type, 
 		f = NULL;
 		doc = NULL;
 	}
+#ifdef _MSC_VER
+	sprintf(construct, "%lu", (unsigned long)size);
+#else
 	sprintf(construct, "%llu", (unsigned long long)size);
+#endif
 	tw_write(ssl, sock, "HTTP/1.1 ", 9);
 	tw_write(ssl, sock, (char*)status, strlen(status));
 	tw_write(ssl, sock, "\r\n", 2);
@@ -255,8 +266,8 @@ void _tw_process_page(SSL* ssl, int sock, const char* status, const char* type, 
 			tw_write(ssl, sock, "\r\n", 2);
 		}
 	}
-	int i;
 	if(headers != NULL) {
+		int i;
 		for(i = 0; headers[i] != NULL; i += 2) {
 			tw_write(ssl, sock, headers[i], strlen(headers[i]));
 			tw_write(ssl, sock, ": ", 2);
@@ -266,7 +277,7 @@ void _tw_process_page(SSL* ssl, int sock, const char* status, const char* type, 
 	}
 	tw_write(ssl, sock, "\r\n", 2);
 	if(doc == NULL && f == NULL) return;
-	size_t incr = 0;
+	incr = 0;
 	while(1) {
 		if(f != NULL) {
 			char buffer[128];
@@ -307,6 +318,11 @@ const char* tw_http_status(int code) {
 
 char* tw_http_default_error(int code, char* name, int port, struct tw_config_entry* vhost) {
 	char address[1024];
+	char* st;
+	char* st2;
+	char* buffer;
+	char* str;
+	int i;
 
 	if((vhost->hideport == -1 ? config.root.hideport : vhost->hideport) == 1) {
 		sprintf(address, "<address>%s Server at %s</address>", tw_server, name, port);
@@ -314,17 +330,15 @@ char* tw_http_default_error(int code, char* name, int port, struct tw_config_ent
 		sprintf(address, "<address>%s Server at %s Port %d</address>", tw_server, name, port);
 	}
 
-	char* st = cm_strdup(tw_http_status(code));
-	char* st2;
-	int i;
+	st = cm_strdup(tw_http_status(code));
 	for(i = 0; st[i] != 0; i++) {
 		if(st[i] == ' ') {
 			st2 = cm_strdup(st + i + 1);
 			break;
 		}
 	}
-	char* buffer = malloc(4096);
-	char* str = cm_strcat3(ERROR_HTML);
+	buffer = malloc(4096);
+	str = cm_strcat3(ERROR_HTML);
 	sprintf(buffer, str, st, st2);
 	free(str);
 	free(st);
@@ -340,8 +354,8 @@ void tw_http_error(SSL* ssl, int sock, int error, char* name, int port, struct t
 void addstring(char** str, const char* add, ...) {
 	int i;
 	char cbuf[2];
-	cbuf[1] = 0;
 	va_list va;
+	cbuf[1] = 0;
 	va_start(va, add);
 	for(i = 0; add[i] != 0; i++) {
 		cbuf[0] = add[i];
@@ -366,8 +380,8 @@ void addstring(char** str, const char* add, ...) {
 			} else if(add[i] == 'd') {
 				int n = va_arg(va, int);
 				char* h = malloc(512);
-				sprintf(h, "%d", n);
 				char* tmp = *str;
+				sprintf(h, "%d", n);
 				*str = cm_strcat(tmp, h);
 				free(tmp);
 				free(h);
@@ -387,9 +401,9 @@ void addstring(char** str, const char* add, ...) {
 
 char* tw_get_mime(const char* ext, struct tw_config_entry* vhost_entry) {
 	char* mime = "application/octet-stream";
-	if(ext == NULL) return mime;
 	bool set = false;
 	int i;
+	if(ext == NULL) return mime;
 	for(i = 0; i < vhost_entry->mime_count; i++) {
 		if(strcmp(vhost_entry->mimes[i].ext, "all") == 0 || (ext != NULL && tw_wildcard_match(vhost_entry->mimes[i].ext, ext))) {
 			mime = vhost_entry->mimes[i].mime;
@@ -408,9 +422,9 @@ char* tw_get_mime(const char* ext, struct tw_config_entry* vhost_entry) {
 
 char* tw_get_icon(const char* mime, struct tw_config_entry* vhost_entry) {
 	char* icon = "";
-	if(mime == NULL) return "";
 	bool set = false;
 	int i;
+	if(mime == NULL) return "";
 	for(i = 0; i < vhost_entry->icon_count; i++) {
 		if(strcmp(vhost_entry->icons[i].mime, "all") == 0 || (mime != NULL && tw_wildcard_match(vhost_entry->icons[i].mime, mime))) {
 			icon = vhost_entry->icons[i].icon;
@@ -434,27 +448,25 @@ struct pass_entry {
 	SOCKADDR addr;
 };
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 unsigned int WINAPI tw_server_pass(void* ptr) {
 #elif defined(__HAIKU__)
 int32_t tw_server_pass(void* ptr) {
 #elif defined(_PSP) || defined(__PPU__)
 int tw_server_pass(void* ptr) {
 #endif
-#if defined(__HAIKU__) || defined(__MINGW32__) || defined(_PSP) || defined(__PPU__)
+#if defined(__HAIKU__) || defined(__MINGW32__) || defined(_PSP) || defined(__PPU__) || defined(_MSC_VER)
+#define FREE_PTR
 	int sock = ((struct pass_entry*)ptr)->sock;
 	bool ssl = ((struct pass_entry*)ptr)->ssl;
 	int port = ((struct pass_entry*)ptr)->port;
 	SOCKADDR addr = ((struct pass_entry*)ptr)->addr;
-	free(ptr);
 #else
 	void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 #endif
-	char* name = config.hostname;
-
+	SSL* s = NULL;
 #ifndef NO_SSL
 	SSL_CTX* ctx = NULL;
-	SSL* s = NULL;
 	bool sslworks = false;
 	if(ssl) {
 		ctx = tw_create_ssl_ctx(port);
@@ -463,32 +475,45 @@ int tw_server_pass(void* ptr) {
 		if(SSL_accept(s) <= 0) goto cleanup;
 		sslworks = true;
 	}
-#else
-		void* s = NULL;
 #endif
-
+	char* name = config.hostname;
 	char address[513];
-	address[0] = 0;
+	int ret;
+	struct tw_http_request req;
+	struct tw_http_response res;
+	struct tw_tool tools;
 #ifndef NO_GETADDRINFO
 	struct sockaddr* sa = (struct sockaddr*)&addr;
 	getnameinfo(sa, sizeof(addr), address, 512, NULL, 0, NI_NUMERICHOST);
 #endif
+	address[0] = 0;
+#ifdef FREE_PTR
+	free(ptr);
+#endif
 
-	struct tw_http_request req;
-	struct tw_http_response res;
-	struct tw_tool tools;
 	res._processed = false;
 	tw_init_tools(&tools);
-	int ret = tw_http_parse(s, sock, &req);
+	ret = tw_http_parse(s, sock, &req);
 	if(ret == 0) {
 		char date[513];
 		time_t t = time(NULL);
 		struct tm* tm = localtime(&t);
+		char* useragent = cm_strdup("");
+		int i;
+		char* tmp;
+		char* tmp2;
+		char* tmp3;
+		char* tmp4;
+		char* tmp5;
+		char* log;
+		char* vhost;
+		time_t cmtime;
+		bool rej;
+		char* host;
+		int port;
+		struct tw_config_entry* vhost_entry;
 		strftime(date, 512, "%a, %d %b %Y %H:%M:%S %Z", tm);
 
-		char* useragent = cm_strdup("");
-
-		int i;
 		for(i = 0; req.headers[i] != NULL; i += 2) {
 			if(cm_strcaseequ(req.headers[i], "User-Agent")) {
 				free(useragent);
@@ -496,12 +521,12 @@ int tw_server_pass(void* ptr) {
 			}
 		}
 
-		char* tmp = cm_strcat3(address, " - [", date);
-		char* tmp2 = cm_strcat3(tmp, "] \"", req.method);
-		char* tmp3 = cm_strcat3(tmp2, " ", req.path);
-		char* tmp4 = cm_strcat3(tmp3, " ", req.version);
-		char* tmp5 = cm_strcat3(tmp4, "\" \"", useragent);
-		char* log = cm_strcat(tmp5, "\"");
+		tmp = cm_strcat3(address, " - [", date);
+		tmp2 = cm_strcat3(tmp, "] \"", req.method);
+		tmp3 = cm_strcat3(tmp2, " ", req.path);
+		tmp4 = cm_strcat3(tmp3, " ", req.version);
+		tmp5 = cm_strcat3(tmp4, "\" \"", useragent);
+		log = cm_strcat(tmp5, "\"");
 		free(tmp);
 		free(tmp2);
 		free(tmp3);
@@ -511,8 +536,8 @@ int tw_server_pass(void* ptr) {
 		cm_force_log(log);
 		free(log);
 
-		char* vhost = cm_strdup(config.hostname);
-		time_t cmtime = 0;
+		vhost = cm_strdup(config.hostname);
+		cmtime = 0;
 		if(req.headers != NULL) {
 			for(i = 0; req.headers[i] != NULL; i += 2) {
 				if(cm_strcaseequ(req.headers[i], "Host")) {
@@ -520,10 +545,12 @@ int tw_server_pass(void* ptr) {
 					vhost = cm_strdup(req.headers[i + 1]);
 				} else if(cm_strcaseequ(req.headers[i], "If-Modified-Since")) {
 					struct tm tm;
+					time_t t;
+					struct tm* btm;
 					strptime(req.headers[i + 1], "%a, %d %b %Y %H:%M:%S GMT", &tm);
-#if defined(__MINGW32__) || defined(_PSP) || defined(__PPU__) || defined(__ps2sdk__)
-					time_t t = 0;
-					struct tm* btm = localtime(&t);
+#if defined(__MINGW32__) || defined(_PSP) || defined(__PPU__) || defined(__ps2sdk__) || defined(_MSC_VER)
+					t = 0;
+					btm = localtime(&t);
 					cmtime = mktime(&tm);
 					cmtime -= (btm->tm_hour * 60 + btm->tm_min) * 60;
 #else
@@ -532,10 +559,10 @@ int tw_server_pass(void* ptr) {
 				}
 			}
 		}
-		bool rej = false;
+		rej = false;
 		cm_log("Server", "Host is %s", vhost);
-		int port = s == NULL ? 80 : 443;
-		char* host = cm_strdup(vhost);
+		port = s == NULL ? 80 : 443;
+		host = cm_strdup(vhost);
 		for(i = 0; vhost[i] != 0; i++) {
 			if(vhost[i] == ':') {
 				host[i] = 0;
@@ -545,7 +572,7 @@ int tw_server_pass(void* ptr) {
 		}
 		name = host;
 		cm_log("Server", "Hostname is `%s', port is `%d'", host, port);
-		struct tw_config_entry* vhost_entry = tw_vhost_match(host, port);
+		vhost_entry = tw_vhost_match(host, port);
 #ifdef HAS_CHROOT
 		char* chrootpath = vhost_entry->chroot_path != NULL ? vhost_entry->chroot_path : config.root.chroot_path;
 		if(chrootpath != NULL) {
@@ -581,11 +608,14 @@ int tw_server_pass(void* ptr) {
 			}
 		}
 		if(!res._processed) {
+			char* path;
+			char* rpath;
+			struct stat st;
 			cm_log("Server", "Document root is %s", vhost_entry->root == NULL ? "not set" : vhost_entry->root);
-			char* path = cm_strcat(vhost_entry->root == NULL ? "" : vhost_entry->root, req.path);
+			path = cm_strcat(vhost_entry->root == NULL ? "" : vhost_entry->root, req.path);
 			cm_log("Server", "Filesystem path is %s", path);
-#ifdef __MINGW32__
-			char* rpath = cm_strdup(path);
+#if defined(__MINGW32__) || defined(_MSC_VER)
+			rpath = cm_strdup(path);
 			for(i = strlen(rpath) - 1; i >= 0; i--) {
 				if(rpath[i] == '/') {
 					int j;
@@ -611,14 +641,13 @@ int tw_server_pass(void* ptr) {
 			}
 			free(rpath);
 #endif
-			struct stat st;
 			if(!rej && stat(path, &st) == 0) {
 				if(!tw_permission_allowed(path, addr, req, vhost_entry)) {
 					tw_http_error(s, sock, 403, name, port, vhost_entry);
 				} else if(S_ISDIR(st.st_mode)) {
 					if(req.path[strlen(req.path) - 1] != '/') {
-						cm_log("Server", "Accessing directory without the slash at the end");
 						char* headers[3] = {"Location", cm_strcat(req.path, "/"), NULL};
+						cm_log("Server", "Accessing directory without the slash at the end");
 						_tw_process_page(s, sock, tw_http_status(301), NULL, NULL, NULL, 0, headers, 0, 0);
 						free(headers[1]);
 					} else {
@@ -631,6 +660,8 @@ int tw_server_pass(void* ptr) {
 							if(f != NULL) {
 								char* ext = NULL;
 								int j;
+								struct stat st;
+								char* mime;
 								for(j = strlen(p) - 1; j >= 0; j--) {
 									if(p[j] == '.') {
 										ext = cm_strdup(p + j);
@@ -639,9 +670,8 @@ int tw_server_pass(void* ptr) {
 										break;
 									}
 								}
-								struct stat st;
 								stat(p, &st);
-								char* mime = tw_get_mime(ext, vhost_entry);
+								mime = tw_get_mime(ext, vhost_entry);
 								tw_process_page(s, sock, tw_http_status(200), mime, f, NULL, st.st_size, 0, 0);
 								fclose(f);
 								if(ext != NULL) free(ext);
@@ -653,8 +683,13 @@ int tw_server_pass(void* ptr) {
 						}
 						if(!found) {
 							char* str = malloc(1);
+							char** items;
+							int readme;
+							char** readmes;
+							int readme_count;
+							int hp;
 							str[0] = 0;
-							char** items = cm_scandir(path);
+							items = cm_scandir(path);
 							addstring(&str, "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n");
 							addstring(&str, "<html>\n");
 							addstring(&str, "	<head>\n");
@@ -672,17 +707,22 @@ int tw_server_pass(void* ptr) {
 							addstring(&str, "				<th>MIME</th>\n");
 							addstring(&str, "				<th>Size</th>\n");
 							addstring(&str, "			</tr>\n");
-							int readme = -1;
-							char** readmes = vhost_entry->readme_count == 0 ? config.root.readmes : vhost_entry->readmes;
-							int readme_count = vhost_entry->readme_count == 0 ? config.root.readme_count : vhost_entry->readme_count;
+							readme = -1;
+							readmes = vhost_entry->readme_count == 0 ? config.root.readmes : vhost_entry->readmes;
+							readme_count = vhost_entry->readme_count == 0 ? config.root.readme_count : vhost_entry->readme_count;
 							if(items != NULL) {
 								int phase = 0;
 							doit:
 								for(i = 0; items[i] != NULL; i++) {
 									int j;
+									char* ext;
+									char* itm;
+									char* icon;
 									char* fpth = cm_strcat3(path, "/", items[i]);
 									struct stat s;
 									char size[512];
+									char* showmime;
+									char* mime;
 									size[0] = 0;
 									stat(fpth, &s);
 									if(phase == 0 && !S_ISDIR(s.st_mode)) {
@@ -704,21 +744,21 @@ int tw_server_pass(void* ptr) {
 											continue;
 										}
 									}
-									if(s.st_size < 1024ULL) {
+									if(s.st_size < NUM1024) {
 										sprintf(size, "%d", (int)s.st_size);
-									} else if(s.st_size < 1024ULL * 1024) {
+									} else if(s.st_size < NUM1024 * 1024) {
 										sprintf(size, "%.1fK", (double)s.st_size / 1024);
-									} else if(s.st_size < 1024ULL * 1024 * 1024) {
+									} else if(s.st_size < NUM1024 * 1024 * 1024) {
 										sprintf(size, "%.1fM", (double)s.st_size / 1024 / 1024);
-									} else if(s.st_size < 1024ULL * 1024 * 1024 * 1024) {
+									} else if(s.st_size < NUM1024 * 1024 * 1024 * 1024) {
 										sprintf(size, "%.1fG", (double)s.st_size / 1024 / 1024 / 1024);
-									} else if(s.st_size < 1024ULL * 1024 * 1024 * 1024 * 1024) {
+									} else if(s.st_size < NUM1024 * 1024 * 1024 * 1024 * 1024) {
 										sprintf(size, "%.1fT", (double)s.st_size / 1024 / 1024 / 1024 / 1024);
 									}
 
 									free(fpth);
 
-									char* ext = NULL;
+									ext = NULL;
 									for(j = strlen(items[i]) - 1; j >= 0; j--) {
 										if(items[i][j] == '.') {
 											ext = cm_strdup(items[i] + j);
@@ -727,8 +767,8 @@ int tw_server_pass(void* ptr) {
 											break;
 										}
 									}
-									char* showmime = "";
-									char* mime = tw_get_mime(ext, vhost_entry);
+									showmime = "";
+									mime = tw_get_mime(ext, vhost_entry);
 									if(strcmp(items[i], "../") == 0) {
 										mime = "misc/parent";
 										size[0] = 0;
@@ -738,9 +778,9 @@ int tw_server_pass(void* ptr) {
 									} else {
 										showmime = mime;
 									}
-									char* icon = tw_get_icon(mime, vhost_entry);
+									icon = tw_get_icon(mime, vhost_entry);
 									if(ext != NULL) free(ext);
-									char* itm = cm_strdup(items[i]);
+									itm = cm_strdup(items[i]);
 									if(strlen(itm) >= 32) {
 										if(itm[strlen(itm) - 1] == '/') {
 											itm[31] = 0;
@@ -770,11 +810,13 @@ int tw_server_pass(void* ptr) {
 							}
 							addstring(&str, "		</table>\n");
 							if(readme != -1) {
-								addstring(&str, "<hr>\n");
-								char* fpth = cm_strcat3(path, "/", readmes[readme]);
 								struct stat s;
+								FILE* fr;
+								char* fpth;
+								addstring(&str, "<hr>\n");
+								fpth = cm_strcat3(path, "/", readmes[readme]);
 								stat(fpth, &s);
-								FILE* fr = fopen(fpth, "r");
+								fr = fopen(fpth, "r");
 								if(fr != NULL) {
 									char* rmbuf = malloc(s.st_size + 1);
 									rmbuf[s.st_size] = 0;
@@ -786,7 +828,7 @@ int tw_server_pass(void* ptr) {
 								free(fpth);
 							}
 							addstring(&str, "		<hr>\n");
-							int hp = vhost_entry->hideport == -1 ? config.root.hideport : vhost_entry->hideport;
+							hp = vhost_entry->hideport == -1 ? config.root.hideport : vhost_entry->hideport;
 							if(hp == 0) {
 								addstring(&str, "		<address>%s Server at %s Port %d</address>\n", tw_server, name, port);
 							} else {
@@ -800,6 +842,8 @@ int tw_server_pass(void* ptr) {
 					}
 				} else {
 					char* ext = NULL;
+					char* mime;
+					FILE* f;
 					for(i = strlen(req.path) - 1; i >= 0; i--) {
 						if(req.path[i] == '.') {
 							ext = cm_strdup(req.path + i);
@@ -808,9 +852,9 @@ int tw_server_pass(void* ptr) {
 							break;
 						}
 					}
-					char* mime = tw_get_mime(ext, vhost_entry);
+					mime = tw_get_mime(ext, vhost_entry);
 					if(ext != NULL) free(ext);
-					FILE* f = fopen(path, "rb");
+					f = fopen(path, "rb");
 					if(f == NULL) {
 						tw_http_error(s, sock, 403, name, port, vhost_entry);
 					} else {
@@ -840,8 +884,8 @@ cleanup:
 	SSL_free(s);
 #endif
 	close_socket(sock);
-#ifdef __MINGW32__
-	_endthreadex(0);
+#if defined(__MINGW32__) || defined(_MSC_VER)
+	_endthread(0);
 #elif defined(__HAIKU__)
 		exit_thread(0);
 #endif
@@ -853,7 +897,7 @@ extern SERVICE_STATUS status;
 extern SERVICE_STATUS_HANDLE status_handle;
 #endif
 
-#if defined(__MINGW32__) || defined(__HAIKU__)
+#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_MSC_VER)
 struct thread_entry {
 #ifdef __HAIKU__
 	thread_id thread;
@@ -868,7 +912,11 @@ extern int running;
 
 void tw_server_loop(void) {
 	int i;
-#if defined(__MINGW32__) || defined(__HAIKU__)
+#ifndef USE_POLL
+		fd_set fdset;
+		struct timeval tv;
+#endif
+#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_MSC_VER)
 	struct thread_entry threads[2048];
 	for(i = 0; i < sizeof(threads) / sizeof(threads[0]); i++) {
 		threads[i].used = false;
@@ -880,13 +928,11 @@ void tw_server_loop(void) {
 		pollfds[i].fd = sockets[i];
 		pollfds[i].events = POLLIN | POLLPRI;
 	}
-#else
-		fd_set fdset;
-		struct timeval tv;
 #endif
 	while(running) {
+		int ret;
 #ifdef USE_POLL
-		int ret = poll(pollfds, sockcount, 1000);
+		ret = poll(pollfds, sockcount, 1000);
 #else
 			FD_ZERO(&fdset);
 			for(i = 0; i < sockcount; i++) {
@@ -895,13 +941,13 @@ void tw_server_loop(void) {
 			tv.tv_sec = 1;
 			tv.tv_usec = 0;
 #ifdef __HAIKU__
-			int ret = select(32, &fdset, NULL, NULL, &tv);
+			ret = select(32, &fdset, NULL, NULL, &tv);
 #else
-			int ret = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
+			ret = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
 #endif
 #endif
 		if(ret == -1) {
-#ifndef __MINGW32__
+#if !defined(__MINGW32__) && !defined(_MSC_VER)
 			cm_log("Server", "Select failure: %s", strerror(errno));
 #endif
 			break;
@@ -925,37 +971,24 @@ void tw_server_loop(void) {
 					SOCKADDR claddr;
 					socklen_t clen = sizeof(claddr);
 					int sock = accept(sockets[i], (struct sockaddr*)&claddr, &clen);
-					cm_log("Server", "New connection accepted");
-#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_PSP) || defined(__PPU__)
+#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_PSP) || defined(__PPU__) || defined(_MSC_VER)
+					int j;
 					struct pass_entry* e = malloc(sizeof(*e));
+					cm_log("Server", "New connection accepted");
 					e->sock = sock;
-					e->ssl = config.ports[i] & (1ULL << 32);
+#ifdef _MSC_VER
+					e->ssl = config.ports[i] & (1UL << 31);
+#else
+					e->ssl = config.ports[i] & (1ULL << 31);
+#endif
 					e->port = config.ports[i];
 					e->addr = claddr;
 #endif
-#ifdef __MINGW32__
-					int j;
-					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
-						if(threads[j].used) {
-							DWORD ex;
-							GetExitCodeThread(threads[j].handle, &ex);
-							if(ex != STILL_ACTIVE) {
-								CloseHandle(threads[j].handle);
-								threads[j].used = false;
-							}
-						}
-					}
-					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
-						if(!threads[j].used) {
-							threads[j].handle = (HANDLE)_beginthreadex(NULL, 0, tw_server_pass, e, 0, NULL);
-							threads[j].used = true;
-							break;
-						}
-					}
+#if defined(__MINGW32__) || defined(_MSC_VER)
+					_beginthread(tw_server_pass, 0, e);
 #elif defined(_PSP) || defined(__PPU__)
 						tw_server_pass(e);
 #elif defined(__HAIKU__)
-					int j;
 					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
 						if(threads[j].used) {
 							thread_info info;
@@ -982,7 +1015,7 @@ void tw_server_loop(void) {
 					if(pid == 0) {
 						int j;
 						for(j = 0; j < sockcount; j++) close_socket(sockets[j]);
-						tw_server_pass(sock, config.ports[i] & (1ULL << 32), config.ports[i], claddr);
+						tw_server_pass(sock, config.ports[i] & (1ULL << 31), config.ports[i], claddr);
 						_exit(0);
 					} else {
 						close_socket(sock);

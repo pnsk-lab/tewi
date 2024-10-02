@@ -35,7 +35,7 @@
 //#include <sys/cdefs.h>
 //__RCSID("$NetBSD: strptime.c,v 1.62 2017/08/24 01:01:09 ginsbach Exp $");
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 
 #include <ctype.h>
 #include <string.h>
@@ -291,10 +291,11 @@ recurse:
 
         case 'D':	/* The date as "%y/%m/%d". */
         {
+	    int year;
             new_fmt = HERE_D_FMT;
             LEGAL_ALT(0);
             state |= S_MON | S_MDAY | S_YEAR;
-            const int year = split_year ? tm->tm_year : 0;
+            year = split_year ? tm->tm_year : 0;
 
             bp = (const unsigned char *)strptime((const char *)bp,
                                 new_fmt, tm);
@@ -398,12 +399,20 @@ recurse:
             continue;
 
 #ifndef TIME_MAX
+#ifdef _MSC_VER
+#define TIME_MAX	INT32_MAX
+#else
 #define TIME_MAX	INT64_MAX
+#endif
 #endif
         case 's':	/* seconds since the epoch */
             {
                 time_t sse = 0;
+#ifdef _MSC_VER
+                uint32_t rulim = TIME_MAX;
+#else
                 uint64_t rulim = TIME_MAX;
+#endif
 
                 if (*bp < '0' || *bp > '9') {
                     bp = NULL;
@@ -416,13 +425,20 @@ recurse:
                     rulim /= 10;
                 } while ((sse * 10 <= TIME_MAX) &&
                      rulim && *bp >= '0' && *bp <= '9');
-
+#ifdef _MSC_VER
+                if (sse < 0 || (uint32_t)sse > TIME_MAX) {
+#else
                 if (sse < 0 || (uint64_t)sse > TIME_MAX) {
+#endif
                     bp = NULL;
                     continue;
                 }
 #ifdef _WIN32
+#ifdef _MSC_VER
+		if (1)
+#else
                 if (localtime_s(tm, &sse) == 0)
+#endif
 #else
                 if (localtime_r(&sse, tm))
 #endif

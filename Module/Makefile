@@ -1,17 +1,19 @@
 # $Id$
 
+OBJ=o
+STATIC=a
 include $(PWD)/Platform/$(PLATFORM).mk
 
 .PHONY: all clean
-.SUFFIXES: .c .o $(LIB)
+.SUFFIXES: .c .$(OBJ) $(LIBSUF)
 
-all: mod_cgi$(LIB) mod_proxy$(LIB)
+all: mod_cgi$(LIBSUF) mod_proxy$(LIBSUF)
 
-.o$(LIB):
-	$(CC) $(LDFLAGS) -shared -o $@ $< ../Common/common.a $(LIBS)
+.$(OBJ)$(LIBSUF):
+	$(CC) $(LDFLAGS) -shared -o $@ $< ../Common/common.$(STATIC) $(LIBS)
 
-.c.o:
+.c.$(OBJ):
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f *.o *.so *.a *.dll
+	rm -f *.o *.so *.a *.dll *.dll

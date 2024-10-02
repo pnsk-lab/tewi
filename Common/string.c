@@ -7,9 +7,10 @@
 #include <ctype.h>
 
 char* cm_strcat(const char* a, const char* b) {
+	char* str;
 	if(a == NULL) a = "";
 	if(b == NULL) b = "";
-	char* str = malloc(strlen(a) + strlen(b) + 1);
+	str = malloc(strlen(a) + strlen(b) + 1);
 	memcpy(str, a, strlen(a));
 	memcpy(str + strlen(a), b, strlen(b));
 	str[strlen(a) + strlen(b)] = 0;
@@ -26,8 +27,8 @@ char* cm_strcat3(const char* a, const char* b, const char* c) {
 char* cm_strdup(const char* str) { return cm_strcat(str, ""); }
 
 bool cm_endswith(const char* str, const char* end) {
-	if(strlen(str) < strlen(end)) return false;
 	int i;
+	if(strlen(str) < strlen(end)) return false;
 	for(i = strlen(str) - strlen(end); i < strlen(str); i++) {
 		if(str[i] != end[i - strlen(str) + strlen(end)]) return false;
 	}
@@ -35,8 +36,8 @@ bool cm_endswith(const char* str, const char* end) {
 }
 
 bool cm_nocase_endswith(const char* str, const char* end) {
-	if(strlen(str) < strlen(end)) return false;
 	int i;
+	if(strlen(str) < strlen(end)) return false;
 	for(i = strlen(str) - strlen(end); i < strlen(str); i++) {
 		if(tolower(str[i]) != tolower(end[i - strlen(str) + strlen(end)])) return false;
 	}
@@ -75,13 +76,13 @@ char* cm_trim(const char* str) {
 char** cm_split(const char* str, const char* by) {
 	int i;
 	char** r = malloc(sizeof(*r));
-	r[0] = NULL;
 	char* b = malloc(1);
-	b[0] = 0;
 	char cbuf[2];
-	cbuf[1] = 0;
 	bool dq = false;
 	bool sq = false;
+	r[0] = NULL;
+	b[0] = 0;
+	cbuf[1] = 0;
 	for(i = 0;; i++) {
 		int j;
 		bool has = false;
@@ -112,8 +113,8 @@ char** cm_split(const char* str, const char* by) {
 			} else if(str[i] == '\'' && !dq) {
 				sq = !sq;
 			} else {
-				cbuf[0] = str[i];
 				char* tmp = b;
+				cbuf[0] = str[i];
 				b = cm_strcat(tmp, cbuf);
 				free(tmp);
 			}
@@ -124,10 +125,10 @@ char** cm_split(const char* str, const char* by) {
 }
 
 bool cm_strcaseequ(const char* a, const char* b) {
+	int i;
 	if(a == NULL) return false;
 	if(b == NULL) return false;
 	if(strlen(a) != strlen(b)) return false;
-	int i;
 	for(i = 0; a[i] != 0; i++) {
 		if(tolower(a[i]) != tolower(b[i])) return false;
 	}
@@ -154,8 +155,8 @@ int cm_hex(const char* str, int len) {
 char* cm_html_escape(const char* str) {
 	int i;
 	char* result = malloc(1);
-	result[0] = 0;
 	char cbuf[2];
+	result[0] = 0;
 	cbuf[1] = 0;
 	for(i = 0; str[i] != 0; i++) {
 		cbuf[0] = str[i];
@@ -183,15 +184,15 @@ char* cm_html_escape(const char* str) {
 char* cm_url_escape(const char* str) {
 	int i;
 	char* result = malloc(1);
-	result[0] = 0;
 	char cbuf[2];
+	result[0] = 0;
 	cbuf[1] = 0;
 	for(i = 0; str[i] != 0; i++) {
 		cbuf[0] = str[i];
 		if('!' <= str[i] && str[i] <= '@' && str[i] != '.' && str[i] != '-' && str[i] != '/' && !('0' <= str[i] && str[i] <= '9')) {
 			char code[4];
-			sprintf(code, "%%%02X", str[i]);
 			char* tmp = result;
+			sprintf(code, "%%%02X", str[i]);
 			result = cm_strcat(tmp, code);
 			free(tmp);
 		} else {

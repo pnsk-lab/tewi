@@ -17,14 +17,19 @@
 #define SSL void
 #endif
 
-#if defined(__MINGW32__) && defined(USE_POLL)
+#if (defined(__MINGW32__) || defined(_MSC_VER)) && defined(USE_POLL)
 #undef USE_POLL
 /* Force select(2) for Windows */
 #endif
 
-#if defined(__MINGW32__) && defined(HAS_CHROOT)
+#if (defined(__MINGW32__) || defined(_MSC_VER)) && defined(HAS_CHROOT)
 #undef HAS_CHROOT
 /* Windows should not have chroot */
+#endif
+
+#if defined(_MSC_VER) && !defined(NO_GETADDRINFO)
+#define NO_GETADDRINFO
+/* Do not use getaddrinfo */
 #endif
 
 #if (defined(_PSP) || defined(__PPU__) || defined(__ps2sdk__)) && !defined(NO_IPV6)

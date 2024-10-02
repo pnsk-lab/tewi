@@ -10,8 +10,10 @@
 #include <cm_log.h>
 
 #include <string.h>
-#include <unistd.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
+#include <unistd.h>
+#endif
 
 extern struct tw_config config;
 
@@ -24,7 +26,7 @@ int tw_module_init(void* mod) { return 1; }
 
 #else
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #include <windows.h>
 #else
 #include <dlfcn.h>
@@ -32,9 +34,9 @@ int tw_module_init(void* mod) { return 1; }
 
 void* tw_module_load(const char* path) {
 	char* p = getcwd(NULL, 0);
-	chdir(config.server_root);
 	void* lib;
-#ifdef __MINGW32__
+	chdir(config.server_root);
+#if defined(__MINGW32__) || defined(_MSC_VER)
 	lib = LoadLibraryA(path);
 #else
 	lib = dlopen(path, RTLD_LAZY);
@@ -48,7 +50,7 @@ void* tw_module_load(const char* path) {
 }
 
 void* tw_module_symbol(void* mod, const char* sym) {
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
 	return GetProcAddress(mod, sym);
 #else
 	return dlsym(mod, sym);
