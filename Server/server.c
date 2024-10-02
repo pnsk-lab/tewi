@@ -42,6 +42,7 @@
 #include <windows.h>
 
 #include "strptime.h"
+typedef int socklen_t;
 #else
 #ifdef USE_POLL
 #ifdef __PPU__
@@ -448,9 +449,8 @@ struct pass_entry {
 	SOCKADDR addr;
 };
 
-#if defined(__MINGW32__) || defined(_MSC_VER)
-unsigned int WINAPI tw_server_pass(void* ptr) {
-#elif defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#define NO_RETURN_THREAD
 void tw_server_pass(void* ptr) {
 #elif defined(__HAIKU__)
 int32_t tw_server_pass(void* ptr) {
@@ -464,6 +464,7 @@ int tw_server_pass(void* ptr) {
 	int port = ((struct pass_entry*)ptr)->port;
 	SOCKADDR addr = ((struct pass_entry*)ptr)->addr;
 #else
+#define NO_RETURN_THREAD
 	void tw_server_pass(int sock, bool ssl, int port, SOCKADDR addr) {
 #endif
 	SSL* s = NULL;
@@ -618,10 +619,10 @@ int tw_server_pass(void* ptr) {
 			path = cm_strcat(vhost_entry->root == NULL ? "" : vhost_entry->root, req.path);
 			cm_log("Server", "Filesystem path is %s", path);
 #if defined(_MSC_VER) || defined(__BORLANDC__)
-			for(i = strlen(path) - 1; i >= 0; i--){
-				if(path[i] == '/'){
+			for(i = strlen(path) - 1; i >= 0; i--) {
+				if(path[i] == '/') {
 					path[i] = 0;
-				}else{
+				} else {
 					break;
 				}
 			}
@@ -898,15 +899,11 @@ cleanup:
 #endif
 	close_socket(sock);
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
-	_endthread(
-#ifndef __BORLANDC__
-		0
-#endif
-	);
+	_endthread();
 #elif defined(__HAIKU__)
 		exit_thread(0);
 #endif
-#ifndef __BORLANDC__
+#ifndef NO_RETURN_THREAD
 	return 0;
 #endif
 }

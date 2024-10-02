@@ -9,5 +9,5 @@ CFLAGS = -g -std=c99 -DPREFIX=\"$(PREFIX)\" -I $(PWD)/Common -fPIC -DSERVICE -mw
 LDFLAGS = -mwindows
 LIBS = -lws2_32
 EXEC = .exe
-LIB = .dll
+LIBSUF = .dll
 PREOBJS = tewi.res
