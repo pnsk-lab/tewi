@@ -22,6 +22,7 @@ LangString SERV_TOO ${LANG_JAPANESE} "サービスもインストールする(NT
 LangString WAIT_STOP ${LANG_ENGLISH} "Waiting for 1 second so service can stop"
 LangString WAIT_STOP ${LANG_JAPANESE} "サービスが止まるのを待っています"
 
+!include "x64.nsh"
 !include "LogicLib.nsh"
 !include "Sections.nsh"
 
@@ -57,8 +58,13 @@ Section
 	CreateShortcut "$SMPROGRAMS\Tewi HTTPd\Start Tewi HTTPd (verbose).lnk" "$INSTDIR\bin\tewi.exe" "-v"
 	CreateShortcut "$SMPROGRAMS\Tewi HTTPd\Uninstall Tewi HTTPd.lnk" "$INSTDIR\uninstall.exe" ""
 
+	${If} ${RunningX64}
+		SetRegView 64
+	${Else}
+		SetRegView 32
+	${EndIf}
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tewi HTTPd" "DisplayName" "Tewi HTTPd"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tewi HTTPd" "InstallDir" '"$INSTDIR"'
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tewi HTTPd" "InstallDir" "$INSTDIR"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tewi HTTPd" "UninstallString" '"$INSTDIR\uninstall.exe"'
 
 	WriteUninstaller "$INSTDIR\uninstall.exe"
@@ -125,5 +131,10 @@ Section "Uninstall"
 	RMDir /r "$INSTDIR"
 	RMDir /r "$SMPROGRAMS\Tewi HTTPd"
 
+	${If} ${RunningX64}
+		SetRegView 64
+	${Else}
+		SetRegView 32
+	${EndIf}
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tewi HTTPd"
 SectionEnd

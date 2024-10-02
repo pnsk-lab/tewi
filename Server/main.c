@@ -73,10 +73,18 @@ int startup(int argc, char** argv);
 
 #ifdef __MINGW32__
 char* get_registry(const char* main, const char* sub) {
-	DWORD bufsize = 255;
-	char* value = malloc(256);
-	int err = RegGetValue(HKEY_LOCAL_MACHINE, main, sub, RRF_RT_ANY, NULL, (void*)value, &bufsize);
+	DWORD bufsize = 512;
+	HKEY handle;
+	char* value = malloc(513);
+	int err = RegOpenKeyEx(HKEY_LOCAL_MACHINE, main, 0, KEY_QUERY_VALUE, &handle);
 	if(err == ERROR_SUCCESS) {
+		err = RegQueryValueEx(handle, sub, NULL, NULL, value, &bufsize);
+		if(err != ERROR_SUCCESS) {
+			free(value);
+			RegCloseKey(handle);
+			return NULL;
+		}
+		RegCloseKey(handle);
 		return value;
 	} else {
 		free(value);
@@ -502,6 +510,7 @@ void show_png(void) {
 #endif
 
 int main(int argc, char** argv) {
+	printf("%s\n", get_registry("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Tewi HTTPd", "InstallDir"));
 	logfile = stderr;
 #ifdef SERVICE
 	SERVICE_TABLE_ENTRY table[] = {{"Tewi HTTPd", servmain}, {NULL, NULL}};
