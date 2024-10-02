@@ -82,7 +82,7 @@ int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req) {
 	while(1) {
 		int i;
 		int len;
-			int n;
+		int n;
 #ifndef USE_POLL
 		struct timeval tv;
 		FD_ZERO(&fds);
@@ -343,7 +343,7 @@ getout:
 		}
 		free(req->path);
 		req->path = result;
-	
+
 		incr = 0;
 		p = malloc(1);
 		p[0] = 0;
@@ -353,9 +353,9 @@ getout:
 				char* pth;
 				cbuf[0] = oldc;
 				req->path[j] = 0;
-	
+
 				pth = req->path + incr;
-	
+
 				if(strcmp(pth, "..") == 0) {
 					int k;
 					if(p[strlen(p) - 1] == '/') p[strlen(p) - 1] = 0;
@@ -375,7 +375,7 @@ getout:
 					p = cm_strcat3(tmp, pth, cbuf);
 					free(tmp);
 				}
-	
+
 				incr = j + 1;
 				if(oldc == 0) break;
 			}

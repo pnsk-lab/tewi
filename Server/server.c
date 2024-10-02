@@ -913,8 +913,8 @@ extern int running;
 void tw_server_loop(void) {
 	int i;
 #ifndef USE_POLL
-		fd_set fdset;
-		struct timeval tv;
+	fd_set fdset;
+	struct timeval tv;
 #endif
 #if defined(__MINGW32__) || defined(__HAIKU__) || defined(_MSC_VER)
 	struct thread_entry threads[2048];
