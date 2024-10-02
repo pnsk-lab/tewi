@@ -2,7 +2,7 @@
 # vim: syntax=tcl
 
 proc run {project_name} {
-	exec cp config.h.tmpl config.h >@stdout 2>@1
-	exec make clean >@stdout 2>@1
-	exec make >@stdout 2>@1
+	RunCommand "cp config.h.tmpl config.h"
+	RunCommand "make clean"
+	RunCommand "make"
 }
