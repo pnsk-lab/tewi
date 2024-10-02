@@ -71,6 +71,20 @@ char tw_server[2048];
 
 int startup(int argc, char** argv);
 
+#ifdef __MINGW32__
+char* get_registry(const char* main, const char* sub) {
+	DWORD bufsize = 255;
+	char* value = malloc(256);
+	int err = RegGetValue(HKEY_LOCAL_MACHINE, main, sub, RRF_RT_ANY, NULL, (void*)value, &bufsize);
+	if(err == ERROR_SUCCESS) {
+		return value;
+	} else {
+		free(value);
+		return NULL;
+	}
+}
+#endif
+
 #ifdef SERVICE
 SERVICE_STATUS status;
 SERVICE_STATUS_HANDLE status_handle;
@@ -86,7 +100,15 @@ void WINAPI servhandler(DWORD control) {
 }
 
 void WINAPI servmain(DWORD argc, LPSTR* argv) {
-	logfile = fopen(PREFIX "/logs/tewi.log", "a");
+	char* path = get_registry("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Tewi HTTPd", "InstallDir");
+	if(path != NULL) {
+		char* lpath = cm_strcat(path, "/logs/tewi.log");
+		logfile = fopen(lpath, "a");
+		free(lpath);
+		free(path);
+	} else {
+		logfile = fopen(PREFIX "/logs/tewi.log", "a");
+	}
 	if(logfile == NULL) logfile = stderr;
 	status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
 	status.dwCurrentState = SERVICE_START_PENDING;
@@ -661,7 +683,17 @@ int main(int argc, char** argv) {
 
 int startup(int argc, char** argv) {
 	int i;
+#ifdef __MINGW32__
+	char* confpath = cm_strdup(PREFIX "/etc/tewi.conf");
+	char* regpath = get_registry("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Tewi HTTPd", "InstallDir");
+	if(regpath != NULL) {
+		free(confpath);
+		confpath = cm_strcat(regpath, "/etc/tewi.conf");
+		free(regpath);
+	}
+#else
 	const char* confpath = PREFIX "/etc/tewi.conf";
+#endif
 	if(argv != NULL) {
 		for(i = 1; i < argc; i++) {
 			if(argv[i][0] == '-') {

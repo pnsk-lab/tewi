@@ -22,13 +22,13 @@ VERSION=`make get-version`
 sed "s/undef NO_SSL/define NO_SSL/g" config.h.tmpl > config.h
 
 make clean || fail
-make PLATFORM=$1 -j4 || fail
+make PLATFORM=$1 PREFIX=C:/srv/Tewi -j4 || fail
 cp Server/tewi.exe tewi.exe
 make clean || fail
-make PLATFORM=$1-service -j4 || fail
+make PLATFORM=$1-service -j4 PREFIX=C:/srv/Tewi || fail
 cp Server/tewi.exe tewi-service.exe
 cd Server
-../Tool/genconf "C:/Tewi" modules dll > ../generated.conf
+../Tool/genconf "C:/srv/Tewi" modules dll > ../generated.conf
 ../Tool/itworks > ../itworks.html
 makensis -DVERSION=$VERSION install.nsi
 cp install.exe ../install-nossl.exe
@@ -38,13 +38,13 @@ cd ..
 sed "s/define NO_SSL/undef NO_SSL/g" config.h.tmpl > config.h
 
 make clean || fail
-make PLATFORM=$1 -j4 || fail
+make PLATFORM=$1 -j4 PREFIX=C:/srv/Tewi|| fail
 cp Server/tewi.exe tewi.exe
 make clean || fail
-make PLATFORM=$1-service -j4 || fail
+make PLATFORM=$1-service -j4 PREFIX=C:/srv/Tewi || fail
 cp Server/tewi.exe tewi-service.exe
 cd Server
-../Tool/genconf "C:/Tewi" modules dll > ../generated.conf
+../Tool/genconf "C:/srv/Tewi" modules dll > ../generated.conf
 ../Tool/itworks > ../itworks.html
 makensis -DVERSION=$VERSION install.nsi
 cp install.exe ../install-ssl.exe

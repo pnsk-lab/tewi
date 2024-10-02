@@ -26,6 +26,7 @@ LangString WAIT_STOP ${LANG_JAPANESE} "サービスが止まるのを待って�
 !include "Sections.nsh"
 
 Page license
+Page directory
 Page components
 Page instfiles
 UninstPage uninstConfirm
@@ -57,6 +58,7 @@ Section
 	CreateShortcut "$SMPROGRAMS\Tewi HTTPd\Uninstall Tewi HTTPd.lnk" "$INSTDIR\uninstall.exe" ""
 
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tewi HTTPd" "DisplayName" "Tewi HTTPd"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tewi HTTPd" "InstallDir" '"$INSTDIR"'
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tewi HTTPd" "UninstallString" '"$INSTDIR\uninstall.exe"'
 
 	WriteUninstaller "$INSTDIR\uninstall.exe"
