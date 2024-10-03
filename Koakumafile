@@ -20,4 +20,19 @@ proc run {project_name} {
 	} else {
 		RunCommand "make"
 	}
+	file mkdir workdir
+	file mkdir workdir/etc
+	file mkdir workdir/www
+	file mkdir workdir/modules
+	file delete archive.7z
+
+	exec ./Tool/itworks > workdir/www/index.html
+	exec ./Tool/genconf C:/Tewi modules dll > workdir/etc/tewi.conf
+	RunCommand "cp Binary/pbtewi.gif workdir/www/"
+	RunCommand "cp Modules/*.dll workdir/modules/"
+	cd workdir
+	RunCommand "7z a ../archive.7z *"
+	cd ..
+	exec cat /usr/share/7z.sfx archive.7z > tewidist.exe
+	RunCommand "rm -rf workdir"
 }
