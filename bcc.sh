@@ -28,10 +28,12 @@ for i in "$@"; do
 	elif [ "$i" = "-shared" ]; then
 		options="$options -tWD"
 		shared=1
+	elif [ "$i" = "-mwindows" ]; then
+		options="$options -tW"
 	elif [ "`echo "$i" | grep -Eo "^-D"`" = "-D" ]; then
 		options="$options -`echo "$i" | sed "s/^-//g"`"
 	elif [ "`echo "$i" | grep -Eo "^-l"`" = "-l" ]; then
-		if [ ! "$i" = "-lwsock32" ]; then
+		if [ ! "$i" = "-lwsock32" -a ! "$i" = "-luser32" -a ! "$i" = "-lcomctl32" ]; then
 			libraries="$libraries `echo "$i" | sed "s/^-l//g"`.lib"
 		fi
 	elif [ "$dowhat" = "output" ]; then

@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
 #endif
 #ifdef BUILD_GUI
 			printf(" -lcomctl32");
+			printf(" -luser32");
 #endif
 		}else if(strcmp(argv[3], "WINDOWS_WATCOM") == 0){
 #ifdef USE_WINSOCK1
@@ -62,6 +63,7 @@ int main(int argc, char** argv) {
 #endif
 #ifdef BUILD_GUI
 			printf(" comctl32.lib");
+			printf(" user32.lib");
 #endif
 		}
 	}

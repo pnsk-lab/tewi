@@ -59,6 +59,10 @@ LRESULT CALLBACK VersionDialog(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp){
 		hdc = BeginPaint(hWnd, &ps);
 		ShowBitmapSize(hWnd, hdc, "TEWILOGO", size.left, size.top, WINWIDTH(size), WINWIDTH(size));
 		EndPaint(hWnd, &ps);
+	}else if(msg == WM_CTLCOLORDLG || msg == WM_CTLCOLORSTATIC){
+		HDC dc = (HDC)wp;
+		SetBkMode(dc, TRANSPARENT);
+		return GetSysColorBrush(COLOR_MENU);
 	}else{
 		return FALSE;
 	}
@@ -79,7 +83,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp){
 		int ev = HIWORD(wp);
 		if(trig == GUI_BUTTON_ABOUT){
 			if(ev == BN_CLICKED){
-				DialogBox(hInst, "VERSIONDLG", hWnd, VersionDialog);
+				DialogBox(hInst, "VERSIONDLG", hWnd, (DLGPROC)VersionDialog);
 			}
 		}else if(trig == GUI_BUTTON_START){
 			if(ev == BN_CLICKED){

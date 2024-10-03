@@ -6,6 +6,7 @@ outfile="a.out"
 dowhat=""
 options="/I../VC6Compat"
 obj=0
+win=0
 source=""
 libraries=""
 link=""
@@ -26,9 +27,14 @@ for i in "$@"; do
 		:
 	elif [ "$i" = "-shared" ]; then
 		options="$options /LD"
+	elif [ "$i" = "-mwindows" ]; then
+		win=1
 	elif [ "`echo "$i" | grep -Eo "^-D"`" = "-D" ]; then
 		options="$options /`echo "$i" | sed "s/^-//g"`"
 	elif [ "`echo "$i" | grep -Eo "^-l"`" = "-l" ]; then
+		if [ "$i" = "-luser32" ]; then
+			libraries="$libraries gdi32.lib"
+		fi
 		libraries="$libraries `echo "$i" | sed "s/^-l//g"`.lib"
 	elif [ "$dowhat" = "output" ]; then
 		dowhat=""
@@ -47,6 +53,11 @@ else
 fi
 if [ ! "$libraries" = "" ]; then
 	link="/link /nodefaultlib:libc $libraries"
+fi
+if [ "$obj" = "0" ]; then
+	if [ "$win" = "1" ]; then
+		link="$link /SUBSYSTEM:windows"
+	fi
 fi
 construct="cl /nologo $options $source $link"
 echo "Run: $construct"
