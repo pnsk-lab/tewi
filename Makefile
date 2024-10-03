@@ -5,6 +5,7 @@ PLATFORM = generic
 PLATFORM_IDENT = NOT_WINDOWS
 PREFIX = /usr/local
 MODULE = ./Module
+OBJ = o
 
 include Platform/$(PLATFORM).mk
 
@@ -24,7 +25,7 @@ all: ./Server $(MODULE)
 	cc -o $@ ./Tool/itworks.c
 
 ./Server:: ./Common ./Tool/option ./Tool/genconf ./Tool/itworks
-	$(MAKE) -C $@ $(FLAGS) EXTOBJS="`./Tool/option objs ../`" EXTLIBS="`./Tool/option libs ../ $(PLATFORM_IDENT)`" EXTCFLAGS="`./Tool/option cflags ../`" EXTLDFLAGS="`./Tool/option ldflags ../`"
+	$(MAKE) -C $@ $(FLAGS) EXTOBJS="`./Tool/option objs ../ $(PLATFORM_IDENT) $(OBJ)`" EXTLIBS="`./Tool/option libs ../ $(PLATFORM_IDENT) $(OBJ)`" EXTCFLAGS="`./Tool/option cflags ../ $(PLATFORM_IDENT) $(OBJ)`" EXTLDFLAGS="`./Tool/option ldflags ../ $(PLATFORM_IDENT) $(OBJ)`"
 
 ./Module:: ./Common
 	$(MAKE) -C $@ $(FLAGS)

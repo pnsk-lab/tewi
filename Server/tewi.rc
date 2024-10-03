@@ -2,7 +2,7 @@
 #include "tw_version.h"
 #include "../config.h"
 
-id ICON "../Binary/tewi.ico"
+TEWI ICON "../Binary/tewi.ico"
 VS_VERSION_INFO VERSIONINFO
 	FILEVERSION 1,0,0,0
 	PRODUCTVERSION 1,0,0,0

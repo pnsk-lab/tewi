@@ -13,4 +13,4 @@ EXEC =
 STATIC = lib
 LIBSUF = .dll
 OBJ = obj
-PREOBJS = tewi_vc6.res
+PREOBJS = tewi_vc6.res gui_vc6.res

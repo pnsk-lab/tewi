@@ -14,4 +14,4 @@ EXEC =
 STATIC = lib
 LIBSUF = .dll
 OBJ = obj
-REQOBJS = tewi_bcc.res
+REQOBJS = tewi_bcc.res gui_bcc.res

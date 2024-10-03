@@ -54,5 +54,14 @@ tewi_vc6.res: tewi.rc ../Binary/tewi.ico
 tewi_bcc.res: tewi.rc ../Binary/tewi.ico
 	brc32 -r -fo$@ tewi.rc
 
+gui.res: gui.rc gui.h
+	$(WINDRES) gui.rc -O coff -o $@
+
+gui_vc6.res: gui.rc gui.h
+	rc /fo$@ gui.rc
+
+gui_bcc.res: gui.rc gui.h
+	brc32 -r -fo$@ gui.rc
+
 clean:
 	rm -f *.o tewi *.exe *.res *.elf *.sfo *.pbp *.self *.pkg *.obj

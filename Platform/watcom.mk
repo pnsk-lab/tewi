@@ -13,4 +13,4 @@ EXEC = .exe
 STATIC = lib
 LIBSUF = .dll
 OBJ = obj
-SERVADD = wrc -bt=nt -i=$(WATCOM)/h/nt -fe=tewi.exe tewi.rc
+SERVADD = wrc -bt=nt -i=$(WATCOM)/h/nt tewi.rc tewi.exe && wrc -bt=nt -i=$(WATCOM)/h/nt gui.rc tewi.exe

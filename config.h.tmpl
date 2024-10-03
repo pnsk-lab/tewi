@@ -11,6 +11,7 @@
 #define HAS_CHROOT
 #undef NO_GETADDRINFO
 #undef USE_WINSOCK1
+#undef BUILD_GUI
 
 /* DO NOT EDIT BELOW THIS LINE */
 
@@ -22,6 +23,7 @@
 #undef USE_POLL
 /* Force select(2) for Windows */
 #endif
+
 #if (defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)) && defined(USE_WINSOCK1) && !defined(NO_GETADDRINFO)
 #define NO_GETADDRINFO
 /* getaddrinfo is not on winsock 1 */

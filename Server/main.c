@@ -7,6 +7,7 @@
 #ifdef __BORLANDC__
 
 #pragma resource "tewi_bcc.res"
+#pragma resource "gui_bcc.res"
 
 #endif
 
@@ -30,7 +31,7 @@
 #include "tw_server.h"
 #include "tw_version.h"
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #include <windows.h>
 #endif
 
@@ -524,6 +525,7 @@ void show_png(void) {
 
 #endif
 
+#if !defined(BUILD_GUI) || !(defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__))
 int main(int argc, char** argv) {
 	int st;
 	logfile = stderr;
@@ -704,6 +706,7 @@ int main(int argc, char** argv) {
 #endif
 	return 0;
 }
+#endif
 
 int startup(int argc, char** argv) {
 	int i;
