@@ -41,7 +41,10 @@
 #include <string.h>
 #include <time.h>
 #include <stdint.h>
+
+#ifdef __WATCOMC__
 #include <strings.h>
+#endif
 
 static const unsigned char *conv_num(const unsigned char *, int *, unsigned int, unsigned int);
 static const unsigned char *find_string(const unsigned char *, int *, const char * const *, const char * const *, int);
