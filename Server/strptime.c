@@ -41,6 +41,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdint.h>
+#include <strings.h>
 
 static const unsigned char *conv_num(const unsigned char *, int *, unsigned int, unsigned int);
 static const unsigned char *find_string(const unsigned char *, int *, const char * const *, const char * const *, int);
@@ -106,6 +107,10 @@ static const unsigned char *find_string(const unsigned char *, int *, const char
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define tzname              _tzname
 #define strncasecmp         _strnicmp
+#endif
+
+#ifdef __WATCOMC__
+#define _tzset tzset
 #endif
 
 #ifdef __BORLANDC__
@@ -455,9 +460,9 @@ recurse:
                     continue;
                 }
 #ifdef _WIN32
-#if defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 		if (1)
-#else
+#else#
                 if (localtime_s(tm, &sse) == 0)
 #endif
 #else
