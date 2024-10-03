@@ -27,12 +27,14 @@ proc run {project_name} {
 	file mkdir workdir
 	file mkdir workdir/etc
 	file mkdir workdir/www
+	file mkdir workdir/bin
 	file mkdir workdir/modules
 	file delete archive.7z
 
 	exec ./Tool/itworks > workdir/www/index.html
 	exec ./Tool/genconf C:/Tewi modules dll > workdir/etc/tewi.conf
 	RunCommand "cp Binary/pbtewi.gif workdir/www/"
+	RunCommand "cp Server/tewi.exe workdir/bin/"
 	foreach filen [glob Module/*.dll] {
 		RunCommand "cp $filen workdir/modules/"
 	}
