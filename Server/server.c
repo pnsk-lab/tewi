@@ -37,7 +37,11 @@
 #include <ws2tcpip.h>
 #include <wspiapi.h>
 #endif
+#ifdef USE_WINSOCK1
+#include <winsock.h>
+#else
 #include <winsock2.h>
+#endif
 #include <process.h>
 #include <windows.h>
 
@@ -122,7 +126,11 @@ int tw_server_init(void) {
 	int i;
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 	WSADATA wsa;
+#ifdef USE_WINSOCK1
+	WSAStartup(MAKEWORD(1, 1), &wsa);
+#else
 	WSAStartup(MAKEWORD(2, 0), &wsa);
+#endif
 #endif
 	for(i = 0; config.ports[i] != -1; i++)
 		;

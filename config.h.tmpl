@@ -10,6 +10,7 @@
 #define USE_POLL
 #define HAS_CHROOT
 #undef NO_GETADDRINFO
+#undef USE_WINSOCK1
 
 /* DO NOT EDIT BELOW THIS LINE */
 
@@ -20,6 +21,10 @@
 #if (defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)) && defined(USE_POLL)
 #undef USE_POLL
 /* Force select(2) for Windows */
+#endif
+#if (defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)) && defined(USE_WINSOCK1) && !defined(NO_GETADDRINFO)
+#define NO_GETADDRINFO
+/* getaddrinfo is not on winsock 1 */
 #endif
 
 #if (defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)) && defined(HAS_CHROOT)

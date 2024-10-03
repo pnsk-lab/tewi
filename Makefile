@@ -2,6 +2,7 @@
 
 PWD = `pwd`
 PLATFORM = generic
+PLATFORM_IDENT = NOT_WINDOWS
 PREFIX = /usr/local
 MODULE = ./Module
 
@@ -23,7 +24,7 @@ all: ./Server $(MODULE)
 	cc -o $@ ./Tool/itworks.c
 
 ./Server:: ./Common ./Tool/option ./Tool/genconf ./Tool/itworks
-	$(MAKE) -C $@ $(FLAGS) EXTOBJS="`./Tool/option objs ../`" EXTLIBS="`./Tool/option libs ../`" EXTCFLAGS="`./Tool/option cflags ../`" EXTLDFLAGS="`./Tool/option ldflags ../`"
+	$(MAKE) -C $@ $(FLAGS) EXTOBJS="`./Tool/option objs ../`" EXTLIBS="`./Tool/option libs ../ $(PLATFORM_IDENT)`" EXTCFLAGS="`./Tool/option cflags ../`" EXTLDFLAGS="`./Tool/option ldflags ../`"
 
 ./Module:: ./Common
 	$(MAKE) -C $@ $(FLAGS)

@@ -15,7 +15,11 @@
 #endif
 
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#ifdef USE_WINSOCK1
+#include <winsock.h>
+#else
 #include <winsock2.h>
+#endif
 #endif
 
 #include <cm_string.h>

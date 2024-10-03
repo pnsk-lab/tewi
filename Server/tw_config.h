@@ -15,7 +15,11 @@ extern "C" {
 #include <stdbool.h>
 
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
+#ifdef USE_WINSOCK1
+#include <winsock.h>
+#else
 #include <winsock2.h>
+#endif
 #define NO_IPV6
 #else
 #ifdef __PPU__

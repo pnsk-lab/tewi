@@ -26,6 +26,19 @@ int main(int argc, char** argv) {
 #ifndef NO_SSL
 		printf("-lssl -lcrypto");
 #endif
+		if(strcmp(argv[3], "WINDOWS") == 0){
+#ifdef USE_WINSOCK1
+			printf(" -lwsock32");
+#else
+			printf(" -lws2_32");
+#endif
+		}else if(strcmp(argv[3], "WINDOWS_WATCOM") == 0){
+#ifdef USE_WINSOCK1
+			printf(" wsock32.lib");
+#else
+			printf(" ws2_32.lib");
+#endif
+		}
 	}
 	printf("\n");
 	return 0;

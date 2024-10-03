@@ -31,7 +31,9 @@ for i in "$@"; do
 	elif [ "`echo "$i" | grep -Eo "^-D"`" = "-D" ]; then
 		options="$options -`echo "$i" | sed "s/^-//g"`"
 	elif [ "`echo "$i" | grep -Eo "^-l"`" = "-l" ]; then
-		libraries="$libraries `echo "$i" | sed "s/^-l//g"`.lib"
+		if [ ! "$i" = "-lwsock32" ]; then
+			libraries="$libraries `echo "$i" | sed "s/^-l//g"`.lib"
+		fi
 	elif [ "$dowhat" = "output" ]; then
 		dowhat=""
 		outfile="$i"
