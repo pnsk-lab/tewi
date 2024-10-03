@@ -4,6 +4,7 @@
 proc run {project_name} {
 	exec sed "s/undef NO_SSL/define NO_SSL/g" config.h.tmpl > config.h
 	set ::env(DISPLAY) ":0"
+	set ::env(PATH) "$::env$(PATH)"
 	RunCommand "make clean"
 	set dirname ""
 	if { "$project_name" == "Tewi-BCC" } {
@@ -21,7 +22,14 @@ proc run {project_name} {
 		set ::env(PATH) "$::env(PATH):/usr/watcom/binl64"
 		RunCommand "make PLATFORM=watcom"
 		set dirname "watcom"
+	} elseif { "$project_name" == "Tewi-PSP" } {
+		RunCommand "./psp.sh"
+		RunCommand "doas mkdir -p /raid/f/g/tewi/psp"
+		RunCommand "doas mkdir -p /raid/ftp/pub/tewi/psp"
+		RunCommand "doas cp tewidist.zip /raid/f/g/tewi/psp/tewidistpsp-[exec make get-version]-nossl.zip"
+		RunCommand "doas cp tewidist.zip /raid/ftp/pub/tewi/psp/tewidistpsp-[exec make get-version]-nossl.zip"
 	} elseif { "$project_name" == "Tewi-MinGW-32" || "$project_name" == "Tewi-MinGW-64" } {
+		RunCommand "rm -rf openssl"
 		RunCommand "git clone https://github.com/clamwin/openssl"
 		set bits 32
 		if { "$project_name" == "Tewi-MinGW-32" } {
