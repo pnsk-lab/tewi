@@ -6,8 +6,10 @@ proc run {project_name} {
 	set ::env(DISPLAY) ":0"
 	RunCommand "make clean"
 	if { "$project_name" == "Tewi-BCC" } {
+		set ::env(LANG) "ja_JP.UTF-8"
 		set ::env(BORLAND) "C:/borland/bcc55"
 		RunCommand "make PLATFORM=bcc"
+		set ::env(LANG) "en_US.UTF-8"
 	} elseif { "$project_name" == "Tewi-VC6" } {
 		RunCommand "make PLATFORM=vc6"
 	} elseif { "$project_name" == "Tewi-Watcom" } {
