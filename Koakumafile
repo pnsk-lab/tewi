@@ -29,7 +29,9 @@ proc run {project_name} {
 	exec ./Tool/itworks > workdir/www/index.html
 	exec ./Tool/genconf C:/Tewi modules dll > workdir/etc/tewi.conf
 	RunCommand "cp Binary/pbtewi.gif workdir/www/"
-	RunCommand "cp Module/*.dll workdir/modules/"
+	foreach filen [glob Module/*.dll] {
+		RunCommand "cp $filen workdir/modules/"
+	}
 	cd workdir
 	RunCommand "7z a ../archive.7z *"
 	cd ..
