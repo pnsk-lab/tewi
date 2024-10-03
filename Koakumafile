@@ -21,6 +21,28 @@ proc run {project_name} {
 		set ::env(PATH) "$::env(PATH):/usr/watcom/binl64"
 		RunCommand "make PLATFORM=watcom"
 		set dirname "watcom"
+	} elseif { "$project_name" == "Tewi-MinGW-32" || "$project_name" == "Tewi-MinGW-64" } {
+		RunCommand "git clone https://github.com/clamwin/openssl"
+		set bits 32
+		if { "$project_name" == "Tewi-MinGW-32" } {
+			foreach filen [glob openssl/lib/mingw/x86/*] {
+				RunCommand "cp $filen openssl/lib/"
+			}
+		} else {
+			set bits 64
+			foreach filen [glob openssl/lib/mingw/x64/*] {
+				RunCommand "cp $filen openssl/lib/"
+			}
+		}
+		set win "win$bits"
+		RunCommand "./installer.sh $win"
+		RunCommand "doas mkdir -p /raid/f/g/tewi/$win"
+		RunCommand "doas mkdir -p /raid/ftp/pub/tewi/$win"
+		RunCommand "doas cp install-ssl.exe /raid/f/g/tewi/$win/tewiinst$bits-[exec make get-version]-ssl.exe"
+		RunCommand "doas cp install-nossl.exe /raid/f/g/tewi/$win/tewiinst$bits-[exec make get-version]-nossl.exe"
+		RunCommand "doas cp install-ssl.exe /raid/ftp/pub/tewi/$win/tewiinst$bits-[exec make get-version]-ssl.exe"
+		RunCommand "doas cp install-nossl.exe /raid/ftp/pub/tewi/$win/tewiinst$bits-[exec make get-version]-nossl.exe"
+		return
 	} else {
 		RunCommand "make"
 	}
