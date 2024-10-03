@@ -462,7 +462,7 @@ recurse:
 #ifdef _WIN32
 #if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 		if (1)
-#else#
+#else
                 if (localtime_s(tm, &sse) == 0)
 #endif
 #else
