@@ -2,7 +2,18 @@
 # vim: syntax=tcl
 
 proc run {project_name} {
-	RunCommand "cp config.h.tmpl config.h"
+	RunCommand "sed 's/undef NO_SSL/define NO_SSL/g' config.h.tmpl > config.h"
 	RunCommand "make clean"
-	RunCommand "make"
+	if { "$project_name" == "Tewi-BCC" } {
+		set ::env(BORLAND) "C:/borland/bcc55"
+		RunCommand "make PLATFORM=bcc"
+	} elseif { "$project_name" == "Tewi-VC6" } {
+		RunCommand "make PLATFORM=vc6"
+	} elseif { "$project_name" == "Tewi-Watcom" } {
+		set ::env(WATCOM) "/usr/watcom"
+		set ::env(INCLUDE) "/usr/watcom/h"
+		RunCommand "make PLATFORM=watcom"
+	} else {
+		RunCommand "make"
+	}
 }
