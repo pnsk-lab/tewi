@@ -4,7 +4,7 @@
 #include "gui.h"
 #include "tw_version.h"
 
-PBTEWI BITMAP "..\\Binary\\pbtewi.bmp"
+PBTEWI BITMAP "../Binary/pbtewi.bmp"
 TEWILOGO BITMAP "../Binary/tewi.bmp"
 
 VERSIONDLG DIALOG 0, 0, 200, 50
