@@ -28,6 +28,16 @@ proc run {project_name} {
 		RunCommand "doas cp tewidist.zip /raid/f/g/tewi/psp/tewidistpsp-[exec make get-version]-nossl.zip"
 		RunCommand "doas cp tewidist.zip /raid/ftp/pub/tewi/psp/tewidistpsp-[exec make get-version]-nossl.zip"
 		return
+	} elseif { "$project_name" == "Tewi-PS3" } {
+		set ::env(PS3DEV) "/usr/local/ps3dev"
+		set ::env(PSL1GHT) "/usr/local/ps3dev"
+		set ::env(PATH) "$::env(PATH):/usr/local/ps3dev/bin:/usr/local/ps3dev/ppu/bin:/usr/local/ps3dev/spu/bin"
+		RunCommand "make PLATFORM=ps3"
+		RunCommand "doas mkdir -p /raid/f/g/tewi/ps3"
+		RunCommand "doas mkdir -p /raid/ftp/pub/tewi/ps3"
+		RunCommand "doas cp Server/tewi.pkg /raid/f/g/tewi/ps3/tewidistps3-[exec make get-version]-nossl.pkg"
+		RunCommand "doas cp Server/tewi.pkg /raid/ftp/pub/tewi/ps3/tewidistps3-[exec make get-version]-nossl.pkg"
+		return
 	} elseif { "$project_name" == "Tewi-MinGW-32" || "$project_name" == "Tewi-MinGW-64" } {
 		RunCommand "rm -rf openssl"
 		RunCommand "git clone https://github.com/clamwin/openssl"
