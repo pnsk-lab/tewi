@@ -30,7 +30,7 @@ cp Server/tewi.exe tewi-service.exe
 cd Server
 ../Tool/genconf "C:/Tewi" modules dll > ../generated.conf
 ../Tool/itworks > ../itworks.html
-makensis -DVERSION=$VERSION install.nsi
+makensis -DVERSION=$VERSION install.nsi || fail
 cp install.exe ../install-nossl.exe
 rm -f tewi.exe tewi-service.exe
 cd ..
@@ -46,7 +46,7 @@ cp Server/tewi.exe tewi-service.exe
 cd Server
 ../Tool/genconf "C:/Tewi" modules dll > ../generated.conf
 ../Tool/itworks > ../itworks.html
-makensis -DVERSION=$VERSION install.nsi
+makensis -DVERSION=$VERSION install.nsi || fail
 cp install.exe ../install-ssl.exe
 rm -f tewi.exe tewi-service.exe
 cd ..
