@@ -4,7 +4,7 @@
 
 outfile="a.out"
 dowhat=""
-options="-I../VC6Compat -tWM"
+options="-I../VC6Compat -tWM -I$BORLAND/Include -L$BORLAND/Lib"
 obj=0
 source=""
 libraries=""
