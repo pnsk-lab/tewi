@@ -43,4 +43,6 @@ proc run {project_name} {
 	RunCommand "rm -rf workdir"
 	RunCommand "doas mkdir -p /raid/f/g/tewi/$dirname"
 	RunCommand "doas cp tewidist.exe /raid/f/g/tewi/$dirname/tewidist$dirname-[exec make get-version]-nossl.exe"
+	RunCommand "doas mkdir -p /raid/ftp/pub/tewi/$dirname"
+	RunCommand "doas cp tewidist.exe /raid/ftp/pub/tewi/$dirname/tewidist$dirname-[exec make get-version]-nossl.exe"
 }
