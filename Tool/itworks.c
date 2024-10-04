@@ -14,7 +14,7 @@ int main() {
 	printf("	<body vlink=\"#000080\" text=\"#000000\" link=\"#0000FF\" bgcolor=\"#FFFFFF\" alink=\"#FF0000\">\n");
 	printf("		<h1 align=\"center\">It works! - Tewi HTTPd is installed on this website!</h1>\n");
 	printf("		<p>\n");
-	printf("			If you can see this page, then the people who own this domain have just installed <a href=\"http://nishi.boats/tewi\">Tewi HTTPd</a> successfully. They now have to add content to this directoryt and replace this placeholder page, or else point the server at their real content.\n");
+	printf("			If you can see this page, then the people who own this domain have just installed <a href=\"http://nishi.boats/tewi\">Tewi HTTPd</a> successfully. They now have to add content to this directory and replace this placeholder page, or else point the server at their real content.\n");
 	printf("		</p>\n");
 	printf("		<hr>\n");
 	printf("		<blockquote>\n");

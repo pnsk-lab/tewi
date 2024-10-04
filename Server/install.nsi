@@ -53,12 +53,16 @@ Section
 	!cd Binary
 	File /oname=pbtewi.gif "pbtewi.gif"
 	!cd ..
-	SetOutPath "$INSTDIR\www\icons"
 	!cd Icons
+	SetOutPath "$INSTDIR\www\icons"
 	File "*.png"
 	!cd ..
 	!cd Server
 	SetOverWrite on
+	!cd ..
+	SetOutPath "$INSTDIR"
+	File "mime.types"
+	!cd Server
 
 	CreateDirectory "$SMPROGRAMS\Tewi HTTPd"
 	CreateShortcut "$SMPROGRAMS\Tewi HTTPd\License.lnk" "$INSTDIR\LICENSE.txt" ""

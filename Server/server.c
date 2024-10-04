@@ -497,10 +497,11 @@ int tw_server_pass(void* ptr) {
 #ifndef NO_GETNAMEINFO
 	struct sockaddr* sa = (struct sockaddr*)&addr;
 	getnameinfo(sa, sizeof(addr), address, 512, NULL, 0, NI_NUMERICHOST);
+#else
+		addrstr = inet_ntoa(addr.sin_addr);
+		strcpy(address, addrstr);
+		address[strlen(addrstr)] = 0;
 #endif
-	addrstr = inet_ntoa(addr.sin_addr);
-	strcpy(address, addrstr);
-	address[strlen(addrstr)] = 0;
 #ifdef FREE_PTR
 	free(ptr);
 #endif

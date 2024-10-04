@@ -41,7 +41,7 @@ extern "C" {
 #define MAX_VHOSTS 1024
 #define MAX_MODULES 1024
 #define MAX_DIRS 1024
-#define MAX_MIME 1024
+#define MAX_MIME 4096
 #define MAX_ICON 1024
 #define MAX_INDEX 1024
 #define MAX_README 8
@@ -84,9 +84,9 @@ struct tw_config_entry {
 	int hideport;
 	struct tw_dir_entry dirs[MAX_DIRS];
 	int dir_count;
-	struct tw_mime_entry mimes[MAX_DIRS];
+	struct tw_mime_entry mimes[MAX_MIME];
 	int mime_count;
-	struct tw_icon_entry icons[MAX_DIRS];
+	struct tw_icon_entry icons[MAX_ICON];
 	int icon_count;
 	char* indexes[MAX_INDEX];
 	int index_count;

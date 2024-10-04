@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #if !defined(_MSC_VER) && !defined(__BORLANDC__)
 #include <unistd.h>
@@ -403,6 +404,84 @@ int tw_config_read(const char* path) {
 							struct tw_mime_entry* e = &current->mimes[current->mime_count++];
 							e->ext = cm_strdup(r[1]);
 							e->mime = cm_strdup(r[2]);
+						}
+					} else if(cm_strcaseequ(r[0], "MIMEFile")) {
+						if(r[1] == NULL) {
+							cm_log("Config", "Missing path at line %d", ln);
+							stop = 1;
+						} else {
+							FILE* mimefile = fopen(r[1], "r");
+							if(mimefile == NULL) {
+								cm_log("Config", "Could not load the file at line %d", ln);
+								stop = 1;
+							} else {
+								char* line = malloc(1);
+								int i;
+								struct stat st;
+								char* buf;
+								int incr = 0;
+								stat(r[1], &st);
+
+								buf = malloc(st.st_size + 1);
+								fread(buf, st.st_size, 1, mimefile);
+
+								for(i = 0;; i++) {
+									if(buf[i] == '\n' || buf[i] == 0) {
+										char oldc = buf[i];
+										char* line;
+										buf[i] = 0;
+
+										line = buf + incr;
+
+										if(strlen(line) > 0 && line[0] != '#') {
+											int j;
+											for(j = 0; line[j] != 0; j++) {
+												if(line[j] == ' ' || line[j] == '\t') {
+													line[j] = 0;
+													j++;
+													for(; line[j] != 0; j++) {
+														if(line[j] != ' ' && line[j] != '\t') {
+															char* name = line;
+															char* mimes = line + j;
+															int k = 0;
+															int incr2 = 0;
+															for(k = 0;; k++) {
+																if(mimes[k] == ' ' || mimes[k] == 0) {
+																	char oldc2 = mimes[k];
+																	struct tw_mime_entry* e;
+																	mimes[k] = 0;
+
+																	e = &current->mimes[current->mime_count++];
+																	e->ext = cm_strcat(".", mimes + incr2);
+																	e->mime = cm_strdup(name);
+																	if(current->mime_count == MAX_MIME) {
+																		cm_log("Config", "Too many MIME types, cannot handle");
+																		stop = 1;
+																		break;
+																	}
+
+																	incr2 = k + 1;
+																	if(oldc2 == 0) break;
+																}
+															}
+															break;
+														}
+													}
+													break;
+												}
+												if(stop) break;
+											}
+										}
+
+										incr = i + 1;
+										if(oldc == 0) break;
+									}
+								}
+
+								free(buf);
+
+								fclose(mimefile);
+							}
 						}
 					} else if(cm_strcaseequ(r[0], "Icon")) {
 						if(r[1] == NULL) {

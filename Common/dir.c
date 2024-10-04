@@ -37,14 +37,14 @@ char** cm_scandir(const char* path) {
 	}
 	do {
 		if(strcmp(ffd.cFileName, ".") != 0 && strcmp(ffd.cFileName, "..") != 0) {
-		old = r;
-		for(i = 0; old[i] != NULL; i++)
-			;
-		r = malloc(sizeof(*r) * (i + 2));
-		for(i = 0; old[i] != NULL; i++) r[i] = old[i];
-		r[i] = cm_strcat(ffd.cFileName, (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? "/" : "");
-		r[i + 1] = NULL;
-		free(old);
+			old = r;
+			for(i = 0; old[i] != NULL; i++)
+				;
+			r = malloc(sizeof(*r) * (i + 2));
+			for(i = 0; old[i] != NULL; i++) r[i] = old[i];
+			r[i] = cm_strcat(ffd.cFileName, (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? "/" : "");
+			r[i + 1] = NULL;
+			free(old);
 		}
 	} while(FindNextFile(hfind, &ffd) != 0);
 	FindClose(hfind);

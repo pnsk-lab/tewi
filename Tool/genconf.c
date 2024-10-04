@@ -28,9 +28,7 @@ int main(int argc, char** argv) {
 	printf("#SSLCertificate cert.pem\n");
 	printf("\n");
 	printf("MIMEType all application/octet-stream\n");
-	printf("MIMEType .html text/html\n");
-	printf("MIMEType .txt text/plain\n");
-	printf("MIMEType .png image/png\n");
+	printf("MIMEFile mime.types\n");
 	printf("\n");
 	printf("Icon all /icons/unknown.png\n");
 	printf("Icon text/* /icons/text.png\n");
