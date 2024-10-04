@@ -6,8 +6,6 @@
 
 #ifdef __BORLANDC__
 
-#pragma resource "tewi_bcc.res"
-
 #pragma resource "gui_bcc.res"
 
 #endif

@@ -33,7 +33,7 @@
 #include <cm_dir.h>
 
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
-#ifndef NO_GETADDRINFO
+#ifndef NO_GETNAMEINFO
 #include <ws2tcpip.h>
 #include <wspiapi.h>
 #endif
@@ -63,7 +63,7 @@ typedef int socklen_t;
 #ifndef __PPU__
 #include <netinet/tcp.h>
 #endif
-#ifndef NO_GETADDRINFO
+#ifndef NO_GETNAMEINFO
 #include <netdb.h>
 #endif
 #endif
@@ -77,7 +77,7 @@ typedef int socklen_t;
 #endif
 
 #ifndef S_ISDIR
-#define S_ISDIR(x) ((x) & _S_IFDIR)
+#define S_ISDIR(x) ((x)&_S_IFDIR)
 #endif
 
 extern struct tw_config config;
@@ -493,11 +493,14 @@ int tw_server_pass(void* ptr) {
 	struct tw_http_request req;
 	struct tw_http_response res;
 	struct tw_tool tools;
-#ifndef NO_GETADDRINFO
+	char* addrstr;
+#ifndef NO_GETNAMEINFO
 	struct sockaddr* sa = (struct sockaddr*)&addr;
 	getnameinfo(sa, sizeof(addr), address, 512, NULL, 0, NI_NUMERICHOST);
 #endif
-	address[0] = 0;
+	addrstr = inet_ntoa(addr.sin_addr);
+	strcpy(address, addrstr);
+	address[strlen(addrstr)] = 0;
 #ifdef FREE_PTR
 	free(ptr);
 #endif
@@ -1049,7 +1052,7 @@ void tw_server_loop(void) {
 			}
 		}
 	}
-	for(i = 0; i < sockcount; i++){
+	for(i = 0; i < sockcount; i++) {
 		close_socket(sockets[i]);
 	}
 	cm_force_log("Server is down");

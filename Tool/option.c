@@ -15,9 +15,9 @@ int main(int argc, char** argv) {
 		printf("-I %s/openssl/include", argv[2]);
 #endif
 #ifdef BUILD_GUI
-		if(strcmp(argv[3], "WINDOWS_WATCOM") == 0){
+		if(strcmp(argv[3], "WINDOWS_WATCOM") == 0) {
 			printf(" -b nt_win");
-		}else if(strcmp(argv[3], "WINDOWS") == 0){
+		} else if(strcmp(argv[3], "WINDOWS") == 0) {
 			printf(" -mwindows");
 		}
 #endif
@@ -26,9 +26,9 @@ int main(int argc, char** argv) {
 		printf("-L %s/openssl/lib", argv[2]);
 #endif
 #ifdef BUILD_GUI
-		if(strcmp(argv[3], "WINDOWS_WATCOM") == 0){
+		if(strcmp(argv[3], "WINDOWS_WATCOM") == 0) {
 			printf(" -b nt_win");
-		}else if(strcmp(argv[3], "WINDOWS") == 0){
+		} else if(strcmp(argv[3], "WINDOWS") == 0) {
 			printf(" -mwindows");
 		}
 #endif
@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
 		printf("ssl.%s", argv[4]);
 #endif
 #ifdef BUILD_GUI
-		if(strcmp(argv[3], "WINDOWS") == 0 || strcmp(argv[3], "WINDOWS_WATCOM") == 0){
+		if(strcmp(argv[3], "WINDOWS") == 0 || strcmp(argv[3], "WINDOWS_WATCOM") == 0) {
 			printf(" gui.%s", argv[4]);
 		}
 #endif
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 #ifndef NO_SSL
 		printf("-lssl -lcrypto");
 #endif
-		if(strcmp(argv[3], "WINDOWS") == 0){
+		if(strcmp(argv[3], "WINDOWS") == 0) {
 #ifdef USE_WINSOCK1
 			printf(" -lwsock32");
 #else
@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 			printf(" -lcomctl32");
 			printf(" -luser32");
 #endif
-		}else if(strcmp(argv[3], "WINDOWS_WATCOM") == 0){
+		} else if(strcmp(argv[3], "WINDOWS_WATCOM") == 0) {
 #ifdef USE_WINSOCK1
 			printf(" wsock32.lib");
 #else

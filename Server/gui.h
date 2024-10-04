@@ -14,6 +14,7 @@
 #define GUI_TEWI_DATE 108
 #define GUI_LOG 109
 #define GUI_BUTTON_EXIT 104
+#define GUI_BUTTON_RESET 105
 
 #define TIMER_WATCH_TEWI 1000
 

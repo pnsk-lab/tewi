@@ -10,8 +10,8 @@ AR_PROC = grep -Eo "[^ ]+" | xargs -I {} echo + {}
 CFLAGS = -g -std=c99 -DPREFIX=\"$(PREFIX)\" -I ../Common -fPIC
 LDFLAGS =
 LIBS =
-EXEC =
+EXEC = .exe
 STATIC = lib
 LIBSUF = .dll
 OBJ = obj
-REQOBJS = tewi_bcc.res gui_bcc.res
+REQOBJS = gui_bcc.res

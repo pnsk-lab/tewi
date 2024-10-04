@@ -26,6 +26,11 @@ cd Server
 makensis -DVERSION=$VERSION -DONLY_EXEC install.nsi
 cp install.exe ../install.exe
 cd ..
+rm -rf Tewi tewi.7z
+7z x -oTewi install.exe
+rm -rf Tewi/'$'*
+7z a tewi.7z Tewi
+rm -rf Tewi
 rm tewi.exe
 rm itworks.html
 rm generated.conf

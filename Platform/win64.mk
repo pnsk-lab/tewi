@@ -11,4 +11,4 @@ LDFLAGS =
 LIBS = 
 EXEC = .exe
 LIBSUF = .dll
-PREOBJS = tewi.res gui.res
+PREOBJS = gui.res

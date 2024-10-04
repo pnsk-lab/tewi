@@ -9,7 +9,7 @@ AR_FLAGS = /nologo /out:
 CFLAGS = -g -std=c99 -DPREFIX=\"$(PREFIX)\" -I ../Common -fPIC
 LDFLAGS =
 LIBS = -ladvapi32 -llibcmt
-EXEC =
+EXEC = .exe
 STATIC = lib
 LIBSUF = .dll
 OBJ = obj

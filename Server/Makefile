@@ -45,13 +45,7 @@ tewi.pkg: tewi.self
 .c.$(OBJ):
 	$(CC) $(CFLAGS) $(EXTCFLAGS) -c -o $@ $<
 
-tewi.res: concat.rc ../Binary/tewi.ico
-	$(WINDRES) concat.rc -O coff -o $@
-
-tewi_bcc.res: concat.rc ../Binary/tewi.ico
-	brc32 -r -fo$@ concat.rc
-
-gui.res: concat.rc gui.h
+gui.res: concat.rc ../Binary/tewi.ico
 	$(WINDRES) concat.rc -O coff -o $@
 
 gui_bcc.res: concat.rc gui.h
@@ -65,4 +59,4 @@ concat.rc: tewi.rc gui.rc
 	cat tewi.rc gui.rc > concat.rc
 
 clean:
-	rm -f *.o tewi *.exe *.res *.elf *.sfo *.pbp *.self *.pkg *.obj concat.rc
+	rm -f *.o tewi *.exe *.res *.elf *.sfo *.pbp *.self *.pkg *.obj concat.rc *.tds

@@ -21,7 +21,48 @@ int cm_sort(const void* _a, const void* _b) {
 
 char** cm_scandir(const char* path) {
 #if defined(_MSC_VER) || defined(__BORLANDC__)
-	return NULL;
+	WIN32_FIND_DATA ffd;
+	HANDLE hfind;
+	char** r = malloc(sizeof(*r));
+	int len;
+	char** old;
+	int i;
+	char* p;
+	r[0] = NULL;
+
+	p = cm_strcat(path, "/*");
+	hfind = FindFirstFile(p, &ffd);
+	if(INVALID_HANDLE_VALUE == hfind) {
+		return NULL;
+	}
+	do {
+		if(strcmp(ffd.cFileName, ".") != 0 && strcmp(ffd.cFileName, "..") != 0) {
+		old = r;
+		for(i = 0; old[i] != NULL; i++)
+			;
+		r = malloc(sizeof(*r) * (i + 2));
+		for(i = 0; old[i] != NULL; i++) r[i] = old[i];
+		r[i] = cm_strcat(ffd.cFileName, (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? "/" : "");
+		r[i + 1] = NULL;
+		free(old);
+		}
+	} while(FindNextFile(hfind, &ffd) != 0);
+	FindClose(hfind);
+	free(p);
+	for(len = 0; r[len] != NULL; len++)
+		;
+	qsort(r, len, sizeof(char*), cm_sort);
+
+	old = r;
+	for(i = 0; old[i] != NULL; i++)
+		;
+	r = malloc(sizeof(*r) * (i + 2));
+	for(i = 0; old[i] != NULL; i++) r[i + 1] = old[i];
+	r[0] = cm_strdup("../");
+	r[i + 1] = NULL;
+	free(old);
+
+	return r;
 #else
 	DIR* dir = opendir(path);
 	if(dir != NULL) {

@@ -488,10 +488,11 @@ int tw_config_read(const char* path) {
 		}
 		free(line);
 		fclose(f);
-		for(portcount = 0; config.ports[portcount] != -1; portcount++);
-		if(portcount == 0){
+		for(portcount = 0; config.ports[portcount] != -1; portcount++)
+			;
+		if(portcount == 0) {
 			return 1;
-		}else{
+		} else {
 			return stop;
 		}
 	} else {
