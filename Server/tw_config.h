@@ -43,7 +43,7 @@ extern "C" {
 #define MAX_DIRS 1024
 #define MAX_MIME 4096
 #define MAX_ICON 1024
-#define MAX_INDEX 1024
+#define MAX_INDEX 32
 #define MAX_README 8
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
