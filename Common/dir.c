@@ -7,8 +7,11 @@
 #include <sys/stat.h>
 #if !defined(_MSC_VER) && !defined(__WATCOMC__)
 #include <dirent.h>
-#elif defined(__WATCOMC__)
+#elif defined(__WATCOMC__) || defined(_MSC_VER)
 #include <direct.h>
+#endif
+#ifdef _MSC_VER
+#include <windows.h>
 #endif
 #include <stdlib.h>
 #include <string.h>
