@@ -131,6 +131,7 @@ int tw_config_read(const char* path) {
 	int ln = 0;
 	int ifbr = 0;
 	int ignore = -1;
+	int portcount;
 	FILE* f;
 	cm_log("Config", "Reading %s", path);
 	f = fopen(path, "r");
@@ -487,7 +488,12 @@ int tw_config_read(const char* path) {
 		}
 		free(line);
 		fclose(f);
-		return stop;
+		for(portcount = 0; config.ports[portcount] != -1; portcount++);
+		if(portcount == 0){
+			return 1;
+		}else{
+			return stop;
+		}
 	} else {
 		cm_log("Config", "Could not open the file");
 		return 1;

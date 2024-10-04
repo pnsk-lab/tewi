@@ -526,7 +526,7 @@ void show_png(void) {
 
 #endif
 
-#if !defined(BUILD_GUI) || !(defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__))
+#if !defined(BUILD_GUI_VALID)
 int main(int argc, char** argv) {
 	int st;
 	logfile = stderr;
@@ -796,7 +796,7 @@ int startup(int argc, char** argv) {
 #if !defined(__MINGW32__) && !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(__WATCOMC__)
 	signal(SIGCHLD, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
-#else
+#elif !defined(BUILD_GUI)
 	SetConsoleTitle(tw_server);
 #endif
 	return -1;

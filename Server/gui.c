@@ -3,8 +3,13 @@
 #include "../config.h"
 
 #include "gui.h"
+#include "tw_server.h"
 
+#include <cm_log.h>
+
+#include <stdio.h>
 #include <windows.h>
+#include <process.h>
 #include <commctrl.h>
 
 HINSTANCE hInst;
@@ -14,15 +19,18 @@ HWND button_start;
 HWND button_stop;
 HWND button_about;
 HWND status;
+HFONT monospace;
 BOOL tewi_alive;
 BOOL was_starting;
 BOOL exiting;
+BOOL idle;
+extern FILE* logfile;
+extern int running;
 
 #define WINWIDTH(rc) (rc.right - rc.left)
 #define WINHEIGHT(rc) (rc.bottom - rc.top)
 
-#define DIALOG_X(n) (HIWORD(GetDialogBaseUnits()) * n)
-#define DIALOG_Y(n) (LOWORD(GetDialogBaseUnits()) * n)
+int startup(int argc, char** argv);
 
 void ShowBitmapSize(HWND hWnd, HDC hdc, const char* name, int x, int y, int w, int h){
 	HBITMAP hBitmap = LoadBitmap(hInst, name);
@@ -44,6 +52,25 @@ void ShowBitmap(HWND hWnd, HDC hdc, const char* name, int x, int y){
 	ShowBitmapSize(hWnd, hdc, name, x, y, 0, 0);
 }
 
+int max = 0;
+void AddLog(const char* str){
+	HDC hdc;
+	PAINTSTRUCT ps;
+	SIZE sz;
+
+	SendMessage(logarea, LB_ADDSTRING, 0, (LPARAM)str);
+
+	hdc = CreateCompatibleDC(NULL);
+	SelectObject(hdc, monospace);
+	GetTextExtentPoint32(hdc, str, strlen(str), &sz);
+	DeleteDC(hdc);
+	
+	if(max < sz.cx){
+		max = sz.cx;
+		SendMessage(logarea, LB_SETHORIZONTALEXTENT, max, 0);
+	}
+}
+
 LRESULT CALLBACK VersionDialog(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp){
 	if(msg == WM_COMMAND){
 		if(LOWORD(wp) == IDOK) EndDialog(hWnd, IDOK);
@@ -62,19 +89,42 @@ LRESULT CALLBACK VersionDialog(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp){
 	}else if(msg == WM_CTLCOLORDLG || msg == WM_CTLCOLORSTATIC){
 		HDC dc = (HDC)wp;
 		SetBkMode(dc, TRANSPARENT);
-		return GetSysColorBrush(COLOR_MENU);
+		return (LRESULT)GetSysColorBrush(COLOR_MENU);
 	}else{
 		return FALSE;
 	}
 	return TRUE;
 }
 
-void StartTewi(void){
+void tewi_thread(void* ptr){
+	int st = startup(0, NULL);
 	was_starting = TRUE;
+	if(st == -1){
+		tewi_alive = TRUE;
+		idle = FALSE;
+	}else{
+		cm_force_log("Config error");
+		idle = FALSE;
+		_endthread();
+	}
+	running = 1;
+	tw_server_loop();
+	tewi_alive = FALSE;
+	was_starting = TRUE;
+	idle = FALSE;
+	_endthread();
+}
+
+void StartTewi(void){
+	EnableWindow(button_start, FALSE);
+	EnableWindow(button_stop, FALSE);
+	_beginthread(tewi_thread, 0, NULL);
 }
 
 void StopTewi(void){
-	was_starting = TRUE;
+	EnableWindow(button_start, FALSE);
+	EnableWindow(button_stop, FALSE);
+	running = 0;
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp){
@@ -118,6 +168,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp){
 
 		InitCommonControls();
 
+		monospace = (HFONT)GetStockObject(SYSTEM_FIXED_FONT);
+
 		status = CreateStatusWindow(WS_CHILD | WS_VISIBLE | CCS_BOTTOM, NULL, hWnd, GUI_STATUS);
 		SendMessage(status, SB_SIMPLE, 0, 0);
 		SendMessage(status, SB_SETTEXT, 0, (LPARAM)"Welcome to Tewi HTTPd");
@@ -128,17 +180,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp){
 		button_stop = CreateWindow("BUTTON", "S&top", WS_CHILD | WS_VISIBLE | WS_DISABLED | BS_PUSHBUTTON, WINWIDTH(rc) - 100, 20 * 1, 100, 20, hWnd, (HMENU)GUI_BUTTON_STOP, hInst, NULL);
 		button_about = CreateWindow("BUTTON", "&About", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, WINWIDTH(rc) - 100, 20 * 2, 100, 20, hWnd, (HMENU)GUI_BUTTON_ABOUT, hInst, NULL);
 		button_about = CreateWindow("BUTTON", "E&xit", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, WINWIDTH(rc) - 100, WINHEIGHT(rc) - WINHEIGHT(src) - 20, 100, 20, hWnd, (HMENU)GUI_BUTTON_EXIT, hInst, NULL);
-		logarea = CreateWindow("LISTBOX", NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL, 0, 40, WINWIDTH(rc) - 100, WINHEIGHT(rc) - 40 - WINHEIGHT(src), hWnd, (HMENU)GUI_LOG, hInst, NULL);
+		logarea = CreateWindow("LISTBOX", NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL | LBS_NOINTEGRALHEIGHT | LBS_NOSEL, 0, 40, WINWIDTH(rc) - 100, WINHEIGHT(rc) - 40 - WINHEIGHT(src), hWnd, (HMENU)GUI_LOG, hInst, NULL);
+
+		SendMessage(logarea, WM_SETFONT, (WPARAM)monospace, TRUE);
+
 		SetTimer(hWnd, TIMER_WATCH_TEWI, 100, NULL);
 	}else if(msg == WM_TIMER){
 		if(wp == TIMER_WATCH_TEWI){
-			if(tewi_alive){
+			if(idle){
+			}else if(tewi_alive){
 				if(was_starting){
 					was_starting = FALSE;
 					SendMessage(status, SB_SETTEXT, 0, (LPARAM)"Started Tewi HTTPd");
 				}
 				EnableWindow(button_start, FALSE);
 				EnableWindow(button_stop, TRUE);
+				idle = TRUE;
 			}else{
 				if(was_starting){
 					was_starting = FALSE;
@@ -150,6 +207,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp){
 					KillTimer(hWnd, TIMER_WATCH_TEWI);
 					SendMessage(hWnd, WM_CLOSE, 0, 0);
 				}
+				idle = TRUE;
 			}
 		}
 	}else if(msg == WM_PAINT){
@@ -171,7 +229,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp){
 }
 
 BOOL InitApp(void){
-	WNDCLASS wc;
+	WNDCLASSEX wc;
+	wc.cbSize = sizeof(WNDCLASSEX);
 	wc.style = CS_HREDRAW | CS_VREDRAW;
 	wc.lpfnWndProc = WndProc;
 	wc.cbClsExtra = 0;
@@ -182,7 +241,8 @@ BOOL InitApp(void){
 	wc.hbrBackground = GetSysColorBrush(COLOR_MENU);
 	wc.lpszMenuName = NULL;
 	wc.lpszClassName = "tewihttpd";
-	return RegisterClass(&wc);
+	wc.hIconSm = LoadIcon(hInst, "TEWI");
+	return RegisterClassEx(&wc);
 }
 
 BOOL InitWindow(int nCmdShow){
@@ -190,7 +250,7 @@ BOOL InitWindow(int nCmdShow){
 	RECT deskrc, rc;
 	HWND hDeskWnd = GetDesktopWindow();
 	GetWindowRect(hDeskWnd, &deskrc);
-	hWnd = CreateWindow("tewihttpd", "Tewi HTTPd", (WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME) ^ WS_MAXIMIZEBOX, 0, 0, 600, 200, NULL, 0, hInst, NULL);
+	hWnd = CreateWindow("tewihttpd", "Tewi HTTPd", (WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME) ^ WS_MAXIMIZEBOX, 0, 0, 600, 400, NULL, 0, hInst, NULL);
 
 	if(!hWnd){
 		return FALSE;
@@ -209,6 +269,8 @@ int WINAPI WinMain(HINSTANCE hCurInst, HINSTANCE hPrevInst, LPSTR lpsCmdLine, in
 	tewi_alive = FALSE;
 	was_starting = FALSE;
 	exiting = FALSE;
+	idle = TRUE;
+	logfile = stderr;
 	if(!InitApp()){
 		return FALSE;
 	}

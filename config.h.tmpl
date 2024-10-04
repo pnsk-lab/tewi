@@ -20,6 +20,10 @@
 #endif
 
 #if (defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)) && defined(USE_POLL)
+#define BUILD_GUI_VALID
+#endif
+
+#if (defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)) && defined(USE_POLL)
 #undef USE_POLL
 /* Force select(2) for Windows */
 #endif

@@ -1049,4 +1049,8 @@ void tw_server_loop(void) {
 			}
 		}
 	}
+	for(i = 0; i < sockcount; i++){
+		close_socket(sockets[i]);
+	}
+	cm_force_log("Server is down");
 }

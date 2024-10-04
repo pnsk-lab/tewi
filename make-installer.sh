@@ -23,7 +23,7 @@ cp Server/tewi.exe tewi.exe
 cd Server
 ../Tool/genconf "C:/Tewi" modules dll > ../generated.conf
 ../Tool/itworks > ../itworks.html
-makensis /inputcharset utf8 -DVERSION=$VERSION -DONLY_EXEC install.nsi
+makensis -DVERSION=$VERSION -DONLY_EXEC install.nsi
 cp install.exe ../install.exe
 cd ..
 rm tewi.exe

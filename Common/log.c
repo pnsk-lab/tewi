@@ -2,6 +2,7 @@
 
 #include "cm_log.h"
 
+#include "../config.h"
 #include "cm_string.h"
 
 #include <time.h>
@@ -25,19 +26,30 @@ bool cm_do_log = false;
 
 #define LOGNAME_LENGTH 12
 
+#ifdef BUILD_GUI_VALID
+void AddLog(const char* str);
+#endif
+
 void cm_force_log(const char* log) {
 	time_t t = time(NULL);
 	struct tm* tm = localtime(&t);
 	char date[513];
+	char* str;
 	strftime(date, 512, "%a %b %d %H:%M:%S %Z %Y", tm);
 #ifdef _PSP
 	pspDebugScreenPrintf("[%s] %s\n", date, log);
 #elif defined(__PPU__)
 	tt_printf("[%s] %s\n", date, log);
+#elif defined(BUILD_GUI_VALID)
+	str = malloc(strlen(date) + strlen(log) + 3 + 1);
+	str[strlen(date) + strlen(log) + 3] = 0;
+	sprintf(str, "[%s] %s", date, log);
+	AddLog(str);
+	free(str);
 #else
 	fprintf(logfile, "[%s] %s\n", date, log);
-#endif
 	fflush(logfile);
+#endif
 }
 
 void cm_log(const char* name, const char* log, ...) {
