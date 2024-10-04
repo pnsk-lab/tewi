@@ -11,4 +11,4 @@ LDFLAGS = -mwindows
 LIBS =
 EXEC = .exe
 LIBSUF = .dll
-PREOBJS = tewi.res
+PREOBJS = gui.res
