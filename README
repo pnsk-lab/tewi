@@ -42,6 +42,7 @@ Windows 9x               Working if I compile it using Borland C++ 5.x
 Windows NT 4.0/later     Working on NT 4.0 SP6a
 Linux                    Working on Debian GNU/Linux 12 (x86_64)
 NetBSD                   Working on NetBSD/amd64 10.0
+OpenBSD                  Working
 Haiku                    Working
 PlayStation Portable     Working, missing module support
                          TODO: Get multi-threading working (maybe)
