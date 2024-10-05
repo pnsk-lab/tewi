@@ -4,6 +4,11 @@ name: "Build Tewi HTTPd"
 
 on:
   workflow_dispatch:
+    inputs:
+      levels:
+        description: "level"
+        type: number
+        required: false
   push:
 
 concurrency:
@@ -70,7 +75,7 @@ jobs:
   release:
     name: "Release"
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.head_commit.message, '[release') }}
+    if: ${{ contains(github.event.head_commit.message, '[release') || github.event.inputs.level != '' }}
 
     permissions:
       contents: write
