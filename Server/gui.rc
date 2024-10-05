@@ -2,10 +2,6 @@
 
 #include <windows.h>
 
-#ifdef _MSC_VER
-#include <winresrc.h>
-#endif
-
 #include "gui.h"
 #include "tw_version.h"
 
