@@ -76,7 +76,7 @@ jobs:
   release:
     name: "Release"
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.head_commit.message, '[release') || github.event.inputs.release }}
+    if: ${{ contains(github.event.head_commit.message, '[forcerebuild]') || contains(github.event.head_commit.message, '[release') || github.event.inputs.release }}
 
     permissions:
       contents: write
