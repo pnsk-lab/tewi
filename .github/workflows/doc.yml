@@ -7,7 +7,7 @@ on:
   push:
 
 concurrency:
-  group: "build"
+  group: "doc"
   cancel-in-progress: true
 
 jobs:
