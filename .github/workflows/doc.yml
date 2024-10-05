@@ -1,0 +1,47 @@
+# $Id$
+
+name: "Build Tewi HTTPd Document"
+
+on:
+  workflow_dispatch:
+  push:
+
+concurrency:
+  group: "build"
+  cancel-in-progress: true
+
+jobs:
+  doc:
+
+    name: "Deploy pages"
+
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install packages
+      run: sudo apt-get install tcl subversion
+    - name: Get docgen
+      run: svn co http://svn.nishi.boats/repo/docgen/trunk docgen
+    - name: Build document
+      run: cd Document && ../docgen/docgen
+    - name: Make HTML
+      run: echo "<html><head><meta charset=\"UTF-8\"><title>Select</title></head><body><h1>Select</h1><hr><ul><li><a href=\"./en\">English</a></li><li><a href=\"./jp\">Japanese</a></li></ul></body></html>" > Document/output/index.html
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+    - name: Upload pages
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: "Document/output"
+    - name: Deploy
+      uses: actions/deploy-pages@v4
