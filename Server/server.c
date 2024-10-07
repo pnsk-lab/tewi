@@ -77,7 +77,7 @@ typedef int socklen_t;
 #endif
 
 #ifndef S_ISDIR
-#define S_ISDIR(x) ((x)&_S_IFDIR)
+#define S_ISDIR(x) ((x) & _S_IFDIR)
 #endif
 
 extern struct tw_config config;
