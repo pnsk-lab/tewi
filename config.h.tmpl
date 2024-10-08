@@ -63,6 +63,11 @@
 /* PSP/PS2/PS3 should not have getnameinfo */
 #endif
 
+#if (defined(__minix)) && !defined(NO_IPV6)
+#define NO_IPV6
+/* Minix does not have IPv6 */
+#endif
+
 #endif
 
 /*
