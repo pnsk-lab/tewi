@@ -30,7 +30,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Install packages
-      run: sudo apt-get install tcl subversion
+      run: sudo apt-get install tcl subversion enscript
     - name: Get docgen
       run: svn co http://svn.nishi.boats/repo/docgen/trunk docgen
     - name: Build document
