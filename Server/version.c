@@ -31,6 +31,8 @@ const char* tw_platform =
     "PSP"
 #elif defined(__PPU__)
     "PS3"
+#elif defined(__minix)
+    "Minix"
 #else
     "Unix"
 #endif
