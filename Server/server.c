@@ -159,7 +159,6 @@ int tw_server_init(void) {
 		}
 #if !defined(__PPU__) && !defined(__minix)
 		if(setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (void*)&yes, sizeof(yes)) < 0) {
-#endif
 			close_socket(sock);
 			cm_log("Server", "setsockopt failure (nodelay)");
 			return 1;
