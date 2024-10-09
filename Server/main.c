@@ -124,6 +124,7 @@ void WINAPI servhandler(DWORD control) {
 
 void WINAPI servmain(DWORD argc, LPSTR* argv) {
 	char* path = get_registry("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Tewi HTTPd", "InstallDir");
+	int st;
 	if(path != NULL) {
 		char* lpath = cm_strcat(path, "/logs/tewi.log");
 		logfile = fopen(lpath, "a");
@@ -143,7 +144,7 @@ void WINAPI servmain(DWORD argc, LPSTR* argv) {
 	status_handle = RegisterServiceCtrlHandler("Tewi HTTPd", servhandler);
 	if(status_handle == NULL) return;
 	if(SetServiceStatus(status_handle, &status) == 0) return;
-	int st = startup(argc, argv);
+	st = startup(argc, argv);
 	if(st != -1) {
 		status.dwWin32ExitCode = NO_ERROR;
 		status.dwServiceSpecificExitCode = st;
@@ -527,11 +528,15 @@ void show_png(void) {
 #if !defined(BUILD_GUI_VALID)
 int main(int argc, char** argv) {
 	int st;
-	logfile = stderr;
 #ifdef SERVICE
 	SERVICE_TABLE_ENTRY table[] = {{"Tewi HTTPd", servmain}, {NULL, NULL}};
-	StartServiceCtrlDispatcher(table);
+	logfile = stderr;
+	if(!StartServiceCtrlDispatcher(table)){
+		printf("Failed to start the service dispatcher\n");
+		return 1;
+	}
 #else
+	logfile = stderr;
 #ifdef _PSP
 	pspDebugScreenInit();
 	pspDebugScreenSetXY(0, 0);
