@@ -63,11 +63,15 @@ proc run {project_name} {
 			RunCommand "./installer.sh $win"
 			RunCommand "doas mkdir -p /raid/f/g/tewi/$win"
 			RunCommand "doas mkdir -p /raid/ftp/pub/tewi/$win"
-			RunCommand "doas cp install-ssl.exe /raid/f/g/tewi/$win/tewiinst$bits-[exec make get-version]-ssl.exe"
-			RunCommand "doas cp install-nossl.exe /raid/f/g/tewi/$win/tewiinst$bits-[exec make get-version]-nossl.exe"
-			RunCommand "doas cp install-ssl.exe /raid/ftp/pub/tewi/$win/tewiinst$bits-[exec make get-version]-ssl.exe"
-			RunCommand "doas cp install-nossl.exe /raid/ftp/pub/tewi/$win/tewiinst$bits-[exec make get-version]-nossl.exe"
-			return
+			RunCommand "doas cp install-ssl.exe /raid/f/g/tewi/$win/tewiinst$bits-[exec make get-version]-ssl$suf.exe"
+			RunCommand "doas cp install-nossl.exe /raid/f/g/tewi/$win/tewiinst$bits-[exec make get-version]-nossl$suf.exe"
+			RunCommand "doas cp install-ssl.exe /raid/ftp/pub/tewi/$win/tewiinst$bits-[exec make get-version]-ssl$suf.exe"
+			RunCommand "doas cp install-nossl.exe /raid/ftp/pub/tewi/$win/tewiinst$bits-[exec make get-version]-nossl$suf.exe"
+			if { $once == 0 } {
+				return
+			}
+			set once 0
+			continue
 		} else {
 			RunCommand "make"
 			return
