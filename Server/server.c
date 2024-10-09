@@ -977,6 +977,7 @@ void tw_server_loop(void) {
 #endif
 		if(ret == -1) {
 #if !defined(__MINGW32__) && !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(__WATCOMC__)
+			if(errno == EINTR) continue;
 			cm_log("Server", "Select failure: %s", strerror(errno));
 #endif
 			break;
