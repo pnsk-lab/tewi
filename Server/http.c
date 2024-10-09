@@ -59,6 +59,7 @@ int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req) {
 	int phase = 0;
 	char* header;
 	int nl;
+	bool bad;
 
 #ifdef USE_POLL
 	struct pollfd pollfds[1];
@@ -68,7 +69,7 @@ int tw_http_parse(SSL* ssl, int sock, struct tw_http_request* req) {
 	fd_set fds;
 #endif
 
-	bool bad = false;
+	bad = false;
 
 	cbuf[1] = 0;
 
