@@ -19,7 +19,7 @@
 #define SSL void
 #endif
 
-#if (defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)) && defined(BUILD_GUI)
+#if (defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)) && defined(BUILD_GUI) && !defined(SERVICE)
 #define BUILD_GUI_VALID
 #endif
 
