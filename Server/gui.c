@@ -2,6 +2,8 @@
 
 #include "../config.h"
 
+#if defined(BUILD_GUI_VALID)
+
 #include "gui.h"
 #include "tw_server.h"
 
@@ -295,3 +297,5 @@ int WINAPI WinMain(HINSTANCE hCurInst, HINSTANCE hPrevInst, LPSTR lpsCmdLine, in
 	}
 	return (int)msg.wParam;
 }
+
+#endif
