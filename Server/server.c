@@ -526,6 +526,7 @@ int tw_server_pass(void* ptr) {
 		bool rej;
 		char* host;
 		int port;
+		char* chrootpath;
 		struct tw_config_entry* vhost_entry;
 		strftime(date, 512, "%a, %d %b %Y %H:%M:%S %Z", tm);
 
@@ -589,7 +590,7 @@ int tw_server_pass(void* ptr) {
 		cm_log("Server", "Hostname is `%s', port is `%d'", host, port);
 		vhost_entry = tw_vhost_match(host, port);
 #ifdef HAS_CHROOT
-		char* chrootpath = vhost_entry->chroot_path != NULL ? vhost_entry->chroot_path : config.root.chroot_path;
+		chrootpath = vhost_entry->chroot_path != NULL ? vhost_entry->chroot_path : config.root.chroot_path;
 		if(chrootpath != NULL) {
 			if(chdir(chrootpath) == 0) {
 				if(chroot(".") == 0) {
