@@ -20,7 +20,7 @@ HWND button_stop;
 HWND button_about;
 HWND button_reset;
 HWND button_exit;
-HWND status;
+HWND statuswnd;
 HFONT monospace;
 BOOL tewi_alive;
 BOOL was_starting;
@@ -137,12 +137,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 			}
 		} else if(trig == GUI_BUTTON_START) {
 			if(ev == BN_CLICKED) {
-				SendMessage(status, SB_SETTEXT, 0, (LPARAM) "Starting Tewi HTTPd");
+				SendMessage(statuswnd, SB_SETTEXT, 0, (LPARAM) "Starting Tewi HTTPd");
 				StartTewi();
 			}
 		} else if(trig == GUI_BUTTON_STOP) {
 			if(ev == BN_CLICKED) {
-				SendMessage(status, SB_SETTEXT, 0, (LPARAM) "Stopping Tewi HTTPd");
+				SendMessage(statuswnd, SB_SETTEXT, 0, (LPARAM) "Stopping Tewi HTTPd");
 				StopTewi();
 			}
 		} else if(trig == GUI_BUTTON_RESET) {
@@ -154,7 +154,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 		} else if(trig == GUI_BUTTON_EXIT) {
 			if(ev == BN_CLICKED) {
 				if(tewi_alive) {
-					SendMessage(status, SB_SETTEXT, 0, (LPARAM) "Stopping Tewi HTTPd");
+					SendMessage(statuswnd, SB_SETTEXT, 0, (LPARAM) "Stopping Tewi HTTPd");
 					StopTewi();
 					exiting = TRUE;
 				} else {
@@ -176,10 +176,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 
 		monospace = (HFONT)GetStockObject(SYSTEM_FIXED_FONT);
 
-		status = CreateStatusWindow(WS_CHILD | WS_VISIBLE | CCS_BOTTOM, NULL, hWnd, GUI_STATUS);
-		SendMessage(status, SB_SIMPLE, 0, 0);
-		SendMessage(status, SB_SETTEXT, 0, (LPARAM) "Welcome to Tewi HTTPd");
-		SendMessage(status, SB_GETRECT, 0, (LPARAM)&src);
+		statuswnd = CreateStatusWindow(WS_CHILD | WS_VISIBLE | CCS_BOTTOM, NULL, hWnd, GUI_STATUS);
+		SendMessage(statuswnd, SB_SIMPLE, 0, 0);
+		SendMessage(statuswnd, SB_SETTEXT, 0, (LPARAM) "Welcome to Tewi HTTPd");
+		SendMessage(statuswnd, SB_GETRECT, 0, (LPARAM)&src);
 
 		pbtewi_brush = CreateSolidBrush(RGB(0xf7, 0xc9, 0xf3));
 		button_start = CreateWindow("BUTTON", "&Start", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, WINWIDTH(rc) - 100, 20 * 0, 100, 20, hWnd, (HMENU)GUI_BUTTON_START, hInst, NULL);
@@ -198,7 +198,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 			} else if(tewi_alive) {
 				if(was_starting) {
 					was_starting = FALSE;
-					SendMessage(status, SB_SETTEXT, 0, (LPARAM) "Started Tewi HTTPd");
+					SendMessage(statuswnd, SB_SETTEXT, 0, (LPARAM) "Started Tewi HTTPd");
 				}
 				EnableWindow(button_start, FALSE);
 				EnableWindow(button_stop, TRUE);
@@ -206,7 +206,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 			} else {
 				if(was_starting) {
 					was_starting = FALSE;
-					SendMessage(status, SB_SETTEXT, 0, (LPARAM) "Stopped Tewi HTTPd");
+					SendMessage(statuswnd, SB_SETTEXT, 0, (LPARAM) "Stopped Tewi HTTPd");
 				}
 				EnableWindow(button_start, TRUE);
 				EnableWindow(button_stop, FALSE);
