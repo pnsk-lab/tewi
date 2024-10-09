@@ -46,8 +46,10 @@ proc run {project_name} {
 			RunCommand "doas cp Server/tewi.pkg /raid/ftp/pub/tewi/ps3/tewidistps3-[exec make get-version]-nossl.pkg"
 			return
 		} elseif { "$project_name" == "Tewi-MinGW-32" || "$project_name" == "Tewi-MinGW-64" } {
-			RunCommand "rm -rf openssl"
-			RunCommand "git clone https://github.com/clamwin/openssl"
+			if { $once == 1 } {
+				RunCommand "rm -rf openssl"
+				RunCommand "git clone https://github.com/clamwin/openssl"
+			}
 			set bits 32
 			if { "$project_name" == "Tewi-MinGW-32" } {
 				foreach filen [glob openssl/lib/mingw/x86/*] {
