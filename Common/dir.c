@@ -71,6 +71,9 @@ char** cm_scandir(const char* path) {
 	if(dir != NULL) {
 		char** r = malloc(sizeof(*r));
 		struct dirent* d;
+		char** old;
+		int len;
+		int i;
 		r[0] = NULL;
 		while((d = readdir(dir)) != NULL) {
 			if(strcmp(d->d_name, ".") != 0 && strcmp(d->d_name, "..") != 0) {
@@ -79,8 +82,7 @@ char** cm_scandir(const char* path) {
 				stat(p, &s);
 				free(p);
 
-				char** old = r;
-				int i;
+				old = r;
 				for(i = 0; old[i] != NULL; i++)
 					;
 				r = malloc(sizeof(*r) * (i + 2));
@@ -90,13 +92,11 @@ char** cm_scandir(const char* path) {
 				free(old);
 			}
 		}
-		int len;
 		for(len = 0; r[len] != NULL; len++)
 			;
 		qsort(r, len, sizeof(char*), cm_sort);
 
-		char** old = r;
-		int i;
+		old = r;
 		for(i = 0; old[i] != NULL; i++)
 			;
 		r = malloc(sizeof(*r) * (i + 2));
