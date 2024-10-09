@@ -78,7 +78,7 @@ proc run {project_name} {
 	foreach filen [glob Module/*.dll] {
 		RunCommand "cp $filen workdir/modules/"
 	}
-	RunCommand "reisen 'Tewi HTTPd' @reisen.conf tewidist.exe"
+	RunCommand "reisen Tewi\ HTTPd @reisen.conf tewidist.exe"
 	RunCommand "rm -rf workdir"
 	RunCommand "doas mkdir -p /raid/f/g/tewi/$dirname"
 	RunCommand "doas cp tewidist.exe /raid/f/g/tewi/$dirname/tewidist$dirname-[exec make get-version]-nossl.exe"
