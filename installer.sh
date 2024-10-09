@@ -20,6 +20,9 @@ rm -f install-nossl.exe install-ssl.exe
 VERSION=`make get-version`
 
 sed "s/undef NO_SSL/define NO_SSL/g" config.h.tmpl > config.h
+if [ ! "x$2" = "x" ]; then
+	sed -i "s/undef $2/define $2/g" config.h
+fi
 
 make clean || fail
 make PLATFORM=$1 PREFIX=C:/Tewi -j4 || fail
@@ -36,6 +39,9 @@ rm -f tewi.exe tewi-service.exe
 cd ..
 
 sed "s/define NO_SSL/undef NO_SSL/g" config.h.tmpl > config.h
+if [ ! "x$2" = "x" ]; then
+	sed -i "s/undef $2/define $2/g" config.h
+fi
 
 make clean || fail
 make PLATFORM=$1 -j4 PREFIX=C:/Tewi|| fail

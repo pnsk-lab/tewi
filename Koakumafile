@@ -5,10 +5,12 @@ proc run {project_name} {
 	set once 1
 	while 1 {
 		set suf ""
+		set arg ""
 		exec sed "s/undef NO_SSL/define NO_SSL/g" config.h.tmpl > config.h
 		if { $once == 0 } {
 			exec sed -i "s/undef BUILD_GUI/define BUILD_GUI/g" config.h
 			set suf "-gui"
+			set arg " BUILD_GUI"
 		}
 		set ::env(DISPLAY) ":0"
 		RunCommand "make clean"
@@ -62,7 +64,7 @@ proc run {project_name} {
 				}
 			}
 			set win "win$bits"
-			RunCommand "./installer.sh $win"
+			RunCommand "./installer.sh $win$arg"
 			RunCommand "doas mkdir -p /raid/f/g/tewi/$win"
 			RunCommand "doas mkdir -p /raid/ftp/pub/tewi/$win"
 			RunCommand "doas cp install-ssl.exe /raid/f/g/tewi/$win/tewiinst$bits-[exec make get-version]-ssl$suf.exe"
