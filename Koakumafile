@@ -2,86 +2,99 @@
 # vim: syntax=tcl
 
 proc run {project_name} {
-	exec sed "s/undef NO_SSL/define NO_SSL/g" config.h.tmpl > config.h
-	set ::env(DISPLAY) ":0"
-	RunCommand "make clean"
-	set dirname ""
-	if { "$project_name" == "Tewi-BCC" } {
-		set ::env(LANG) "ja_JP.UTF-8"
-		set ::env(BORLAND) "C:/borland/bcc55"
-		RunCommand "make PLATFORM=bcc"
-		set ::env(LANG) "en_US.UTF-8"
-		set dirname "bcc"
-	} elseif { "$project_name" == "Tewi-VC6" } {
-		RunCommand "make PLATFORM=vc6"
-		set dirname "vc6"
-	} elseif { "$project_name" == "Tewi-Watcom" } {
-		set ::env(WATCOM) "/usr/watcom"
-		set ::env(INCLUDE) "/usr/watcom/h"
-		set ::env(PATH) "$::env(PATH):/usr/watcom/binl64"
-		RunCommand "make PLATFORM=watcom"
-		set dirname "watcom"
-	} elseif { "$project_name" == "Tewi-PSP" } {
-		RunCommand "./psp.sh"
-		RunCommand "doas mkdir -p /raid/f/g/tewi/psp"
-		RunCommand "doas mkdir -p /raid/ftp/pub/tewi/psp"
-		RunCommand "doas cp tewidist.zip /raid/f/g/tewi/psp/tewidistpsp-[exec make get-version]-nossl.zip"
-		RunCommand "doas cp tewidist.zip /raid/ftp/pub/tewi/psp/tewidistpsp-[exec make get-version]-nossl.zip"
-		return
-	} elseif { "$project_name" == "Tewi-PS3" } {
-		set ::env(PS3DEV) "/usr/local/ps3dev"
-		set ::env(PSL1GHT) "/usr/local/ps3dev"
-		set ::env(PATH) "$::env(PATH):/usr/local/ps3dev/bin:/usr/local/ps3dev/ppu/bin:/usr/local/ps3dev/spu/bin"
-		RunCommand "make PLATFORM=ps3"
-		RunCommand "doas mkdir -p /raid/f/g/tewi/ps3"
-		RunCommand "doas mkdir -p /raid/ftp/pub/tewi/ps3"
-		RunCommand "doas cp Server/tewi.pkg /raid/f/g/tewi/ps3/tewidistps3-[exec make get-version]-nossl.pkg"
-		RunCommand "doas cp Server/tewi.pkg /raid/ftp/pub/tewi/ps3/tewidistps3-[exec make get-version]-nossl.pkg"
-		return
-	} elseif { "$project_name" == "Tewi-MinGW-32" || "$project_name" == "Tewi-MinGW-64" } {
-		RunCommand "rm -rf openssl"
-		RunCommand "git clone https://github.com/clamwin/openssl"
-		set bits 32
-		if { "$project_name" == "Tewi-MinGW-32" } {
-			foreach filen [glob openssl/lib/mingw/x86/*] {
-				RunCommand "cp $filen openssl/lib/"
-			}
-		} else {
-			set bits 64
-			foreach filen [glob openssl/lib/mingw/x64/*] {
-				RunCommand "cp $filen openssl/lib/"
-			}
+	set once 1
+	while 1 {
+		set suf ""
+		exec sed "s/undef NO_SSL/define NO_SSL/g" config.h.tmpl > config.h
+		if { $once == 0 } {
+			exec sed -i "s/undef BUILD_GUI/define BUILD_GUI/g" config.h
+			set suf "-gui"
 		}
-		set win "win$bits"
-		RunCommand "./installer.sh $win"
-		RunCommand "doas mkdir -p /raid/f/g/tewi/$win"
-		RunCommand "doas mkdir -p /raid/ftp/pub/tewi/$win"
-		RunCommand "doas cp install-ssl.exe /raid/f/g/tewi/$win/tewiinst$bits-[exec make get-version]-ssl.exe"
-		RunCommand "doas cp install-nossl.exe /raid/f/g/tewi/$win/tewiinst$bits-[exec make get-version]-nossl.exe"
-		RunCommand "doas cp install-ssl.exe /raid/ftp/pub/tewi/$win/tewiinst$bits-[exec make get-version]-ssl.exe"
-		RunCommand "doas cp install-nossl.exe /raid/ftp/pub/tewi/$win/tewiinst$bits-[exec make get-version]-nossl.exe"
-		return
-	} else {
-		RunCommand "make"
+		set ::env(DISPLAY) ":0"
+		RunCommand "make clean"
+		set dirname ""
+		if { "$project_name" == "Tewi-BCC" } {
+			set ::env(LANG) "ja_JP.UTF-8"
+			set ::env(BORLAND) "C:/borland/bcc55"
+			RunCommand "make PLATFORM=bcc"
+			set ::env(LANG) "en_US.UTF-8"
+			set dirname "bcc"
+		} elseif { "$project_name" == "Tewi-VC6" } {
+			RunCommand "make PLATFORM=vc6"
+			set dirname "vc6"
+		} elseif { "$project_name" == "Tewi-Watcom" } {
+			set ::env(WATCOM) "/usr/watcom"
+			set ::env(INCLUDE) "/usr/watcom/h"
+			set ::env(PATH) "$::env(PATH):/usr/watcom/binl64"
+			RunCommand "make PLATFORM=watcom"
+			set dirname "watcom"
+		} elseif { "$project_name" == "Tewi-PSP" } {
+			RunCommand "./psp.sh"
+			RunCommand "doas mkdir -p /raid/f/g/tewi/psp"
+			RunCommand "doas mkdir -p /raid/ftp/pub/tewi/psp"
+			RunCommand "doas cp tewidist.zip /raid/f/g/tewi/psp/tewidistpsp-[exec make get-version]-nossl.zip"
+			RunCommand "doas cp tewidist.zip /raid/ftp/pub/tewi/psp/tewidistpsp-[exec make get-version]-nossl.zip"
+			return
+		} elseif { "$project_name" == "Tewi-PS3" } {
+			set ::env(PS3DEV) "/usr/local/ps3dev"
+			set ::env(PSL1GHT) "/usr/local/ps3dev"
+			set ::env(PATH) "$::env(PATH):/usr/local/ps3dev/bin:/usr/local/ps3dev/ppu/bin:/usr/local/ps3dev/spu/bin"
+			RunCommand "make PLATFORM=ps3"
+			RunCommand "doas mkdir -p /raid/f/g/tewi/ps3"
+			RunCommand "doas mkdir -p /raid/ftp/pub/tewi/ps3"
+			RunCommand "doas cp Server/tewi.pkg /raid/f/g/tewi/ps3/tewidistps3-[exec make get-version]-nossl.pkg"
+			RunCommand "doas cp Server/tewi.pkg /raid/ftp/pub/tewi/ps3/tewidistps3-[exec make get-version]-nossl.pkg"
+			return
+		} elseif { "$project_name" == "Tewi-MinGW-32" || "$project_name" == "Tewi-MinGW-64" } {
+			RunCommand "rm -rf openssl"
+			RunCommand "git clone https://github.com/clamwin/openssl"
+			set bits 32
+			if { "$project_name" == "Tewi-MinGW-32" } {
+				foreach filen [glob openssl/lib/mingw/x86/*] {
+					RunCommand "cp $filen openssl/lib/"
+				}
+			} else {
+				set bits 64
+				foreach filen [glob openssl/lib/mingw/x64/*] {
+					RunCommand "cp $filen openssl/lib/"
+				}
+			}
+			set win "win$bits"
+			RunCommand "./installer.sh $win"
+			RunCommand "doas mkdir -p /raid/f/g/tewi/$win"
+			RunCommand "doas mkdir -p /raid/ftp/pub/tewi/$win"
+			RunCommand "doas cp install-ssl.exe /raid/f/g/tewi/$win/tewiinst$bits-[exec make get-version]-ssl.exe"
+			RunCommand "doas cp install-nossl.exe /raid/f/g/tewi/$win/tewiinst$bits-[exec make get-version]-nossl.exe"
+			RunCommand "doas cp install-ssl.exe /raid/ftp/pub/tewi/$win/tewiinst$bits-[exec make get-version]-ssl.exe"
+			RunCommand "doas cp install-nossl.exe /raid/ftp/pub/tewi/$win/tewiinst$bits-[exec make get-version]-nossl.exe"
+			return
+		} else {
+			RunCommand "make"
+			return
+		}
+		file mkdir workdir
+		file mkdir workdir/etc
+		file mkdir workdir/www
+		file mkdir workdir/bin
+		file mkdir workdir/modules
+		file delete archive.7z
+	
+		exec ./Tool/itworks > workdir/www/index.html
+		exec ./Tool/genconf C:/Tewi modules dll > workdir/etc/tewi.conf
+		RunCommand "cp Binary/pbtewi.gif workdir/www/"
+		RunCommand "cp Server/tewi.exe workdir/bin/"
+		foreach filen [glob Module/*.dll] {
+			RunCommand "cp $filen workdir/modules/"
+		}
+		RunCommand "reisen Tewi\\ HTTPd @reisen.conf tewidist.exe"
+		RunCommand "rm -rf workdir"
+		RunCommand "doas mkdir -p /raid/f/g/tewi/$dirname"
+		RunCommand "doas cp tewidist.exe /raid/f/g/tewi/$dirname/tewidist$dirname-[exec make get-version]-nossl$suf.exe"
+		RunCommand "doas mkdir -p /raid/ftp/pub/tewi/$dirname"
+		RunCommand "doas cp tewidist.exe /raid/ftp/pub/tewi/$dirname/tewidist$dirname-[exec make get-version]-nossl$suf.exe"
+		if { $once == 0 } {
+			return
+		}
+		set once 0
 	}
-	file mkdir workdir
-	file mkdir workdir/etc
-	file mkdir workdir/www
-	file mkdir workdir/bin
-	file mkdir workdir/modules
-	file delete archive.7z
-
-	exec ./Tool/itworks > workdir/www/index.html
-	exec ./Tool/genconf C:/Tewi modules dll > workdir/etc/tewi.conf
-	RunCommand "cp Binary/pbtewi.gif workdir/www/"
-	RunCommand "cp Server/tewi.exe workdir/bin/"
-	foreach filen [glob Module/*.dll] {
-		RunCommand "cp $filen workdir/modules/"
-	}
-	RunCommand "reisen Tewi\\ HTTPd @reisen.conf tewidist.exe"
-	RunCommand "rm -rf workdir"
-	RunCommand "doas mkdir -p /raid/f/g/tewi/$dirname"
-	RunCommand "doas cp tewidist.exe /raid/f/g/tewi/$dirname/tewidist$dirname-[exec make get-version]-nossl.exe"
-	RunCommand "doas mkdir -p /raid/ftp/pub/tewi/$dirname"
-	RunCommand "doas cp tewidist.exe /raid/ftp/pub/tewi/$dirname/tewidist$dirname-[exec make get-version]-nossl.exe"
 }
