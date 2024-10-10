@@ -76,6 +76,10 @@ typedef int socklen_t;
 #include <OS.h>
 #endif
 
+#ifdef __USLC__
+typedef int socklen_t;
+#endif
+
 #ifndef S_ISDIR
 #define S_ISDIR(x) ((x) & _S_IFDIR)
 #endif
