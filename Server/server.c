@@ -952,7 +952,7 @@ void tw_server_loop(void) {
 	}
 #endif
 #ifdef USE_POLL
-	struct pollfd pollfds[sockcount];
+	struct pollfd* pollfds = malloc(sizeof(*pollfds) * sockcount);
 	for(i = 0; i < sockcount; i++) {
 		pollfds[i].fd = sockets[i];
 		pollfds[i].events = POLLIN | POLLPRI;
