@@ -33,6 +33,8 @@ const char* tw_platform =
     "PS3"
 #elif defined(__minix)
     "Minix"
+#elif defined(__USLC__)
+    "UnixWare"
 #else
     "Unix"
 #endif

@@ -3,6 +3,7 @@
 OBJ=o
 STATIC=a
 END=_dll
+SHARED=-shared
 include $(PWD)/Platform/$(PLATFORM).mk
 
 .PHONY: all clean
@@ -11,7 +12,7 @@ include $(PWD)/Platform/$(PLATFORM).mk
 all: mod_cgi$(LIBSUF) mod_proxy$(LIBSUF)
 
 .$(OBJ)$(LIBSUF):
-	$(CC) $(LDFLAGS) -shared -o $@ $< ../Common/common.$(STATIC) $(LIBS)
+	$(CC) $(LDFLAGS) $(SHARED) -o $@ $< ../Common/common.$(STATIC) $(LIBS)
 
 .c.$(OBJ):
 	$(CC) $(CFLAGS) -I ../Server -c -o $@ $<
