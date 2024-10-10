@@ -43,6 +43,7 @@ NetBSD                   Working on NetBSD/amd64 10.0
 OpenBSD                  Working
 Haiku                    Working
 Minix                    Working
+UnixWare                 Working on 7.1.1
 PlayStation Portable     Working, missing module support
                          TODO: Get multi-threading working (maybe)
 PlayStation 2            Not working
