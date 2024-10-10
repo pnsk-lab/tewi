@@ -67,7 +67,7 @@ PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
 
 #define printf(...) tt_printf(__VA_ARGS__)
 #define STDERR_LOG(...) tt_printf(__VA_ARGS__)
-#elif defined(_MSC_VER) || defined(__BORLANDC__)
+#elif defined(_MSC_VER) || defined(__BORLANDC__) || defined(__UNIXWARE__)
 void STDERR_LOG(const char* format, ...) {
 	va_list args;
 	va_start(args, format);
