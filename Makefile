@@ -37,7 +37,7 @@ all: ./Server $(MODULE)
 	sed "s/@VERSION@/`grep "define TW_VERSION" Server/tw_version.h | grep -Eom 1 '"[^\]+' | sed 's/^"//g'`/g" ./README.tmpl > $@
 
 install: all ./Tool/genconf ./Tool/itworks
-	mkdir -p $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib/tewi $(DESTDIR)$(PREFIX)/etc $(DESTDIR)$(PREFIX)/www
+	-mkdir -p $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib/tewi $(DESTDIR)$(PREFIX)/etc $(DESTDIR)$(PREFIX)/www
 	if [ ! -e $(DESTDIR)$(PREFIX)/etc/tewi.conf ]; then ( ./Tool/genconf $(PREFIX) lib/tewi so > $(DESTDIR)$(PREFIX)/etc/tewi.conf || ( rm $(DESTDIR)$(PREFIX)/etc/tewi.conf ; exit 1 ) ) ; fi
 	cp mime.types $(DESTDIR)$(PREFIX)/
 	if [ ! -e $(DESTDIR)$(PREFIX)/www/index.html ]; then ( ./Tool/itworks > $(DESTDIR)$(PREFIX)/www/index.html || ( rm $(DESTDIR)$(PREFIX)/www/index.html ; exit 1 ) ) ; fi
