@@ -533,7 +533,7 @@ int main(int argc, char** argv) {
 #ifdef SERVICE
 	SERVICE_TABLE_ENTRY table[] = {{"Tewi HTTPd", servmain}, {NULL, NULL}};
 	logfile = stderr;
-	if(!StartServiceCtrlDispatcher(table)){
+	if(!StartServiceCtrlDispatcher(table)) {
 		printf("Failed to start the service dispatcher\n");
 		return 1;
 	}
