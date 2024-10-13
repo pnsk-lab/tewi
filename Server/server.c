@@ -32,7 +32,7 @@
 #include <cm_log.h>
 #include <cm_dir.h>
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__))
 #ifndef NO_GETNAMEINFO
 #include <ws2tcpip.h>
 #include <wspiapi.h>

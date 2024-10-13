@@ -15,7 +15,7 @@
 #include <unistd.h>
 #endif
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__))
 #ifdef USE_WINSOCK1
 #include <winsock.h>
 #else
