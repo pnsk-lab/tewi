@@ -43,7 +43,9 @@ install: all ./Tool/genconf ./Tool/itworks
 	if [ ! -e $(DESTDIR)$(PREFIX)/www/index.html ]; then ( ./Tool/itworks > $(DESTDIR)$(PREFIX)/www/index.html || ( rm $(DESTDIR)$(PREFIX)/www/index.html ; exit 1 ) ) ; fi
 	if [ ! -e $(DESTDIR)$(PREFIX)/www/pbtewi.gif ]; then ( cp Binary/pbtewi.gif $(DESTDIR)$(PREFIX)/www/ || ( rm $(DESTDIR)$(PREFIX)/www/pbtewi.gif ; exit 1 ) ) ; fi
 	-cp ./Server/tewi $(DESTDIR)$(PREFIX)/bin/
+	-cp ./Server/tewi.exe $(DESTDIR)$(PREFIX)/bin/
 	-cp ./Module/*.so $(DESTDIR)$(PREFIX)/lib/tewi/
+	-cp ./Module/*.dll $(DESTDIR)$(PREFIX)/lib/tewi/
 
 format:
 	clang-format --verbose -i `find ./Server ./Common ./Module ./Tool "(" -name "*.c" -or -name "*.h" ")" -and -not -name "strptime.*"` config.h

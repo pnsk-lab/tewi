@@ -25,13 +25,15 @@ extern "C" {
 #ifdef __PPU__
 #include <net/net.h>
 #endif
+#if !defined(__OS2__)
 #include <netinet/in.h>
+#endif
 #ifdef __HAIKU__
 #define NO_IPV6
 #endif
 #endif
 
-#ifdef NO_IPV6
+#if defined(NO_IPV6)
 #define SOCKADDR struct sockaddr_in
 #else
 #define SOCKADDR struct sockaddr_in6

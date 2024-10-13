@@ -27,8 +27,13 @@ int tw_module_init(void* mod) { return 1; }
 #else
 
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
+#ifdef __OS2__
+#define INCL_DOSMODULEMGR
+#include <os2.h>
+#else
 #include <windows.h>
 #include <direct.h>
+#endif
 #else
 #include <dlfcn.h>
 #endif
@@ -36,9 +41,17 @@ int tw_module_init(void* mod) { return 1; }
 void* tw_module_load(const char* path) {
 	char* p = getcwd(NULL, 0);
 	void* lib;
+	char tmp[512];
+	unsigned long l;
 	chdir(config.server_root);
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
+#ifdef __OS2__
+	lib = NULL;
+	l = (unsigned long)lib;
+	DosLoadModule(tmp, 512, path, &l);
+#else
 	lib = LoadLibraryA(path);
+#endif
 #else
 	lib = dlopen(path, RTLD_LAZY);
 #endif
@@ -52,7 +65,13 @@ void* tw_module_load(const char* path) {
 
 void* tw_module_symbol(void* mod, const char* sym) {
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
+#ifdef __OS2__
+	void* ret;
+	DosQueryProcAddr((unsigned long)mod, 0, sym, (PFN*)&ret);
+	return ret;
+#else
 	return GetProcAddress(mod, sym);
+#endif
 #else
 	return dlsym(mod, sym);
 #endif

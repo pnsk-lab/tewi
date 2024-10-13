@@ -23,6 +23,10 @@
 #include <openssl/opensslv.h>
 #endif
 
+#ifdef __OS2__
+#include <types.h>
+#endif
+
 #include <cm_log.h>
 #include <cm_string.h>
 
@@ -801,7 +805,7 @@ int startup(int argc, char** argv) {
 #if !defined(__MINGW32__) && !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(__WATCOMC__)
 	signal(SIGCHLD, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
-#elif !defined(BUILD_GUI)
+#elif !defined(BUILD_GUI) && !defined(__OS2__)
 	SetConsoleTitle(tw_server);
 #endif
 	return -1;

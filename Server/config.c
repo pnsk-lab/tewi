@@ -2,8 +2,7 @@
 
 #define SOURCE
 
-#include "tw_config.h"
-#include "tw_module.h"
+#include "../config.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -15,7 +14,7 @@
 #include <unistd.h>
 #endif
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__))
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__WATCOMC__))
 #ifdef USE_WINSOCK1
 #include <winsock.h>
 #else
@@ -25,6 +24,15 @@
 
 #include <cm_string.h>
 #include <cm_log.h>
+
+#ifdef __OS2__
+#include <types.h>
+#include <netinet/in.h>
+#include <tcpustd.h>
+#endif
+
+#include "tw_config.h"
+#include "tw_module.h"
 
 struct tw_config config;
 

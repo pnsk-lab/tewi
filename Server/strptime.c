@@ -462,7 +462,7 @@ recurse:
                     bp = NULL;
                     continue;
                 }
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__OS2__)
 #if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 		if (1)
 #else

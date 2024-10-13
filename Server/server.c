@@ -18,6 +18,7 @@
 #if !defined(_MSC_VER) && !defined(__BORLANDC__)
 #include <unistd.h>
 #endif
+#include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdarg.h>
@@ -31,6 +32,20 @@
 #include <cm_string.h>
 #include <cm_log.h>
 #include <cm_dir.h>
+
+#ifdef __OS2__
+#include <types.h>
+#include <sys/time.h>
+#define INCL_DOSPROCESS
+#include <os2.h>
+#include <process.h>
+#define HANDLE void*
+
+#include "strptime.h"
+typedef int socklen_t;
+
+#include <tcpustd.h>
+#endif
 
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__))
 #ifndef NO_GETNAMEINFO
@@ -108,7 +123,7 @@ int tw_wildcard_match(const char* wildcard, const char* target) {
 			return 0;
 		} else if(*pw == '*') {
 			return *(pw + 1) == 0 || tw_wildcard_match(pw, pt + 1) || tw_wildcard_match(pw + 1, pt);
-		} else if(*pw == '?' || (*pw == *pt)) {
+		} else if(*pw == '?' || (tolower(*pw) == tolower(*pt))) {
 			pw++;
 			pt++;
 			continue;
@@ -119,7 +134,9 @@ int tw_wildcard_match(const char* wildcard, const char* target) {
 }
 
 void close_socket(int sock) {
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
+#ifdef __OS2__
+	soclose(sock);
+#elif defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 	closesocket(sock);
 #else
 	close(sock);
@@ -128,13 +145,16 @@ void close_socket(int sock) {
 
 int tw_server_init(void) {
 	int i;
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__))
 	WSADATA wsa;
 #ifdef USE_WINSOCK1
 	WSAStartup(MAKEWORD(1, 1), &wsa);
 #else
 	WSAStartup(MAKEWORD(2, 0), &wsa);
 #endif
+#endif
+#ifdef __OS2__
+	sock_init();
 #endif
 	for(i = 0; config.ports[i] != -1; i++)
 		;
@@ -1019,7 +1039,11 @@ void tw_server_loop(void) {
 					e->addr = claddr;
 #endif
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
+#ifdef __OS2__
+					_beginthread(tw_server_pass, 0, 0, e);
+#else
 					_beginthread(tw_server_pass, 0, e);
+#endif
 #elif defined(_PSP) || defined(__PPU__)
 						tw_server_pass(e);
 #elif defined(__HAIKU__)

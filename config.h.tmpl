@@ -68,6 +68,10 @@
 /* Minix does not have IPv6 */
 #endif
 
+#if defined(__WATCOMC__) && defined(__OS2__) && !defined(NO_IPV6)
+#define NO_IPV6
+#endif
+
 #endif
 
 /*

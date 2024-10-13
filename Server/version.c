@@ -15,6 +15,8 @@ const char* tw_platform =
     "OpenBSD"
 #elif defined(__linux__)
     "Linux"
+#elif defined(__OS2__)
+    "OS/2"
 #elif defined(__MINGW32__)
     "Windows-MinGW32"
 #elif defined(_MSC_VER)
