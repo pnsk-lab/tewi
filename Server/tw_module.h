@@ -10,6 +10,15 @@ extern "C" {
 #include "tw_config.h"
 #include "tw_http.h"
 
+#if defined(__OS2__)
+#define INCL_DOSMODULEMGR
+#define INCL_DOSERRORS
+#include <os2.h>
+#define MODULE_DECL APIENTRY
+#else
+#define MODULE_DECL
+#endif
+
 struct tw_tool {
 	void (*log)(const char* name, const char* log, ...);
 	void (*add_version)(const char* string);
@@ -37,9 +46,9 @@ enum TW_MODULE_RETURN {
 #define TW_CONFIG_NOTME _TW_CONFIG_NOTME
 #define TW_CONFIG_ERROR _TW_CONFIG_ERROR
 
-typedef int (*tw_mod_init_t)(struct tw_config* config, struct tw_tool* tools);
-typedef int (*tw_mod_request_t)(struct tw_tool* tools, struct tw_http_request* req, struct tw_http_response* res);
-typedef int (*tw_mod_config_t)(struct tw_tool* tools, char** argv, int argc);
+typedef int (MODULE_DECL *tw_mod_init_t)(struct tw_config* config, struct tw_tool* tools);
+typedef int (MODULE_DECL *tw_mod_request_t)(struct tw_tool* tools, struct tw_http_request* req, struct tw_http_response* res);
+typedef int (MODULE_DECL *tw_mod_config_t)(struct tw_tool* tools, char** argv, int argc);
 
 #ifdef SOURCE
 void* tw_module_load(const char* path);

@@ -29,6 +29,7 @@ int tw_module_init(void* mod) { return 1; }
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #ifdef __OS2__
 #define INCL_DOSMODULEMGR
+#define INCL_DOSERRORS
 #include <os2.h>
 #else
 #include <windows.h>
@@ -42,13 +43,16 @@ void* tw_module_load(const char* path) {
 	char* p = getcwd(NULL, 0);
 	void* lib;
 	char tmp[512];
-	unsigned long l;
+#ifdef __OS2__
+	HMODULE mod;
+#endif
 	chdir(config.server_root);
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #ifdef __OS2__
-	lib = NULL;
-	l = (unsigned long)lib;
-	DosLoadModule(tmp, 512, path, &l);
+	if(DosLoadModule(tmp, 512, path, &mod) != NO_ERROR){
+		return NULL;
+	}
+	lib = (void*)mod;
 #else
 	lib = LoadLibraryA(path);
 #endif
@@ -67,7 +71,11 @@ void* tw_module_symbol(void* mod, const char* sym) {
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #ifdef __OS2__
 	void* ret;
-	DosQueryProcAddr((unsigned long)mod, 0, sym, (PFN*)&ret);
+	APIRET rc;
+	if((rc = DosQueryProcAddr((HMODULE)mod, 0, sym, (PFN*)&ret)) != NO_ERROR){
+		cm_log("Module", "OS/2 error %d", (int)rc);
+		return NULL;
+	}
 	return ret;
 #else
 	return GetProcAddress(mod, sym);
@@ -80,7 +88,7 @@ void* tw_module_symbol(void* mod, const char* sym) {
 int tw_module_init(void* mod) {
 	tw_mod_init_t mod_init = (tw_mod_init_t)tw_module_symbol(mod, "mod_init");
 	if(mod_init == NULL) {
-		cm_log("Module", "Could not init a module");
+		cm_log("Module", "Could not find a init call");
 		return 1;
 	} else {
 		struct tw_tool tools;
