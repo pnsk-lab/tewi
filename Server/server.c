@@ -84,6 +84,9 @@ typedef int socklen_t;
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #if !defined(__PPU__)
+#ifdef __NeXT__
+#include <netinet/in_systm.h>
+#endif
 #include <netinet/tcp.h>
 #endif
 #ifndef NO_GETNAMEINFO
@@ -99,7 +102,7 @@ typedef int socklen_t;
 #include <OS.h>
 #endif
 
-#if defined(__USLC__) || defined(__NeXT__) || defined(__NETWARE__)
+#if defined(__USLC__) || defined(__NETWARE__)
 typedef int socklen_t;
 #endif
 
