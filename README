@@ -46,7 +46,7 @@ Minix                    Working
 UnixWare                 Working on 7.1.1
 OS/2                     Working
 NetWare                  WIP, cannot run fopen somehow (left as-is)
-NeXTSTEP                 WIP
+NeXTSTEP                 Working
 PlayStation Portable     Working, missing module support
                          TODO: Get multi-threading working (maybe)
 PlayStation 2            Not working (left as-is)
