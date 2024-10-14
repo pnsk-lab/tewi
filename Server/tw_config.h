@@ -13,6 +13,9 @@ extern "C" {
 
 #include <stdint.h>
 #include <stdbool.h>
+#ifdef __NeXT__
+#include <sys/types.h>
+#endif
 
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__))
 #ifdef USE_WINSOCK1

@@ -79,7 +79,9 @@ typedef int socklen_t;
 #include <poll.h>
 #endif
 #else
+#ifndef __NeXT__
 #include <sys/select.h>
+#endif
 #endif
 #include <sys/socket.h>
 #include <arpa/inet.h>
