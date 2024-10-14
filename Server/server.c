@@ -102,6 +102,10 @@ typedef int socklen_t;
 #include <OS.h>
 #endif
 
+#ifdef __NeXT__
+#include <sys/time.h>
+#endif
+
 #if defined(__USLC__) || defined(__NeXT__) || defined(__NETWARE__)
 typedef int socklen_t;
 #endif
