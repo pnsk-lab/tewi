@@ -8,4 +8,5 @@ LIBS = -ldl
 EXEC =
 LIBSUF = .so
 AR_USUAL=rc
+MODULE =
 MAYBE_RANLIB=ranlib common.a
