@@ -21,12 +21,14 @@
 #include <tcpustd.h>
 #endif
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__))
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__))
 #ifdef USE_WINSOCK1
 #include <winsock.h>
 #else
 #include <winsock2.h>
 #endif
+#elif defined(__NETWARE__)
+#include <sys/socket.h>
 #else
 #ifdef USE_POLL
 #ifdef __PPU__

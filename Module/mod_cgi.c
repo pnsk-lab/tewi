@@ -21,3 +21,7 @@ int MODULE_DECL mod_request(struct tw_tool* tools, struct tw_http_request* req, 
 	res->status = 403;
 	return TW_MODULE_STOP;
 }
+
+#ifdef __NETWARE__
+int main() { return 0; }
+#endif

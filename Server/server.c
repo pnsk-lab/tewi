@@ -47,7 +47,7 @@ typedef int socklen_t;
 #include <tcpustd.h>
 #endif
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__))
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__))
 #ifndef NO_GETNAMEINFO
 #include <ws2tcpip.h>
 #include <wspiapi.h>
@@ -62,6 +62,15 @@ typedef int socklen_t;
 
 #include "strptime.h"
 typedef int socklen_t;
+#elif defined(__NETWARE__)
+#include <sys/socket.h>
+#include <nwthread.h>
+
+typedef int socklen_t;
+#define IPPROTO_TCP 0
+#define INADDR_ANY 0
+#define htons(x) x
+#include "strptime.h"
 #else
 #ifdef USE_POLL
 #ifdef __PPU__
@@ -136,6 +145,8 @@ int tw_wildcard_match(const char* wildcard, const char* target) {
 void close_socket(int sock) {
 #ifdef __OS2__
 	soclose(sock);
+#elif defined(__NETWARE__)
+	shutdown(sock, 2);
 #elif defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 	closesocket(sock);
 #else
@@ -145,7 +156,7 @@ void close_socket(int sock) {
 
 int tw_server_init(void) {
 	int i;
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__))
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__))
 	WSADATA wsa;
 #ifdef USE_WINSOCK1
 	WSAStartup(MAKEWORD(1, 1), &wsa);
@@ -521,10 +532,12 @@ int tw_server_pass(void* ptr) {
 #ifndef NO_GETNAMEINFO
 	struct sockaddr* sa = (struct sockaddr*)&addr;
 	getnameinfo(sa, sizeof(addr), address, 512, NULL, 0, NI_NUMERICHOST);
+#elif defined(__NETWARE__)
+		address[0] = 0;
 #else
-		addrstr = inet_ntoa(addr.sin_addr);
-		strcpy(address, addrstr);
-		address[strlen(addrstr)] = 0;
+	addrstr = inet_ntoa(addr.sin_addr);
+	strcpy(address, addrstr);
+	address[strlen(addrstr)] = 0;
 #endif
 #ifdef FREE_PTR
 	free(ptr);
@@ -631,7 +644,7 @@ int tw_server_pass(void* ptr) {
 #ifdef __OS2__
 			tw_mod_request_t mod_req = (tw_mod_request_t)tw_module_symbol(config.modules[i], "MOD_REQUEST");
 #else
-			tw_mod_request_t mod_req = (tw_mod_request_t)tw_module_symbol(config.modules[i], "mod_request");
+				tw_mod_request_t mod_req = (tw_mod_request_t)tw_module_symbol(config.modules[i], "mod_request");
 #endif
 			if(mod_req != NULL) {
 				int ret = mod_req(&tools, &req, &res);
@@ -940,7 +953,11 @@ cleanup:
 #endif
 	close_socket(sock);
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
+#ifdef __NETWARE__
+	ExitThread(EXIT_THREAD, 0);
+#else
 	_endthread();
+#endif
 #elif defined(__HAIKU__)
 		exit_thread(0);
 #endif
@@ -958,6 +975,8 @@ extern SERVICE_STATUS_HANDLE status_handle;
 struct thread_entry {
 #ifdef __HAIKU__
 	thread_id thread;
+#elif defined(__NETWARE__)
+	int thread;
 #else
 	HANDLE handle;
 #endif
@@ -1045,6 +1064,8 @@ void tw_server_loop(void) {
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #ifdef __OS2__
 					_beginthread(tw_server_pass, 0, 0, e);
+#elif defined(__NETWARE__)
+					BeginThread(tw_server_pass, 0, 0, e);
 #else
 					_beginthread(tw_server_pass, 0, e);
 #endif

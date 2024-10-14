@@ -37,13 +37,16 @@
 
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 
+#include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
 #include <stdint.h>
 
 #ifdef __WATCOMC__
+#ifndef __NETWARE__
 #include <strings.h>
+#endif
 #endif
 
 static const unsigned char *conv_num(const unsigned char *, int *, unsigned int, unsigned int);
@@ -116,14 +119,18 @@ static const unsigned char *find_string(const unsigned char *, int *, const char
 #define _tzset tzset
 #endif
 
-#ifdef __BORLANDC__
+#if defined(__BORLANDC__) || defined(__NETWARE__)
 char* cm_strdup(const char* str);
+
+#ifdef __NETWARE__
+#define strncasecmp _strnicmp
+#endif
 
 int _strnicmp(const char* _a, const char* _b, int len){
 	char* a = cm_strdup(_a);
 	char* b = cm_strdup(_b);
 	int i;
-	char* r;
+	int r;
 	for(i = 0; a[i] != 0; i++){
 		a[i] = tolower(a[i]);
 	}
@@ -428,7 +435,7 @@ recurse:
             continue;
 
 #ifndef TIME_MAX
-#if defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__NETWARE__)
 #define TIME_MAX	INT32_MAX
 #else
 #define TIME_MAX	INT64_MAX

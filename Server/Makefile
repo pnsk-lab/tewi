@@ -59,4 +59,4 @@ concat.rc: tewi.rc gui.rc
 	cat tewi.rc gui.rc > concat.rc
 
 clean:
-	rm -f *.o tewi *.exe *.res *.elf *.sfo *.pbp *.self *.pkg *.obj concat.rc *.tds
+	rm -f *.o tewi *.exe *.res *.elf *.sfo *.pbp *.self *.pkg *.obj concat.rc *.tds *.nlm

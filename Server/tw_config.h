@@ -14,7 +14,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__))
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__))
 #ifdef USE_WINSOCK1
 #include <winsock.h>
 #else
@@ -25,12 +25,25 @@ extern "C" {
 #ifdef __PPU__
 #include <net/net.h>
 #endif
-#if !defined(__OS2__)
+#if !defined(__OS2__) && !defined(__NETWARE__)
 #include <netinet/in.h>
 #endif
 #ifdef __HAIKU__
 #define NO_IPV6
 #endif
+#endif
+
+#ifdef __NETWARE__
+struct in_addr {
+	unsigned int s_addr;
+};
+
+struct sockaddr_in {
+	unsigned short sin_family;
+	unsigned short sin_port;
+	struct in_addr sin_addr;
+	char sin_zero[8];
+};
 #endif
 
 #if defined(NO_IPV6)

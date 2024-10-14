@@ -12,7 +12,7 @@ include $(PWD)/Platform/$(PLATFORM).mk
 all: mod_cgi$(LIBSUF) mod_proxy$(LIBSUF)
 
 .$(OBJ)$(LIBSUF):
-	$(CC) $(LDFLAGS) $(SHARED) -o $@ $< ../Common/common.$(STATIC) $(LIBS)
+	$(CC) $(LDFLAGS) $(SHARED) -o $@ $< $(LIBEXTRA) ../Common/common.$(STATIC) $(LIBS)
 
 .c.$(OBJ):
 	$(CC) $(CFLAGS) -I ../Server -c -o $@ $<

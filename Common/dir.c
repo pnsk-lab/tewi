@@ -7,6 +7,8 @@
 #include <sys/stat.h>
 #if !defined(_MSC_VER) && !defined(__WATCOMC__)
 #include <dirent.h>
+#elif defined(__NETWARE__)
+#include <dirent.h>
 #elif defined(__WATCOMC__) || defined(_MSC_VER)
 #include <direct.h>
 #endif

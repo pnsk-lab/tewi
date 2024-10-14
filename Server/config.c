@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 #if !defined(_MSC_VER) && !defined(__BORLANDC__)
 #include <unistd.h>
@@ -124,6 +125,8 @@ void tw_config_init(void) {
 	strcpy(config.hostname, "ps3");
 #elif defined(__ps2sdk__)
 	strcpy(config.hostname, "ps2");
+#elif defined(__NETWARE__)
+	strcpy(config.hostname, "netware");
 #else
 	gethostname(config.hostname, 1024);
 #endif
@@ -583,6 +586,7 @@ int tw_config_read(const char* path) {
 			return stop;
 		}
 	} else {
+		printf("%d\n", errno);
 		cm_log("Config", "Could not open the file");
 		return 1;
 	}

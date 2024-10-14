@@ -34,8 +34,11 @@
 #include "tw_server.h"
 #include "tw_version.h"
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__))
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__))
 #include <windows.h>
+#elif defined(__NETWARE__)
+#include <nwconio.h>
+#include <nwthread.h>
 #endif
 
 #ifdef _PSP
@@ -92,7 +95,7 @@ char tw_server[2048];
 
 int startup(int argc, char** argv);
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || (defined(__WATCOMC__) && !defined(__OS2__)) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__)) || defined(__BORLANDC__)
 char* get_registry(const char* main, const char* sub) {
 	DWORD bufsize = 512;
 	HKEY handle;
@@ -532,8 +535,32 @@ void show_png(void) {
 #endif
 
 #if !defined(BUILD_GUI_VALID)
+void thread_stuff(void* pargs);
+
+struct arg_struct {
+	int argc;
+	char** argv;
+};
+
 int main(int argc, char** argv) {
 	int st;
+#ifdef __NETWARE__
+	struct arg_struct* parg = malloc(sizeof(*parg));
+	parg->argc = argc;
+	parg->argv = argv;
+	DestroyScreen(GetCurrentScreen());
+	SetCurrentScreen(CreateScreen("Tewi Console", 0));
+	BeginThread(thread_stuff, NULL, 0, parg);
+	ThreadSwitch();
+	ExitThread(EXIT_THREAD, 0);
+	return 0;
+}
+
+void thread_stuff(void* pargs) {
+	int st;
+	int argc = ((struct arg_struct*)pargs)->argc;
+	char** argv = ((struct arg_struct*)pargs)->argv;
+#endif
 #ifdef SERVICE
 	SERVICE_TABLE_ENTRY table[] = {{"Tewi HTTPd", servmain}, {NULL, NULL}};
 	logfile = stderr;
@@ -706,7 +733,11 @@ int main(int argc, char** argv) {
 		while(1)
 			;
 #endif
+#ifdef __NETWARE__
+		return;
+#else
 		return st;
+#endif
 #endif
 	}
 	tw_server_loop();
@@ -714,14 +745,18 @@ int main(int argc, char** argv) {
 #ifdef _PSP
 	sceKernelExitGame();
 #endif
+#ifdef __NETWARE__
+	return;
+#else
 	return 0;
+#endif
 }
 #endif
 
 int startup(int argc, char** argv) {
 	int i;
 	char* r;
-#if defined(__MINGW32__) || defined(_MSC_VER) || (defined(__WATCOMC__) && !defined(__OS2__)) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__)) || defined(__BORLANDC__)
 	char* confpath = cm_strdup(PREFIX "/etc/tewi.conf");
 	char* regpath = get_registry("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Tewi HTTPd", "InstallDir");
 	if(regpath != NULL) {
@@ -805,7 +840,7 @@ int startup(int argc, char** argv) {
 #if !defined(__MINGW32__) && !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(__WATCOMC__)
 	signal(SIGCHLD, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
-#elif !defined(BUILD_GUI) && !defined(__OS2__)
+#elif !defined(BUILD_GUI) && !defined(__OS2__) && !defined(__NETWARE__)
 	SetConsoleTitle(tw_server);
 #endif
 	return -1;

@@ -31,6 +31,9 @@ int tw_module_init(void* mod) { return 1; }
 #define INCL_DOSMODULEMGR
 #define INCL_DOSERRORS
 #include <os2.h>
+#elif defined(__NETWARE__)
+#include <nwadv.h>
+#include <nwthread.h>
 #else
 #include <windows.h>
 #include <direct.h>
@@ -45,14 +48,19 @@ void* tw_module_load(const char* path) {
 	char tmp[512];
 #ifdef __OS2__
 	HMODULE mod;
+#elif defined(__NETWARE__)
+	unsigned int* hnd = malloc(sizeof(*hnd));
 #endif
 	chdir(config.server_root);
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #ifdef __OS2__
-	if(DosLoadModule(tmp, 512, path, &mod) != NO_ERROR){
+	if(DosLoadModule(tmp, 512, path, &mod) != NO_ERROR) {
 		return NULL;
 	}
 	lib = (void*)mod;
+#elif defined(__NETWARE__)
+	*hnd = FindNLMHandle(path);
+	lib = (void*)hnd;
 #else
 	lib = LoadLibraryA(path);
 #endif
@@ -72,11 +80,13 @@ void* tw_module_symbol(void* mod, const char* sym) {
 #ifdef __OS2__
 	void* ret;
 	APIRET rc;
-	if((rc = DosQueryProcAddr((HMODULE)mod, 0, sym, (PFN*)&ret)) != NO_ERROR){
+	if((rc = DosQueryProcAddr((HMODULE)mod, 0, sym, (PFN*)&ret)) != NO_ERROR) {
 		cm_log("Module", "OS/2 error %d", (int)rc);
 		return NULL;
 	}
 	return ret;
+#elif defined(__NETWARE__)
+	return ImportSymbol(*(unsigned int*)mod, sym);
 #else
 	return GetProcAddress(mod, sym);
 #endif
