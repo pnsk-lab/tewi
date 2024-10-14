@@ -556,6 +556,10 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
+#ifdef __NETWARE__
+void __WATCOM_Prelude(void){return;}
+#endif
+
 void thread_stuff(void* pargs) {
 	int st;
 	int argc = ((struct arg_struct*)pargs)->argc;
