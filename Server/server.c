@@ -65,8 +65,6 @@ typedef int socklen_t;
 #elif defined(__NETWARE__)
 #include <sys/socket.h>
 #include <nwthread.h>
-
-typedef int socklen_t;
 #define IPPROTO_TCP 0
 #define INADDR_ANY 0
 #define htons(x) x
@@ -102,7 +100,7 @@ typedef int socklen_t;
 #include <OS.h>
 #endif
 
-#ifdef __USLC__
+#if defined(__USLC__) || defined(__NeXT__) || defined(__NETWARE__)
 typedef int socklen_t;
 #endif
 
