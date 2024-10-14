@@ -5,7 +5,7 @@
 #include <cm_string.h>
 
 int MODULE_DECL mod_init(struct tw_config* config, struct tw_tool* tools) {
-	tools->log("CGI", "Initializing Proxy module");
+	tools->log("Proxy", "Initializing Proxy module");
 	tools->add_version("Proxy/1.0");
 	return 0;
 }

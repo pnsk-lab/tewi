@@ -628,7 +628,11 @@ int tw_server_pass(void* ptr) {
 		}
 #endif
 		for(i = 0; i < config.module_count; i++) {
+#ifdef __OS2__
+			tw_mod_request_t mod_req = (tw_mod_request_t)tw_module_symbol(config.modules[i], "MOD_REQUEST");
+#else
 			tw_mod_request_t mod_req = (tw_mod_request_t)tw_module_symbol(config.modules[i], "mod_request");
+#endif
 			if(mod_req != NULL) {
 				int ret = mod_req(&tools, &req, &res);
 				int co = ret & 0xff;

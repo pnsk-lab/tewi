@@ -14,7 +14,7 @@ extern "C" {
 #define INCL_DOSMODULEMGR
 #define INCL_DOSERRORS
 #include <os2.h>
-#define MODULE_DECL APIENTRY
+#define MODULE_DECL __export APIENTRY
 #else
 #define MODULE_DECL
 #endif
