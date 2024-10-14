@@ -37,7 +37,9 @@
 #include <poll.h>
 #endif
 #else
-#ifndef __NeXT__
+#ifdef __NeXT__
+#include <sys/socket.h>
+#else
 #include <sys/select.h>
 #endif
 #endif
