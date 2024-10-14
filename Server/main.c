@@ -74,7 +74,7 @@ PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_USER);
 
 #define printf(...) tt_printf(__VA_ARGS__)
 #define STDERR_LOG(...) tt_printf(__VA_ARGS__)
-#elif defined(_MSC_VER) || defined(__BORLANDC__) || defined(__USLC__)
+#elif defined(_MSC_VER) || defined(__BORLANDC__) || defined(__USLC__) || defined(REALLY_OLD)
 #include <stdarg.h>
 
 void STDERR_LOG(const char* format, ...) {
