@@ -39,6 +39,7 @@
 #else
 #ifdef __NeXT__
 #include <sys/socket.h>
+#include <sys/time.h>
 #else
 #include <sys/select.h>
 #endif
