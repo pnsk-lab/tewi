@@ -102,7 +102,7 @@ typedef int socklen_t;
 #include <OS.h>
 #endif
 
-#if defined(__USLC__) || defined(__NETWARE__)
+#if defined(__USLC__) || defined(__NeXT__) || defined(__NETWARE__)
 typedef int socklen_t;
 #endif
 
