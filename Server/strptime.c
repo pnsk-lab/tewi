@@ -35,7 +35,7 @@
 //#include <sys/cdefs.h>
 //__RCSID("$NetBSD: strptime.c,v 1.62 2017/08/24 01:01:09 ginsbach Exp $");
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__) || defined(__NeXT__)
 
 #include <stdlib.h>
 #include <ctype.h>
