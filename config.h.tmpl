@@ -80,6 +80,10 @@
 #define NO_IPV6
 #endif
 
+#if defined(__NeXT__) && !defined(NO_GETNAMEINFO)
+#define NO_GETNAMEINFO
+#endif
+
 #if defined(__NeXT__) && defined(USE_POLL)
 #undef USE_POLL
 #endif
