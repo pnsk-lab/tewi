@@ -470,7 +470,7 @@ recurse:
                     continue;
                 }
 #if defined(_WIN32) || defined(__OS2__)
-#if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
+#if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__) || defined(__NeXT__)
 		if (1)
 #else
                 if (localtime_s(tm, &sse) == 0)
