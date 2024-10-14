@@ -4,6 +4,7 @@ OBJ=o
 STATIC=a
 AR_FLAGS=rcs
 AR_PROC=cat
+AR_USUAL=rcs
 include $(PWD)/Platform/$(PLATFORM).mk
 
 .PHONY: all clean
@@ -15,7 +16,8 @@ all: common.$(STATIC)
 
 common.a: $(OBJS)
 	rm -f common.a
-	$(AR) rcs $@ `echo $(OBJS) | $(AR_PROC)`
+	$(AR) $(AR_USUAL) $@ `echo $(OBJS) | $(AR_PROC)`
+	$(MAYBE_RANLIB)
 
 common.lib: $(OBJS)
 	rm -f common.lib

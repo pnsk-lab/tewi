@@ -7,3 +7,5 @@ LDFLAGS =
 LIBS = -ldl
 EXEC =
 LIBSUF = .so
+AR_USUAL=rc
+MAYBE_RANLIB=ranlib common.a
