@@ -17,6 +17,8 @@ const char* tw_platform =
     "Linux"
 #elif defined(__OS2__)
     "OS/2"
+#elif defined(__NETWARE__)
+    "NetWare"
 #elif defined(__MINGW32__)
     "Windows-MinGW32"
 #elif defined(_MSC_VER)
