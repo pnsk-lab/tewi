@@ -80,6 +80,9 @@ typedef int socklen_t;
 #ifndef __NeXT__
 #include <sys/select.h>
 #endif
+#ifdef __OS2__
+#include <netinet/in.h>
+#endif
 #endif
 #include <sys/socket.h>
 #include <arpa/inet.h>
