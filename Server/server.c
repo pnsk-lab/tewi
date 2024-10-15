@@ -64,9 +64,9 @@ typedef int socklen_t;
 typedef int socklen_t;
 #elif defined(__NETWARE__)
 #include <sys/socket.h>
-#include <nwthread.h>
-#define IPPROTO_TCP 0
-#define INADDR_ANY 0
+#include <arpa/inet.h>
+#include <sys/select.h>
+#include <pthread.h>
 #define htons(x) x
 #include "strptime.h"
 #else
@@ -106,7 +106,7 @@ typedef int socklen_t;
 #include <sys/time.h>
 #endif
 
-#if defined(__USLC__) || defined(__NeXT__) || defined(__NETWARE__)
+#if defined(__USLC__) || defined(__NeXT__)
 typedef int socklen_t;
 #endif
 
@@ -932,7 +932,11 @@ int tw_server_pass(void* ptr) {
 					if(f == NULL) {
 						tw_http_error(s, sock, 403, name, port, vhost_entry);
 					} else {
-						tw_process_page(s, sock, tw_http_status(200), mime, f, NULL, st.st_size, st.st_mtime, cmtime);
+#ifdef __NETWARE__
+						tw_process_page(s, sock, tw_http_status(200), mime, f, NULL, st.st_size, st.st_mtime.tv_sec, cmtime);
+#else
+							tw_process_page(s, sock, tw_http_status(200), mime, f, NULL, st.st_size, st.st_mtime, cmtime);
+#endif
 						fclose(f);
 					}
 				}
@@ -960,7 +964,7 @@ cleanup:
 	close_socket(sock);
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #ifdef __NETWARE__
-	ExitThread(EXIT_THREAD, 0);
+	pthread_exit(NULL);
 #else
 	_endthread();
 #endif
@@ -1071,7 +1075,9 @@ void tw_server_loop(void) {
 #ifdef __OS2__
 					_beginthread(tw_server_pass, 0, 0, e);
 #elif defined(__NETWARE__)
-					BeginThread(tw_server_pass, 0, 0, e);
+					pthread_t thr;
+					pthread_create(&thr, NULL, (void* (*)(void*))tw_server_pass, e);
+					pthread_detach(thr);
 #else
 					_beginthread(tw_server_pass, 0, e);
 #endif

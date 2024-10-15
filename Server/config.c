@@ -14,7 +14,7 @@
 #include <unistd.h>
 #endif
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__WATCOMC__))
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__))
 #ifdef USE_WINSOCK1
 #include <winsock.h>
 #else
@@ -31,6 +31,9 @@
 #include <tcpustd.h>
 #endif
 
+#ifdef __NETWARE__
+#include <arpa/inet.h>
+#endif
 #include "tw_config.h"
 #include "tw_module.h"
 

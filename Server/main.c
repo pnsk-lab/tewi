@@ -37,8 +37,8 @@
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__))
 #include <windows.h>
 #elif defined(__NETWARE__)
-#include <nwconio.h>
-#include <nwthread.h>
+#include <nks/thread.h>
+#include <screen.h>
 #endif
 
 #ifdef _PSP
@@ -548,17 +548,9 @@ int main(int argc, char** argv) {
 	struct arg_struct* parg = malloc(sizeof(*parg));
 	parg->argc = argc;
 	parg->argv = argv;
-	DestroyScreen(GetCurrentScreen());
-	SetCurrentScreen(CreateScreen("Tewi Console", 0));
-	BeginThread(thread_stuff, NULL, 0, parg);
-	ThreadSwitch();
-	ExitThread(EXIT_THREAD, 0);
+	thread_stuff(parg);
 	return 0;
 }
-
-#ifdef __NETWARE__
-void __WATCOM_Prelude(void){return;}
-#endif
 
 void thread_stuff(void* pargs) {
 	int st;
