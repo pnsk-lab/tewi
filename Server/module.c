@@ -32,7 +32,8 @@ int tw_module_init(void* mod) { return 1; }
 #define INCL_DOSERRORS
 #include <os2.h>
 #elif defined(__NETWARE__)
-#include <dlfcn.h>
+#include <nwadv.h>
+#include <nwthread.h>
 #else
 #include <windows.h>
 #include <direct.h>
@@ -58,7 +59,8 @@ void* tw_module_load(const char* path) {
 	}
 	lib = (void*)mod;
 #elif defined(__NETWARE__)
-	lib = dlopen(path, RTLD_LAZY);
+	*hnd = FindNLMHandle(path);
+	lib = (void*)hnd;
 #else
 	lib = LoadLibraryA(path);
 #endif
@@ -84,7 +86,7 @@ void* tw_module_symbol(void* mod, const char* sym) {
 	}
 	return ret;
 #elif defined(__NETWARE__)
-	return dlsym(mod, sym);
+	return ImportSymbol(*(unsigned int*)mod, sym);
 #else
 	return GetProcAddress(mod, sym);
 #endif

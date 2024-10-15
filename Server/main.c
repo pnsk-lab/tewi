@@ -37,8 +37,6 @@
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__))
 #include <windows.h>
 #elif defined(__NETWARE__)
-#include <nks/thread.h>
-#include <screen.h>
 #endif
 
 #ifdef _PSP

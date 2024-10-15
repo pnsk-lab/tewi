@@ -29,7 +29,6 @@
 #endif
 #elif defined(__NETWARE__)
 #include <sys/socket.h>
-#include <sys/select.h>
 #else
 #ifdef USE_POLL
 #ifdef __PPU__

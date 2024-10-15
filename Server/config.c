@@ -32,7 +32,7 @@
 #endif
 
 #ifdef __NETWARE__
-#include <arpa/inet.h>
+#include <sys/socket.h>
 #endif
 #include "tw_config.h"
 #include "tw_module.h"

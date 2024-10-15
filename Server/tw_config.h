@@ -36,6 +36,18 @@ extern "C" {
 #endif
 #endif
 
+#ifdef __NETWARE__
+struct in_addr {
+	uint32_t s_addr;
+};
+struct sockaddr_in {
+	uint16_t sin_family;
+	uint16_t sin_port;
+	struct in_addr sin_addr;
+	uint8_t sin_zero[8];
+};
+#endif
+
 #if defined(NO_IPV6)
 #define SOCKADDR struct sockaddr_in
 #else
