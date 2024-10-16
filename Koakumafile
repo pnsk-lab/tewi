@@ -36,7 +36,7 @@ proc run {project_name} {
 			set ::env(PATH) "$::env(PATH):/usr/watcom/binl64"
 			RunCommand "make PLATFORM=watcom"
 			set dirname "watcom"
-		} elseif { "$project_name" == "Tewi-Watcom" } {
+		} elseif { "$project_name" == "Tewi-OS2" } {
 			set ::env(WATCOM) "/usr/watcom"
 			set ::env(INCLUDE) "/usr/watcom/h"
 			set ::env(PATH) "$::env(PATH):/usr/watcom/binl64"
