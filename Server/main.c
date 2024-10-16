@@ -27,6 +27,10 @@
 #include <types.h>
 #endif
 
+#ifdef __DOS__
+#include <tcp.h>
+#endif
+
 #include <cm_log.h>
 #include <cm_string.h>
 
@@ -34,7 +38,7 @@
 #include "tw_server.h"
 #include "tw_version.h"
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__))
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__) && !defined(__DOS__))
 #include <windows.h>
 #elif defined(__NETWARE__)
 #endif
@@ -93,7 +97,7 @@ char tw_server[2048];
 
 int startup(int argc, char** argv);
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__)) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__) && !defined(__DOS__)) || defined(__BORLANDC__)
 char* get_registry(const char* main, const char* sub) {
 	DWORD bufsize = 512;
 	HKEY handle;
@@ -750,7 +754,7 @@ void thread_stuff(void* pargs) {
 int startup(int argc, char** argv) {
 	int i;
 	char* r;
-#if defined(__MINGW32__) || defined(_MSC_VER) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__)) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__) && !defined(__DOS__)) || defined(__BORLANDC__)
 	char* confpath = cm_strdup(PREFIX "/etc/tewi.conf");
 	char* regpath = get_registry("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Tewi HTTPd", "InstallDir");
 	if(regpath != NULL) {
@@ -823,6 +827,9 @@ int startup(int argc, char** argv) {
 		STDERR_LOG("Could not read the config\n");
 		return 1;
 	}
+#ifdef __DOS__
+	sock_init();
+#endif
 	if(tw_server_init() != 0) {
 		STDERR_LOG("Could not initialize the server\n");
 		return 1;
@@ -834,7 +841,7 @@ int startup(int argc, char** argv) {
 #if !defined(__MINGW32__) && !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(__WATCOMC__)
 	signal(SIGCHLD, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
-#elif !defined(BUILD_GUI) && !defined(__OS2__) && !defined(__NETWARE__)
+#elif !defined(BUILD_GUI) && !defined(__OS2__) && !defined(__NETWARE__) && !defined(__DOS__)
 	SetConsoleTitle(tw_server);
 #endif
 	return -1;

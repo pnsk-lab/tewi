@@ -469,7 +469,7 @@ recurse:
                     bp = NULL;
                     continue;
                 }
-#if defined(_WIN32) || defined(__OS2__) || defined(__NeXT__)
+#if defined(_WIN32) || defined(__OS2__) || defined(__NeXT__) || defined(__DOS__)
 #if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__) || defined(__NeXT__)
 		if (1)
 #else

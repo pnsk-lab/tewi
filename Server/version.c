@@ -21,6 +21,8 @@ const char* tw_platform =
     "NeXT"
 #elif defined(__NETWARE__)
     "NetWare"
+#elif defined(__DOS__)
+    "DOS"
 #elif defined(__MINGW32__)
     "Windows-MinGW32"
 #elif defined(_MSC_VER)

@@ -47,7 +47,7 @@ typedef int socklen_t;
 #include <tcpustd.h>
 #endif
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__))
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__) && !defined(__DOS__))
 #ifndef NO_GETNAMEINFO
 #include <ws2tcpip.h>
 #include <wspiapi.h>
@@ -70,6 +70,13 @@ typedef int socklen_t;
 #define htons(x) x
 #include "strptime.h"
 typedef int socklen_t;
+#elif defined(__DOS__)
+#include <netinet/tcp.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/select.h>
+
+#include "strptime.h"
 #else
 #ifdef USE_POLL
 #ifdef __PPU__
@@ -166,7 +173,7 @@ void close_socket(int sock) {
 
 int tw_server_init(void) {
 	int i;
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__))
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__) && !defined(__DOS__))
 	WSADATA wsa;
 #ifdef USE_WINSOCK1
 	WSAStartup(MAKEWORD(1, 1), &wsa);
@@ -964,6 +971,7 @@ cleanup:
 	close_socket(sock);
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #ifdef __NETWARE__
+#elif defined(__DOS__)
 #else
 	_endthread();
 #endif
@@ -986,6 +994,7 @@ struct thread_entry {
 	thread_id thread;
 #elif defined(__NETWARE__)
 	int thread;
+#elif defined(__DOS__)
 #else
 	HANDLE handle;
 #endif
@@ -1074,6 +1083,8 @@ void tw_server_loop(void) {
 #ifdef __OS2__
 					_beginthread(tw_server_pass, 0, 0, e);
 #elif defined(__NETWARE__)
+					tw_server_pass(e);
+#elif defined(__DOS__)
 					tw_server_pass(e);
 #else
 					_beginthread(tw_server_pass, 0, e);

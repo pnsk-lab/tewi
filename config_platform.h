@@ -69,6 +69,10 @@
 #define NO_IPV6
 #endif
 
+#if defined(__WATCOMC__) && defined(__DOS__) && !defined(NO_IPV6)
+#define NO_IPV6
+#endif
+
 #if defined(__NeXT__) && !defined(NO_IPV6)
 #define NO_IPV6
 #endif

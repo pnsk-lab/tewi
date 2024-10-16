@@ -17,7 +17,7 @@ extern "C" {
 #include <sys/types.h>
 #endif
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__))
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__) && !defined(__DOS__))
 #ifdef USE_WINSOCK1
 #include <winsock.h>
 #else

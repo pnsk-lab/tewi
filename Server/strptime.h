@@ -7,7 +7,7 @@ extern "C" {
 
 #include <time.h>
 
-#if defined(_WIN32) || defined(_PSP) || defined(__ps2sdk__) || defined(__OS2__) || defined(__NETWARE__) || defined(__NeXT__)
+#if defined(_WIN32) || defined(_PSP) || defined(__ps2sdk__) || defined(__OS2__) || defined(__NETWARE__) || defined(__NeXT__) || defined(__DOS__)
 char* strptime(const char *buf, const char *fmt, struct tm *tm);
 #endif
 
