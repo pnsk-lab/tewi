@@ -30,6 +30,27 @@ proc run {project_name} {
 			set ::env(PATH) "$::env(PATH):/usr/watcom/binl64"
 			RunCommand "make PLATFORM=watcom"
 			set dirname "watcom"
+		} elseif { "$project_name" == "Tewi-Watcom" } {
+			set ::env(WATCOM) "/usr/watcom"
+			set ::env(INCLUDE) "/usr/watcom/h"
+			set ::env(PATH) "$::env(PATH):/usr/watcom/binl64"
+			RunCommand "make PLATFORM=watcom"
+			set dirname "watcom"
+		} elseif { "$project_name" == "Tewi-Watcom" } {
+			set ::env(WATCOM) "/usr/watcom"
+			set ::env(INCLUDE) "/usr/watcom/h"
+			set ::env(PATH) "$::env(PATH):/usr/watcom/binl64"
+			RunCommand "rm -rf os2"
+			RunCommand "make PLATFORM=os2"
+			RunCommand "make PLATFORM=os2 install DESTDIR=os2/"
+			cd os2/C:
+			RunCommand "zip -rv ../../tewidist.zip Tewi"
+			cd ../..
+			RunCommand "doas mkdir -p /raid/f/g/tewi/os2"
+			RunCommand "doas mkdir -p /raid/ftp/pub/tewi/os2"
+			RunCommand "doas cp tewidist.zip /raid/f/g/tewi/os2/tewidistos2-[exec make get-version]-nossl.zip"
+			RunCommand "doas cp tewidist.zip /raid/ftp/pub/tewi/os2/tewidistos2-[exec make get-version]-nossl.zip"
+			return
 		} elseif { "$project_name" == "Tewi-PSP" } {
 			RunCommand "./psp.sh"
 			RunCommand "doas mkdir -p /raid/f/g/tewi/psp"
