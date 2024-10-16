@@ -11,9 +11,15 @@ include Platform/$(PLATFORM).mk
 
 FLAGS = PWD=$(PWD) PLATFORM=$(PLATFORM) PREFIX=$(PREFIX)
 
-.PHONY: all format clean ./Server ./Common ./Module get-version
+.PHONY: all format clean ./Server ./Common ./Module get-version src-archive
 
 all: ./Server $(MODULE)
+
+src-archive: clean
+	@svn cleanup --remove-unversioned
+	cp -rf . /tmp/tewi-`grep "define TW_VERSION" Server/tw_version.h | grep -Eom 1 '"[^\]+' | sed 's/^"//g'`
+	cd /tmp && tar --exclude .github -czvf tewi-`grep "define TW_VERSION" tewi-*/Server/tw_version.h | grep -Eom 1 '"[^\]+' | sed 's/^"//g'`.tar.gz tewi-`grep "define TW_VERSION" tewi-*/Server/tw_version.h | grep -Eom 1 '"[^\]+' | sed 's/^"//g'`
+	mv /tmp/tewi-`grep "define TW_VERSION" Server/tw_version.h | grep -Eom 1 '"[^\]+' | sed 's/^"//g'`.tar.gz ./
 
 ./Tool/option: ./Tool/option.c config.h
 	cc -o $@ ./Tool/option.c
