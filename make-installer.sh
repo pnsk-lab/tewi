@@ -13,7 +13,12 @@ fail() {
 	exit 1
 }
 
+rm -rf Tewi
+rm -f tewi.exe
+rm -f itworks.html
+rm -f generated.conf
 rm -f install.exe
+rm -f tewi.7z
 
 VERSION=`make get-version`
 
