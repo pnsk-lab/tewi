@@ -435,7 +435,7 @@ recurse:
             continue;
 
 #ifndef TIME_MAX
-#if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__NETWARE__) || defined(__NeXT__)
+#if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__NETWARE__) || defined(__NeXT__) || defined(__bsdi__)
 #define TIME_MAX	INT32_MAX
 #else
 #define TIME_MAX	INT64_MAX

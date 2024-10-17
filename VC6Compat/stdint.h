@@ -9,6 +9,8 @@ typedef u_int8_t uint8_t;
 typedef u_int16_t uint16_t;
 typedef u_int32_t uint32_t;
 typedef u_int64_t uint64_t;
+
+#define INT32_MAX 0x7fffffff
 #else
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
