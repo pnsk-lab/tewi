@@ -1013,7 +1013,7 @@ void tw_server_loop(void) {
 	fd_set fdset;
 	struct timeval tv;
 #endif
-#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__NETWARE__))
+#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__NETWARE__) && !defined(__DOS__))
 	struct thread_entry threads[2048];
 	for(i = 0; i < sizeof(threads) / sizeof(threads[0]); i++) {
 		threads[i].used = false;

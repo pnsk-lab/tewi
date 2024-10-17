@@ -54,12 +54,12 @@ struct sockaddr_in {
 #define SOCKADDR struct sockaddr_in6
 #endif
 
-#define MAX_PORTS 1024
-#define MAX_VHOSTS 1024
-#define MAX_MODULES 1024
-#define MAX_DIRS 1024
+#define MAX_PORTS 128
+#define MAX_VHOSTS 128
+#define MAX_MODULES 128
+#define MAX_DIRS 128
 #define MAX_MIME 4096
-#define MAX_ICON 1024
+#define MAX_ICON 128
 #define MAX_INDEX 32
 #define MAX_README 8
 
