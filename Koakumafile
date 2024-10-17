@@ -40,7 +40,7 @@ proc run {project_name} {
 			set ::env(WATCOM) "/usr/watcom"
 			set ::env(INCLUDE) "/usr/watcom/h"
 			set ::env(PATH) "$::env(PATH):/usr/watcom/binl64"
-			RunCommand "rm -rf os2"
+			RunCommand "rm -rf os2 tewidist.zip"
 			RunCommand "make PLATFORM=os2"
 			RunCommand "make PLATFORM=os2 install DESTDIR=os2/"
 			cd os2/C:
@@ -55,7 +55,7 @@ proc run {project_name} {
 			set ::env(WATCOM) "/usr/watcom"
 			set ::env(NOVELLNDK) "/usr/novell/clib"
 			set ::env(PATH) "$::env(PATH):/usr/watcom/binl64"
-			RunCommand "rm -rf netware"
+			RunCommand "rm -rf netware tewidist.zip"
 			RunCommand "make PLATFORM=netware"
 			RunCommand "make PLATFORM=netware install DESTDIR=netware/"
 			cd netware/SYS:
