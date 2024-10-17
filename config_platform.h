@@ -85,6 +85,14 @@
 #undef USE_POLL
 #endif
 
+#if defined(__bsdi__) && !defined(NO_IPV6)
+#define NO_IPV6
+#endif
+
+#if defined(__bsdi__) && defined(USE_POLL)
+#undef USE_POLL
+#endif
+
 #endif
 
 /*

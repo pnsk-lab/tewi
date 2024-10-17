@@ -107,7 +107,7 @@ uint16_t htons(uint16_t n) { return ((n >> 8) & 0xff) | ((n << 8) & 0xff00); }
 #endif
 #endif
 
-#if defined(_PSP) || defined(__ps2sdk__)
+#if defined(_PSP) || defined(__ps2sdk__) || defined(__bsdi__)
 #include "strptime.h"
 #endif
 
@@ -620,7 +620,7 @@ int tw_server_pass(void* ptr) {
 					time_t t;
 					struct tm* btm;
 					strptime(req.headers[i + 1], "%a, %d %b %Y %H:%M:%S GMT", &tm);
-#if defined(__MINGW32__) || defined(_PSP) || defined(__PPU__) || defined(__ps2sdk__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__) || defined(__USLC__) || defined(__NeXT__)
+#if defined(__MINGW32__) || defined(_PSP) || defined(__PPU__) || defined(__ps2sdk__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__) || defined(__USLC__) || defined(__NeXT__) || defined(__bsdi__)
 					t = 0;
 					btm = localtime(&t);
 					cmtime = mktime(&tm);
