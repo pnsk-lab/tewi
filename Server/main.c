@@ -41,6 +41,9 @@
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__) && !defined(__DOS__))
 #include <windows.h>
 #elif defined(__NETWARE__)
+#include <nwnamspc.h>
+#include <nwthread.h>
+#include <nwconio.h>
 #endif
 
 #ifdef _PSP
@@ -548,9 +551,13 @@ int main(int argc, char** argv) {
 	int st;
 #ifdef __NETWARE__
 	struct arg_struct* parg = malloc(sizeof(*parg));
+	SetCurrentNameSpace(NW_NS_LONG);
 	parg->argc = argc;
 	parg->argv = argv;
-	thread_stuff(parg);
+	DestroyScreen(GetCurrentScreen());
+	SetCurrentScreen(CreateScreen("Tewi Console", 0));
+	BeginThread(thread_stuff, NULL, 0, parg);
+	ThreadSwitch();
 	return 0;
 }
 

@@ -28,6 +28,7 @@
 #include <winsock2.h>
 #endif
 #elif defined(__NETWARE__)
+#include <sys/bsdskt.h>
 #include <sys/socket.h>
 #else
 #ifdef USE_POLL

@@ -63,13 +63,15 @@ typedef int socklen_t;
 #include "strptime.h"
 typedef int socklen_t;
 #elif defined(__NETWARE__)
+#include <sys/bsdskt.h>
 #include <sys/socket.h>
 
 #define IPPROTO_TCP 0
 #define INADDR_ANY 0
-#define htons(x) x
 #include "strptime.h"
 typedef int socklen_t;
+
+uint16_t htons(uint16_t n) { return ((n >> 8) & 0xff) | ((n << 8) & 0xff00); }
 #elif defined(__DOS__)
 #include <netinet/tcp.h>
 #include <netinet/in.h>
@@ -1010,7 +1012,7 @@ void tw_server_loop(void) {
 	fd_set fdset;
 	struct timeval tv;
 #endif
-#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
+#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_MSC_VER) || defined(__BORLANDC__) || (defined(__WATCOMC__) && !defined(__NETWARE__))
 	struct thread_entry threads[2048];
 	for(i = 0; i < sizeof(threads) / sizeof(threads[0]); i++) {
 		threads[i].used = false;
@@ -1083,7 +1085,7 @@ void tw_server_loop(void) {
 #ifdef __OS2__
 					_beginthread(tw_server_pass, 0, 0, e);
 #elif defined(__NETWARE__)
-					tw_server_pass(e);
+					BeginThread(tw_server_pass, NULL, 0, e);
 #elif defined(__DOS__)
 					tw_server_pass(e);
 #else

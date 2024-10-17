@@ -51,6 +51,21 @@ proc run {project_name} {
 			RunCommand "doas cp tewidist.zip /raid/f/g/tewi/os2/tewidistos2-[exec make get-version]-nossl.zip"
 			RunCommand "doas cp tewidist.zip /raid/ftp/pub/tewi/os2/tewidistos2-[exec make get-version]-nossl.zip"
 			return
+		} elseif { "$project_name" == "Tewi-NetWare" } {
+			set ::env(WATCOM) "/usr/watcom"
+			set ::env(NOVELLNDK) "/usr/novell/clib"
+			set ::env(PATH) "$::env(PATH):/usr/watcom/binl64"
+			RunCommand "rm -rf netware"
+			RunCommand "make PLATFORM=netware"
+			RunCommand "make PLATFORM=netware install DESTDIR=netware/"
+			cd netware/SYS:
+			RunCommand "zip -rv ../../tewidist.zip Tewi"
+			cd ../..
+			RunCommand "doas mkdir -p /raid/f/g/tewi/netware"
+			RunCommand "doas mkdir -p /raid/ftp/pub/tewi/netware"
+			RunCommand "doas cp tewidist.zip /raid/f/g/tewi/netware/tewidistnw-[exec make get-version]-nossl.zip"
+			RunCommand "doas cp tewidist.zip /raid/ftp/pub/tewi/os2/tewidistnw-[exec make get-version]-nossl.zip"
+			return
 		} elseif { "$project_name" == "Tewi-PSP" } {
 			RunCommand "./psp.sh"
 			RunCommand "doas mkdir -p /raid/f/g/tewi/psp"
