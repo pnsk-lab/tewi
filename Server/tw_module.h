@@ -10,6 +10,13 @@ extern "C" {
 #include "tw_config.h"
 #include "tw_http.h"
 
+#ifdef __NETWARE__
+#include <nwconio.h>
+#define END_MODULE int main(){DestroyScreen(GetCurrentScreen());while(1);return 0;}
+#else
+#define END_MODULE
+#endif
+
 #if defined(__OS2__)
 #define INCL_DOSMODULEMGR
 #define INCL_DOSERRORS

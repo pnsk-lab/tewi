@@ -13,6 +13,4 @@ int MODULE_DECL mod_config(struct tw_tool* tools, char** argv, int argc) { retur
 
 int MODULE_DECL mod_request(struct tw_tool* tools, struct tw_http_request* req, struct tw_http_response* res) { return TW_MODULE_ERROR(403); }
 
-#ifdef __NETWARE__
-int main() { return 0; }
-#endif
+END_MODULE
