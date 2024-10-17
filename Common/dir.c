@@ -69,7 +69,8 @@ char** cm_scandir(const char* path) {
 
 	return r;
 #else
-	DIR* dir = opendir(path);
+	char* fxpath = cm_strcat(path, "/");
+	DIR* dir = opendir(fxpath);
 	if(dir != NULL) {
 		char** r = malloc(sizeof(*r));
 		struct dirent* d;
@@ -108,9 +109,11 @@ char** cm_scandir(const char* path) {
 		free(old);
 
 		closedir(dir);
+		free(fxpath);
 
 		return r;
 	} else {
+		free(fxpath);
 		return NULL;
 	}
 #endif

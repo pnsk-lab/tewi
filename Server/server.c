@@ -973,6 +973,7 @@ cleanup:
 	close_socket(sock);
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #ifdef __NETWARE__
+	ExitThread(EXIT_THREAD, 0);
 #elif defined(__DOS__)
 #else
 	_endthread();
