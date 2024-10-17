@@ -15,7 +15,7 @@ extern "C" {
 #include <nwthread.h>
 #include <stddef.h>
 #define END_MODULE	void _thread(void* arg){ \
-				while(1); \
+				SuspendThread(GetThreadID()); \
 			} \
 			int main(){ \
 				DestroyScreen(GetCurrentScreen()); \
