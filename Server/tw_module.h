@@ -12,7 +12,17 @@ extern "C" {
 
 #ifdef __NETWARE__
 #include <nwconio.h>
-#define END_MODULE int main(){DestroyScreen(GetCurrentScreen());while(1);return 0;}
+#include <nwthread.h>
+#include <stddef.h>
+#define END_MODULE	void _thread(void* arg){ \
+				while(1); \
+			} \
+			int main(){ \
+				DestroyScreen(GetCurrentScreen()); \
+				BeginThread(_thread, NULL, 0, NULL); \
+				ThreadSwitch(); \
+				return 0; \
+			}
 #else
 #define END_MODULE
 #endif
