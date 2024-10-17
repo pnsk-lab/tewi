@@ -64,7 +64,7 @@ proc run {project_name} {
 			RunCommand "doas mkdir -p /raid/f/g/tewi/netware"
 			RunCommand "doas mkdir -p /raid/ftp/pub/tewi/netware"
 			RunCommand "doas cp tewidist.zip /raid/f/g/tewi/netware/tewidistnw-[exec make get-version]-nossl.zip"
-			RunCommand "doas cp tewidist.zip /raid/ftp/pub/tewi/os2/tewidistnw-[exec make get-version]-nossl.zip"
+			RunCommand "doas cp tewidist.zip /raid/ftp/pub/tewi/netware/tewidistnw-[exec make get-version]-nossl.zip"
 			return
 		} elseif { "$project_name" == "Tewi-PSP" } {
 			RunCommand "./psp.sh"
