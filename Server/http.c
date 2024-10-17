@@ -43,6 +43,9 @@
 #include <time.h>
 #include <sys/time.h>
 #else
+#ifdef __bsdi__
+#include <sys/time.h>
+#endif
 #include <sys/select.h>
 #endif
 #endif
