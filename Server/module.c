@@ -60,6 +60,10 @@ void* tw_module_load(const char* path) {
 	lib = (void*)mod;
 #elif defined(__NETWARE__)
 	*hnd = FindNLMHandle(path);
+	if(*hnd == 0){
+		free(hnd);
+		hnd = NULL;
+	}
 	lib = (void*)hnd;
 #else
 	lib = LoadLibraryA(path);

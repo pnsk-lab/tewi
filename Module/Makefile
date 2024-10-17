@@ -18,4 +18,4 @@ all: mod_cgi$(LIBSUF) mod_proxy$(LIBSUF)
 	$(CC) $(CFLAGS) -I ../Server -c -o $@ $<
 
 clean:
-	rm -f *.o *.so *.a *.dll *.tds *.obj
+	rm -f *.o *.so *.a *.dll *.tds *.obj *.nlm
