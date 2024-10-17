@@ -13,6 +13,8 @@ const char* tw_platform =
     "NetBSD"
 #elif defined(__OpenBSD__)
     "OpenBSD"
+#elif defined(__bsdi__)
+    "BSD/OS"
 #elif defined(__linux__)
     "Linux"
 #elif defined(__OS2__)
