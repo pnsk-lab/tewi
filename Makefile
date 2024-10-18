@@ -11,9 +11,12 @@ include Platform/$(PLATFORM).mk
 
 FLAGS = PWD=$(PWD) PLATFORM=$(PLATFORM) PREFIX=$(PREFIX)
 
-.PHONY: all format clean ./Server ./Common ./Module get-version src-archive
+.PHONY: all prepare-config format clean ./Server ./Common ./Module get-version src-archive
 
 all: ./Server $(MODULE)
+
+prepare-config:
+	if [ '!' -e config.h ]; then cp config.h.tmpl config.h ; fi
 
 src-archive: clean
 	@svn cleanup --remove-unversioned
@@ -21,33 +24,33 @@ src-archive: clean
 	cd /tmp && tar --exclude .github -czvf tewi-`grep "define TW_VERSION" tewi-*/Server/tw_version.h | grep -Eom 1 '"[^\]+' | sed 's/^"//g'`.tar.gz tewi-`grep "define TW_VERSION" tewi-*/Server/tw_version.h | grep -Eom 1 '"[^\]+' | sed 's/^"//g'`
 	mv /tmp/tewi-`grep "define TW_VERSION" Server/tw_version.h | grep -Eom 1 '"[^\]+' | sed 's/^"//g'`.tar.gz ./
 
-./Tool/option: ./Tool/option.c config.h
+./Tool/option: ./Tool/option.c config.h prepare-config
 	cc -o $@ ./Tool/option.c
 
-./Tool/genconf: ./Tool/genconf.c config.h
+./Tool/genconf: ./Tool/genconf.c config.h prepare-config
 	cc -o $@ ./Tool/genconf.c
 
-./Tool/itworks: ./Tool/itworks.c config.h
+./Tool/itworks: ./Tool/itworks.c config.h prepare-config
 	cc -o $@ ./Tool/itworks.c
 
-./Server:: ./Common ./Tool/option ./Tool/genconf ./Tool/itworks
+./Server:: ./Common ./Tool/option ./Tool/genconf ./Tool/itworks prepare-config
 	$(MAKE) -C $@ $(FLAGS) EXTOBJS="`./Tool/option objs ../ $(PLATFORM_IDENT) $(OBJ)`" EXTLIBS="`./Tool/option libs ../ $(PLATFORM_IDENT) $(OBJ)`" EXTCFLAGS="`./Tool/option cflags ../ $(PLATFORM_IDENT) $(OBJ)`" EXTLDFLAGS="`./Tool/option ldflags ../ $(PLATFORM_IDENT) $(OBJ)`"
 
-./Module:: ./Common
+./Module:: ./Common prepare-config
 	$(MAKE) -C $@ $(FLAGS)
 
-./Common::
+./Common:: prepare-config
 	$(MAKE) -C $@ $(FLAGS)
 
 ./README: ./README.tmpl ./Server/tw_version.h
-	sed "s/@VERSION@/`grep "define TW_VERSION" Server/tw_version.h | grep -Eom 1 '"[^\]+' | sed 's/^"//g'`/g" ./README.tmpl > $@
+	sed "s/@*VERSION@/`grep "define TW_VERSION" Server/tw_version.h | grep -Eom 1 '"[^\]+' | sed 's/^"//g'`/g" ./README.tmpl > $@
 
 install: all ./Tool/genconf ./Tool/itworks
-	-mkdir -p $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib/tewi $(DESTDIR)$(PREFIX)/etc $(DESTDIR)$(PREFIX)/www
-	if [ ! -e $(DESTDIR)$(PREFIX)/etc/tewi.conf ]; then ( ./Tool/genconf $(PREFIX) lib/tewi `echo $(LIBSUF) | sed 's/\.//g'` > $(DESTDIR)$(PREFIX)/etc/tewi.conf || ( rm $(DESTDIR)$(PREFIX)/etc/tewi.conf ; exit 1 ) ) ; fi
+	-mkdir -p* $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/lib/tewi $(DESTDIR)$(PREFIX)/etc $(DESTDIR)$(PREFIX)/www
+	if [ '!' -e $(DESTDIR)$(PREFIX)/etc/tewi.conf ]; then ( ./Tool/genconf $(PREFIX) lib/tewi `echo $(LIBSUF) | sed 's/\.//g'` > $(DESTDIR)$(PREFIX)/etc/tewi.conf || ( rm $(DESTDIR)$(PREFIX)/etc/tewi.conf ; exit 1 ) ) ; fi
 	cp mime.types $(DESTDIR)$(PREFIX)/
-	if [ ! -e $(DESTDIR)$(PREFIX)/www/index.html ]; then ( ./Tool/itworks > $(DESTDIR)$(PREFIX)/www/index.html || ( rm $(DESTDIR)$(PREFIX)/www/index.html ; exit 1 ) ) ; fi
-	if [ ! -e $(DESTDIR)$(PREFIX)/www/pbtewi.gif ]; then ( cp Binary/pbtewi.gif $(DESTDIR)$(PREFIX)/www/ || ( rm $(DESTDIR)$(PREFIX)/www/pbtewi.gif ; exit 1 ) ) ; fi
+	if [ '!' -e $(DESTDIR)$(PREFIX)/www/index.html ]; then ( ./Tool/itworks > $(DESTDIR)$(PREFIX)/www/index.html || ( rm $(DESTDIR)$(PREFIX)/www/index.html ; exit 1 ) ) ; fi
+	if [ '!' -e $(DESTDIR)$(PREFIX)/www/pbtewi.gif ]; then ( cp Binary/pbtewi.gif $(DESTDIR)$(PREFIX)/www/ || ( rm $(DESTDIR)$(PREFIX)/www/pbtewi.gif ; exit 1 ) ) ; fi
 	-cp ./Server/tewi $(DESTDIR)$(PREFIX)/bin/
 	-cp ./Server/tewi.exe $(DESTDIR)$(PREFIX)/bin/
 	-cp ./Server/tewi.nlm $(DESTDIR)$(PREFIX)/bin/
