@@ -1,6 +1,6 @@
 #!/bin/sh
 # $Id$
-# Wrapper for CL. VC6 sucks.
+# Wrapper for BCC32.
 
 outfile="a.out"
 dowhat=""
