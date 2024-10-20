@@ -791,6 +791,7 @@ int tw_server_pass(void* ptr) {
 							addstring(&str, "			<tr>\n");
 							addstring(&str, "				<th></th>\n");
 							addstring(&str, "				<th>Filename</th>\n");
+							addstring(&str, "				<th>Last-modified</th>\n");
 							addstring(&str, "				<th>MIME</th>\n");
 							addstring(&str, "				<th>Size</th>\n");
 							addstring(&str, "			</tr>\n");
@@ -808,10 +809,14 @@ int tw_server_pass(void* ptr) {
 									char* fpth = cm_strcat3(path, "/", items[i]);
 									struct stat s;
 									char size[512];
+									char date[512];
 									char* showmime;
 									char* mime;
+									struct tm* tm;
 									size[0] = 0;
 									stat(fpth, &s);
+									tm = localtime(&s.st_mtime);
+									strftime(date, 512, "%a, %d %b %Y %H:%M:%S %Z", tm);
 									if(phase == 0 && !S_ISDIR(s.st_mode)) {
 										free(fpth);
 										continue;
@@ -885,6 +890,7 @@ int tw_server_pass(void* ptr) {
 									addstring(&str, "<tr>\n");
 									addstring(&str, "	<td><img src=\"%s\" alt=\"icon\"></td>\n", icon);
 									addstring(&str, "	<td><a href=\"%l\"><code>%h</code></a></td>\n", items[i], itm);
+									addstring(&str, "	<td><code>  %h  </code></td>\n", date);
 									addstring(&str, "	<td><code>  %h  </code></td>\n", showmime);
 									addstring(&str, "	<td><code>  %s  </code></td>\n", size);
 									addstring(&str, "</tr>\n");
