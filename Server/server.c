@@ -640,6 +640,8 @@ int tw_server_pass(void* ptr) {
 				host[i] = 0;
 				port = atoi(host + i + 1);
 				break;
+			}else if(vhost[i] == '['){
+				for(; vhost[i] != 0 && vhost[i] != ']'; i++);
 			}
 		}
 		name = host;

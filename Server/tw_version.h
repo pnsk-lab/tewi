@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-#define TW_VERSION "2.05\0"
-#define TW_VERSION_TEXT "Tewi HTTPd version 2.05"
+#define TW_VERSION "2.05A\0"
+#define TW_VERSION_TEXT "Tewi HTTPd version 2.05A"
 
 const char* tw_get_version(void);
 const char* tw_get_platform(void);
