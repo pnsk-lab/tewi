@@ -343,15 +343,15 @@ void _tw_process_page(SSL* ssl, int sock, const char* status, const char* type, 
 	incr = 0;
 	while(1) {
 		if(f != NULL) {
-			char buffer[128];
-			fread(buffer, size < 128 ? size : 128, 1, f);
-			tw_write(ssl, sock, buffer, size < 128 ? size : 128);
+			char buffer[512];
+			fread(buffer, size < 512 ? size : 512, 1, f);
+			tw_write(ssl, sock, buffer, size < 512 ? size : 512);
 		} else {
-			tw_write(ssl, sock, (unsigned char*)doc + incr, size < 128 ? size : 128);
+			tw_write(ssl, sock, (unsigned char*)doc + incr, size < 512 ? size : 512);
 		}
-		incr += 128;
-		if(size <= 128) break;
-		size -= 128;
+		incr += 512;
+		if(size <= 512) break;
+		size -= 512;
 	}
 }
 
