@@ -345,9 +345,9 @@ void _tw_process_page(SSL* ssl, int sock, const char* status, const char* type, 
 		if(f != NULL) {
 			char buffer[512];
 			fread(buffer, size < 512 ? size : 512, 1, f);
-			if(tw_write(ssl, sock, buffer, size < 512 ? size : 512) < 0) return;
+			if(tw_write(ssl, sock, buffer, size < 512 ? size : 512) <= 0) return;
 		} else {
-			if(tw_write(ssl, sock, (unsigned char*)doc + incr, size < 512 ? size : 512) < 0) return;
+			if(tw_write(ssl, sock, (unsigned char*)doc + incr, size < 512 ? size : 512) <= 0) return;
 		}
 		incr += 512;
 		if(size <= 512) break;
