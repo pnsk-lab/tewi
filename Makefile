@@ -22,6 +22,7 @@ src-archive: clean
 	@svn cleanup --remove-unversioned
 	cp -rf . /tmp/tewi-`grep "define TW_VERSION" Server/tw_version.h | grep -Eom 1 '"[^\]+' | sed 's/^"//g'`
 	cd /tmp && tar --exclude .github -czvf tewi-`grep "define TW_VERSION" tewi-*/Server/tw_version.h | grep -Eom 1 '"[^\]+' | sed 's/^"//g'`.tar.gz tewi-`grep "define TW_VERSION" tewi-*/Server/tw_version.h | grep -Eom 1 '"[^\]+' | sed 's/^"//g'`
+	rm -rf /tmp/tewi-*
 	mv /tmp/tewi-`grep "define TW_VERSION" Server/tw_version.h | grep -Eom 1 '"[^\]+' | sed 's/^"//g'`.tar.gz ./
 
 ./Tool/option: ./Tool/option.c config.h prepare-config
