@@ -35,6 +35,8 @@ const char* tw_platform =
     "Windows-Watcom"
 #elif defined(__HAIKU__)
     "Haiku"
+#elif defined(__APPLE__)
+    "Darwin"
 #elif defined(__CYGWIN__)
     "Cygwin"
 #elif defined(_PSP)

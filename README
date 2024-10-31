@@ -47,6 +47,7 @@ Haiku                    Working
 Minix                    Working
 UnixWare                 Working on 7.1.1
 OS/2                     Working
+Darwin                   Working on 8.0.1
 NetWare                  Working on 6.5 SP8, missing module support
 DOS                      Working, missing module support and multi-threading
 NeXTSTEP                 Working, missing module support
