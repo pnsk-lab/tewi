@@ -25,6 +25,8 @@ const char* tw_platform =
     "NetWare"
 #elif defined(__DOS__)
     "DOS"
+#elif defined(__amiga__)
+    "Amiga"
 #elif defined(__MINGW32__)
     "Windows-MinGW32"
 #elif defined(_MSC_VER)

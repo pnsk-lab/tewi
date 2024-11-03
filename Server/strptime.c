@@ -35,7 +35,7 @@
 //#include <sys/cdefs.h>
 //__RCSID("$NetBSD: strptime.c,v 1.62 2017/08/24 01:01:09 ginsbach Exp $");
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__) || defined(__NeXT__) || defined(__bsdi__)
+#if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__) || defined(__NeXT__) || defined(__bsdi__) || defined(__amiga__)
 
 #include <stdlib.h>
 #include <ctype.h>
@@ -115,7 +115,7 @@ static const unsigned char *find_string(const unsigned char *, int *, const char
 #define strncasecmp         _strnicmp
 #endif
 
-#ifdef __WATCOMC__
+#if defined(__WATCOMC__)
 #define _tzset tzset
 #endif
 
@@ -469,8 +469,8 @@ recurse:
                     bp = NULL;
                     continue;
                 }
-#if defined(_WIN32) || defined(__OS2__) || defined(__NeXT__) || defined(__DOS__)
-#if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__) || defined(__NeXT__)
+#if defined(_WIN32) || defined(__OS2__) || defined(__NeXT__) || defined(__DOS__) || defined(__amiga__)
+#if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__) || defined(__NeXT__) || defined(__amiga__)
 		if (1)
 #else
                 if (localtime_s(tm, &sse) == 0)
@@ -560,6 +560,7 @@ recurse:
         case 'z':       //
 #ifdef _WIN32
             _tzset();
+#elif defined(__amiga__)
 #else
             tzset();
 #endif

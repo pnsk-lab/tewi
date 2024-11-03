@@ -133,6 +133,8 @@ void tw_config_init(void) {
 	strcpy(config.hostname, "ps2");
 #elif defined(__NETWARE__)
 	strcpy(config.hostname, "netware");
+#elif defined(__amiga__)
+	strcpy(config.hostname, "amiga");
 #else
 	gethostname(config.hostname, 1024);
 #endif

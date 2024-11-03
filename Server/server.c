@@ -15,6 +15,10 @@
 #include "tw_module.h"
 #include "tw_version.h"
 
+#ifdef __amiga__
+#include <pthread.h>
+#endif
+
 #if !defined(_MSC_VER) && !defined(__BORLANDC__)
 #include <unistd.h>
 #endif
@@ -107,7 +111,7 @@ uint16_t htons(uint16_t n) { return ((n >> 8) & 0xff) | ((n << 8) & 0xff00); }
 #endif
 #endif
 
-#if defined(_PSP) || defined(__ps2sdk__) || defined(__bsdi__)
+#if defined(_PSP) || defined(__ps2sdk__) || defined(__bsdi__) || defined(__amiga__)
 #include "strptime.h"
 #endif
 
@@ -515,12 +519,14 @@ struct pass_entry {
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #define NO_RETURN_THREAD
 void tw_server_pass(void* ptr) {
+#elif defined(__amiga__)
+void* tw_server_pass(void* ptr) {
 #elif defined(__HAIKU__)
 int32_t tw_server_pass(void* ptr) {
 #elif defined(_PSP) || defined(__PPU__)
 int tw_server_pass(void* ptr) {
 #endif
-#if defined(__HAIKU__) || defined(__MINGW32__) || defined(_PSP) || defined(__PPU__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
+#if defined(__HAIKU__) || defined(__MINGW32__) || defined(_PSP) || defined(__PPU__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__) || defined(__amiga__)
 #define FREE_PTR
 	int sock = ((struct pass_entry*)ptr)->sock;
 	bool ssl = ((struct pass_entry*)ptr)->ssl;
@@ -621,7 +627,7 @@ int tw_server_pass(void* ptr) {
 					time_t t;
 					struct tm* btm;
 					strptime(req.headers[i + 1], "%a, %d %b %Y %H:%M:%S GMT", &tm);
-#if defined(__MINGW32__) || defined(_PSP) || defined(__PPU__) || defined(__ps2sdk__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__) || defined(__USLC__) || defined(__NeXT__) || defined(__bsdi__)
+#if defined(__MINGW32__) || defined(_PSP) || defined(__PPU__) || defined(__ps2sdk__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__) || defined(__USLC__) || defined(__NeXT__) || defined(__bsdi__) || defined(__amiga__)
 					t = 0;
 					btm = localtime(&t);
 					cmtime = mktime(&tm);
@@ -1055,7 +1061,7 @@ void tw_server_loop(void) {
 		if(ret == -1) {
 #if !defined(__MINGW32__) && !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(__WATCOMC__)
 			if(errno == EINTR) continue;
-			cm_log("Server", "Select failure: %s", strerror(errno));
+			cm_log("Server", "Select/poll failure: %s", strerror(errno));
 #endif
 			break;
 		} else if(ret == 0) {
@@ -1078,7 +1084,10 @@ void tw_server_loop(void) {
 					SOCKADDR claddr;
 					socklen_t clen = sizeof(claddr);
 					int sock = accept(sockets[i], (struct sockaddr*)&claddr, &clen);
-#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_PSP) || defined(__PPU__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
+#if defined(__MINGW32__) || defined(__HAIKU__) || defined(_PSP) || defined(__PPU__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__) || defined(__amiga__)
+#ifdef __amiga__
+					pthread_t thrt;
+#endif
 					int j;
 					struct pass_entry* e = malloc(sizeof(*e));
 					cm_log("Server", "New connection accepted");
@@ -1103,6 +1112,8 @@ void tw_server_loop(void) {
 #endif
 #elif defined(_PSP) || defined(__PPU__)
 						tw_server_pass(e);
+#elif defined(__amiga__)
+					pthread_create(&thrt, NULL, tw_server_pass, e);
 #elif defined(__HAIKU__)
 					for(j = 0; j < sizeof(threads) / sizeof(threads[0]); j++) {
 						if(threads[j].used) {

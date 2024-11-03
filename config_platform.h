@@ -36,6 +36,21 @@
 /* Do not use getnameinfo */
 #endif
 
+#if (defined(__amiga__)) && !defined(NO_IPV6)
+#define NO_IPV6
+/* Amiga does not have IPv6 */
+#endif
+
+#if (defined(__amiga__)) && defined(HAS_CHROOT)
+#undef HAS_CHROOT
+/* Amiga does not have chroot */
+#endif
+
+#if (defined(__amiga__)) && !defined(NO_GETNAMEINFO)
+#define NO_GETNAMEINFO
+/* Do not use getnameinfo */
+#endif
+
 #if (defined(_PSP) || defined(__PPU__) || defined(__ps2sdk__)) && !defined(NO_IPV6)
 #define NO_IPV6
 /* PSP/PS2/PS3 does not have IPv6 */
