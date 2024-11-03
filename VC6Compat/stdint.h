@@ -11,6 +11,8 @@ typedef u_int32_t uint32_t;
 typedef u_int64_t uint64_t;
 
 #define INT32_MAX 0x7fffffff
+#elif defined(__sun__)
+#include <sys/int_types.h>
 #else
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
