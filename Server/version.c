@@ -39,6 +39,8 @@ const char* tw_platform =
     "Haiku"
 #elif defined(__APPLE__)
     "Darwin"
+#elif defined(__sun__)
+    "Solaris"
 #elif defined(__CYGWIN__)
     "Cygwin"
 #elif defined(_PSP)
