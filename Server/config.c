@@ -10,6 +10,10 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#ifdef NEED_DIRECT
+#include <direct.h>
+#endif
+
 #if !defined(_MSC_VER) && !defined(__BORLANDC__)
 #include <unistd.h>
 #endif
