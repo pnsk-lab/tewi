@@ -41,6 +41,8 @@ const char* tw_platform =
     "Darwin"
 #elif defined(__sun__)
     "Solaris"
+#elif defined(__gnu_hurd__)
+    "GNU/Hurd"
 #elif defined(__CYGWIN__)
     "Cygwin"
 #elif defined(_PSP)
