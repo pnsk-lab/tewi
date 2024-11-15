@@ -42,6 +42,7 @@ Windows NT               Working on NT 4.0 SP6a
 Linux                    Working on Debian GNU/Linux 12 (x86_64)
 NetBSD                   Working on NetBSD/amd64 10.0
 OpenBSD                  Working
+FreeBSD                  Working on FreeBSD/amd64 14.1
 BSD/OS                   Working
 Haiku                    Working
 Minix                    Working
