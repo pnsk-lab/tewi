@@ -100,7 +100,7 @@ char tw_server[2048];
 
 int startup(int argc, char** argv);
 
-#if defined(__MINGW32__) || defined(_MSC_VER) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__) && !defined(__DOS__)) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || (defined(_MSC_VER) && !defined(WINCE)) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__) && !defined(__DOS__)) || defined(__BORLANDC__)
 char* get_registry(const char* main, const char* sub) {
 	DWORD bufsize = 512;
 	HKEY handle;
@@ -761,7 +761,7 @@ void thread_stuff(void* pargs) {
 int startup(int argc, char** argv) {
 	int i;
 	char* r;
-#if defined(__MINGW32__) || defined(_MSC_VER) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__) && !defined(__DOS__)) || defined(__BORLANDC__)
+#if defined(__MINGW32__) || (defined(_MSC_VER) && !defined(WINCE)) || (defined(__WATCOMC__) && !defined(__OS2__) && !defined(__NETWARE__) && !defined(__DOS__)) || defined(__BORLANDC__)
 	char* confpath = cm_strdup(PREFIX "/etc/tewi.conf");
 	char* regpath = get_registry("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Tewi HTTPd", "InstallDir");
 	if(regpath != NULL) {
@@ -848,7 +848,7 @@ int startup(int argc, char** argv) {
 #if !defined(__MINGW32__) && !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(__WATCOMC__)
 	signal(SIGCHLD, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
-#elif !defined(BUILD_GUI) && !defined(__OS2__) && !defined(__NETWARE__) && !defined(__DOS__)
+#elif !defined(BUILD_GUI) && !defined(__OS2__) && !defined(__NETWARE__) && !defined(__DOS__) && !defined(WINCE)
 	SetConsoleTitle(tw_server);
 #endif
 	return -1;

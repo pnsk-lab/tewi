@@ -392,7 +392,9 @@ int tw_config_read(const char* path) {
 							cm_log("Config", "Missing path at line %d", ln);
 							stop = 1;
 						} else {
+#ifndef WINCE
 							chdir(r[1]);
+#endif
 							free(config.server_root);
 							config.server_root = cm_strdup(r[1]);
 						}

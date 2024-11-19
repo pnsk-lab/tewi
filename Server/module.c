@@ -51,7 +51,9 @@ void* tw_module_load(const char* path) {
 #elif defined(__NETWARE__)
 	unsigned int* hnd = malloc(sizeof(*hnd));
 #endif
+#ifndef WINCE
 	chdir(config.server_root);
+#endif
 #if defined(__MINGW32__) || defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
 #ifdef __OS2__
 	if(DosLoadModule(tmp, 512, path, &mod) != NO_ERROR) {
@@ -66,7 +68,7 @@ void* tw_module_load(const char* path) {
 	}
 	lib = (void*)hnd;
 #else
-	lib = LoadLibraryA(path);
+	lib = LoadLibrary(path);
 #endif
 #else
 	lib = dlopen(path, RTLD_LAZY);
@@ -74,7 +76,9 @@ void* tw_module_load(const char* path) {
 	if(lib == NULL) {
 		cm_log("Module", "Could not load %s", path);
 	}
+#ifndef WINCE
 	chdir(p);
+#endif
 	free(p);
 	return lib;
 }
@@ -91,6 +95,8 @@ void* tw_module_symbol(void* mod, const char* sym) {
 	return ret;
 #elif defined(__NETWARE__)
 	return ImportSymbol(*(unsigned int*)mod, sym);
+#elif defined(WINCE)
+	return GetProcAddressW(mod, sym);
 #else
 	return GetProcAddress(mod, sym);
 #endif
